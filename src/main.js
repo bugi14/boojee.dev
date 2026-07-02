@@ -219,7 +219,14 @@ const blackHole = {
       const dy = this.mouse.y - y;
       if (dx * dx + dy * dy >= minDistSq) break;
     }
-    container.particles.addParticle({ x, y });
+    // No initial velocity of its own — tsParticles' default particle
+    // creation assigns a random ambient drift (from the stars preset's
+    // move.random setting), which read as an unwanted burst of speed and
+    // direction on spawn. Disabling move here means the star is stationary
+    // until our own gravity loop (which runs independent of this setting)
+    // starts pulling it in, exactly like any other star's motion once
+    // gravity takes over from its ambient drift.
+    container.particles.addParticle({ x, y }, { move: { enable: false } });
   },
 
   spawnFlash(container, position) {
