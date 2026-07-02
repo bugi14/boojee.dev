@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-02
+
+Floating text nav buttons that travel through hyperspace to a destination page. See [#3](https://github.com/bugi14/boojee.dev/issues/3).
+
+### Added
+- **Floating text nav buttons** (`src/main.js`): CV, ClimateMapper, Other Projects, and About render as real DOM buttons that drift slowly around the screen (like the existing particle effects, but hand-rolled so they get native hover styling, click handling, and accessibility), bouncing off a margin inset from the viewport edges rather than the raw edge.
+- **Hyperspace travel transition**: clicking a nav button — or the "← Back" link on a destination page — plays the `hyperspace` preset for the travel duration in both directions before landing.
+- **Hash-based routing**: each destination gets its own URL (`#/cv`, `#/climatemapper`, `#/other-projects`, `#/about`). Destination pages are intentionally blank placeholders for now — per-destination content is out of scope for this change.
+- **Local development docs**: `npm run dev` / `build` / `preview` scripts and setup instructions in the README.
+
+### Fixed
+- Switching to any preset other than the one loaded first previously failed silently — tsParticles' plugin manager only accepts preset registration before the very first `tsParticles.load()` call. All presets are now registered up front at startup.
+- Switching presets left the previous preset's render loop running in the background indefinitely (a growing resource leak); the previous container is now explicitly destroyed before loading the next one.
+- Returning from a destination page previously left the star field blank, because the preset reload was happening while the home view was still hidden (`display:none`), so tsParticles measured a zero-size canvas. The home view is now revealed before any preset loads.
+
 ## [0.1.0] - 2026-07-02
 
 Interactive tsParticles playground with a mouse-driven "black hole" effect on the stars preset.
