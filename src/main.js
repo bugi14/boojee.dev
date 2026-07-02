@@ -48,6 +48,7 @@ const PRESET_OVERRIDES = {
 // covers both absorption and stars that get slingshotted off-screen and
 // destroyed by tsParticles' own out-of-bounds handling. Distances are CSS px.
 const EVENT_HORIZON_RADIUS = 16;
+const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
 const GRAVITY = 2000;
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
@@ -186,24 +187,37 @@ const blackHole = {
 
   spawnAtEdge(container) {
     const { width, height } = container.canvas.size;
+    const ratio = container.retina.pixelRatio;
+    // A point picked anywhere along the edge can coincidentally land right
+    // next to the cursor if it's currently near that edge — inverse-square
+    // gravity then yanks the new star in instantly, reading as a sudden
+    // burst of speed instead of the same gentle drift every other star
+    // gets. Resample a few times to keep spawns a safe distance away.
+    const minDistSq = (MIN_SPAWN_DISTANCE * ratio) ** 2;
     let x, y;
-    switch (Math.floor(Math.random() * 4)) {
-      case 0: // top
-        x = Math.random() * width;
-        y = 0;
-        break;
-      case 1: // bottom
-        x = Math.random() * width;
-        y = height;
-        break;
-      case 2: // left
-        x = 0;
-        y = Math.random() * height;
-        break;
-      default: // right
-        x = width;
-        y = Math.random() * height;
-        break;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      switch (Math.floor(Math.random() * 4)) {
+        case 0: // top
+          x = Math.random() * width;
+          y = 0;
+          break;
+        case 1: // bottom
+          x = Math.random() * width;
+          y = height;
+          break;
+        case 2: // left
+          x = 0;
+          y = Math.random() * height;
+          break;
+        default: // right
+          x = width;
+          y = Math.random() * height;
+          break;
+      }
+      if (!this.mouse) break;
+      const dx = this.mouse.x - x;
+      const dy = this.mouse.y - y;
+      if (dx * dx + dy * dy >= minDistSq) break;
     }
     container.particles.addParticle({ x, y });
   },
