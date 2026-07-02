@@ -281,6 +281,7 @@ const NAV_ITEMS = [
 // the blackHole gravity loop above. DOM gives free :hover/:focus styling,
 // native click handling and accessibility, which canvas-drawn particles don't.
 const FLOAT_SPEED = 0.15; // CSS px per frame
+const NAV_EDGE_MARGIN = 32; // keep floating text off the viewport edges
 
 const navButtons = {
   layer: null,
@@ -306,8 +307,8 @@ const navButtons = {
         el,
         width,
         height,
-        x: Math.random() * Math.max(window.innerWidth - width, 1),
-        y: Math.random() * Math.max(window.innerHeight - height, 1),
+        x: NAV_EDGE_MARGIN + Math.random() * Math.max(window.innerWidth - width - NAV_EDGE_MARGIN * 2, 1),
+        y: NAV_EDGE_MARGIN + Math.random() * Math.max(window.innerHeight - height - NAV_EDGE_MARGIN * 2, 1),
         vx: Math.cos(angle) * FLOAT_SPEED,
         vy: Math.sin(angle) * FLOAT_SPEED,
       };
@@ -332,23 +333,25 @@ const navButtons = {
 
   update() {
     if (!this.particles) return;
-    const maxX = window.innerWidth;
-    const maxY = window.innerHeight;
+    const minX = NAV_EDGE_MARGIN;
+    const minY = NAV_EDGE_MARGIN;
+    const maxX = window.innerWidth - NAV_EDGE_MARGIN;
+    const maxY = window.innerHeight - NAV_EDGE_MARGIN;
 
     for (const p of this.particles) {
       p.x += p.vx;
       p.y += p.vy;
 
-      if (p.x < 0) {
-        p.x = 0;
+      if (p.x < minX) {
+        p.x = minX;
         p.vx = Math.abs(p.vx);
       } else if (p.x + p.width > maxX) {
         p.x = maxX - p.width;
         p.vx = -Math.abs(p.vx);
       }
 
-      if (p.y < 0) {
-        p.y = 0;
+      if (p.y < minY) {
+        p.y = minY;
         p.vy = Math.abs(p.vy);
       } else if (p.y + p.height > maxY) {
         p.y = maxY - p.height;
@@ -424,6 +427,7 @@ const DESTINATIONS = new Map(NAV_ITEMS.map((item) => [item.hash, item.label]));
 const homeView = document.getElementById("home-view");
 const destinationView = document.getElementById("destination-view");
 const destinationLabel = document.getElementById("destination-label");
+const destinationBack = document.getElementById("destination-back");
 const navLayer = document.getElementById("nav-layer");
 
 let traveling = false;
@@ -451,22 +455,53 @@ function renderRoute() {
   }
 }
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Plays the hyperspace preset for the travel duration. The particle canvas
+// only lives in the home view, so the caller must make sure home-view is
+// visible before calling this — loading a preset while its container is
+// display:none leaves tsParticles measuring a zero-size canvas, which is
+// also why stars never reappeared after a plain (non-animated) "back".
+async function playHyperspace() {
+  select.value = "hyperspace";
+  select.disabled = true;
+  await loadPreset("hyperspace");
+  await wait(HYPERSPACE_TRAVEL_MS);
+}
+
 async function travelTo(hash) {
   if (traveling) return;
   traveling = true;
-  select.disabled = true;
   navButtons.detach();
 
-  await loadPreset("hyperspace");
+  await playHyperspace();
 
-  setTimeout(async () => {
-    window.location.hash = `/${hash}`;
-    select.value = HOME_DEFAULT_PRESET;
-    await loadPreset(HOME_DEFAULT_PRESET);
-    select.disabled = false;
-    traveling = false;
-  }, HYPERSPACE_TRAVEL_MS);
+  window.location.hash = `/${hash}`;
+  traveling = false;
 }
+
+async function travelHome() {
+  if (traveling) return;
+  traveling = true;
+
+  destinationView.hidden = true;
+  homeView.hidden = false;
+
+  await playHyperspace();
+
+  select.value = HOME_DEFAULT_PRESET;
+  await loadPreset(HOME_DEFAULT_PRESET);
+  select.disabled = false;
+  window.location.hash = "";
+  traveling = false;
+}
+
+destinationBack.addEventListener("click", (e) => {
+  e.preventDefault();
+  travelHome();
+});
 
 window.addEventListener("hashchange", renderRoute);
 

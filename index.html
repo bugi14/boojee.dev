@@ -89,9 +89,14 @@
       letter-spacing: 0.03em;
     }
     #destination-back {
+      background: none;
+      border: none;
+      margin: 0;
+      padding: 0;
       color: #9fb3ff;
+      font: inherit;
       font-size: 0.95rem;
-      text-decoration: none;
+      cursor: pointer;
     }
     #destination-back:hover {
       color: #ffffff;
@@ -122,7 +127,7 @@
 
   <div id="destination-view" hidden>
     <p id="destination-label"></p>
-    <a id="destination-back" href="#/">← Back</a>
+    <button type="button" id="destination-back">← Back</button>
   </div>
 
   <script type="module" src="/src/main.js"></script>
