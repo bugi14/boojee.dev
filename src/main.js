@@ -36,19 +36,19 @@ const PRESET_OVERRIDES = {
   },
 };
 
-// "Black hole" effect for the stars preset: stars within PULL_RADIUS
-// accelerate toward the cursor following an inverse-square law (like
-// gravity) — distant stars barely move, close ones plunge in fast. Stars
-// pulled inside EVENT_HORIZON_RADIUS are consumed — a flash particle is
-// spawned in their place. The population is topped back up to its starting
-// count every tick by spawning new stars at the frame edges, which covers
-// both absorption and stars that get slingshotted off-screen and destroyed
-// by tsParticles' own out-of-bounds handling. Distances are CSS px.
-const PULL_RADIUS = 260;
+// "Black hole" effect for the stars preset: every star accelerates toward
+// the cursor following an inverse-square law (like gravity) — there's no
+// pull radius, distance alone determines strength, so distant stars barely
+// move while close ones plunge in fast. Stars pulled inside
+// EVENT_HORIZON_RADIUS are consumed — a flash particle is spawned in their
+// place. The population is topped back up to its starting count every tick
+// by spawning new stars at the frame edges (with no initial velocity of
+// their own, so they ease in under the same gravity as everything else,
+// like a star just beyond the frame drifting into the cursor's pull) — this
+// covers both absorption and stars that get slingshotted off-screen and
+// destroyed by tsParticles' own out-of-bounds handling. Distances are CSS px.
 const EVENT_HORIZON_RADIUS = 16;
-// Tuned so a star drifting at the edge of PULL_RADIUS is barely nudged,
-// while one right at the event horizon gets a strong, fast plunge.
-const GRAVITY = 4000;
+const GRAVITY = 2000;
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
 
@@ -110,7 +110,6 @@ const blackHole = {
     if (!container || container.destroyed) return;
 
     const ratio = container.retina.pixelRatio;
-    const pullRadiusSq = (PULL_RADIUS * ratio) ** 2;
     const horizonSq = (EVENT_HORIZON_RADIUS * ratio) ** 2;
     // Clamp the minimum distance used in the 1/dist² falloff so acceleration
     // can't blow up to Infinity/NaN as a star nears the cursor — it's capped
@@ -146,16 +145,15 @@ const blackHole = {
           continue;
         }
 
-        if (distSq < pullRadiusSq) {
-          // Inverse-square "gravity": acceleration falls off with the square
-          // of the distance, so distant stars barely feel it while close
-          // ones get pulled in hard and fast.
-          const dist = Math.sqrt(distSq) || 1;
-          const clampedDist = Math.max(dist, minDist);
-          const accel = GRAVITY / (clampedDist * clampedDist);
-          vel.x += (dx / dist) * accel;
-          vel.y += (dy / dist) * accel;
-        }
+        // Inverse-square "gravity", applied to every star regardless of
+        // distance — acceleration falls off with the square of the
+        // distance, so distant stars barely feel it while close ones get
+        // pulled in hard and fast.
+        const dist = Math.sqrt(distSq) || 1;
+        const clampedDist = Math.max(dist, minDist);
+        const accel = GRAVITY / (clampedDist * clampedDist);
+        vel.x += (dx / dist) * accel;
+        vel.y += (dy / dist) * accel;
       }
 
       // Friction applies whether or not the star is currently being pulled,
