@@ -41,12 +41,13 @@ const PRESET_OVERRIDES = {
 // pull radius, distance alone determines strength, so distant stars barely
 // move while close ones plunge in fast. Stars pulled inside
 // EVENT_HORIZON_RADIUS are consumed — a flash particle is spawned in their
-// place. The population is topped back up to its starting count every tick
-// by spawning new stars at the frame edges (with no initial velocity of
-// their own, so they ease in under the same gravity as everything else,
-// like a star just beyond the frame drifting into the cursor's pull) — this
-// covers both absorption and stars that get slingshotted off-screen and
-// destroyed by tsParticles' own out-of-bounds handling. Distances are CSS px.
+// place. Population is maintained at a constant density (stars per unit
+// area, not a fixed count) every tick, topping up or trimming at the frame
+// edges as needed — this covers absorption, stars slingshotted off-screen
+// and destroyed by tsParticles' own out-of-bounds handling, and window
+// resizes. New stars spawn with no initial velocity of their own, so they
+// ease in under the same gravity as everything else, like a star just
+// beyond the frame drifting into the cursor's pull. Distances are CSS px.
 const EVENT_HORIZON_RADIUS = 16;
 const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
 const GRAVITY = 2000;
@@ -58,13 +59,14 @@ const blackHole = {
   mouse: null,
   rafId: null,
   velocities: null,
-  targetStarCount: 0,
+  baseDensity: 0, // stars per retina px², so total count scales with actual canvas area
 
   attach(container, wrapperEl) {
     this.detach();
     this.container = container;
     this.velocities = new WeakMap();
-    this.targetStarCount = container.particles.count;
+    const { width, height } = container.canvas.size;
+    this.baseDensity = container.particles.count / (width * height);
 
     // Listen on the wrapper div, not the <canvas> — tsParticles can recreate
     // its internal canvas element (e.g. on retina/resize adjustments), which
@@ -176,12 +178,27 @@ const blackHole = {
       }
     }
 
-    // Top up the population — covers stars just absorbed above, and stars
-    // that got slingshotted past the frame edge and destroyed by
-    // tsParticles' own out-of-bounds handling.
+    // Maintain a constant density (not a constant count) — target scales
+    // with the current canvas area, recomputed every tick so it tracks
+    // window resizes. Tops up stars lost to absorption or to tsParticles'
+    // own out-of-bounds handling, and trims the surplus if the window
+    // shrinks, so density never drifts up on a smaller viewport.
+    const { width, height } = container.canvas.size;
+    const targetStarCount = Math.round(this.baseDensity * width * height);
     const currentStars = container.particles.count - flashCount;
-    for (let i = currentStars; i < this.targetStarCount; i++) {
-      this.spawnAtEdge(container);
+
+    if (currentStars < targetStarCount) {
+      for (let i = currentStars; i < targetStarCount; i++) {
+        this.spawnAtEdge(container);
+      }
+    } else if (currentStars > targetStarCount) {
+      let excess = currentStars - targetStarCount;
+      for (let i = container.particles.count - 1; i >= 0 && excess > 0; i--) {
+        const particle = container.particles.get(i);
+        if (!particle || particle.destroyed || particle.isFlash) continue;
+        container.particles.remove(particle);
+        excess--;
+      }
     }
   },
 
