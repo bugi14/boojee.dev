@@ -269,6 +269,97 @@ const blackHole = {
   },
 };
 
+const NAV_ITEMS = [
+  { label: "CV", hash: "cv" },
+  { label: "ClimateMapper", hash: "climatemapper" },
+  { label: "Other Projects", hash: "other-projects" },
+  { label: "About", hash: "about" },
+];
+
+// Floating nav buttons: plain DOM elements (not tsParticles particles) drifting
+// around the nav layer under their own slow RAF loop, in the same spirit as
+// the blackHole gravity loop above. DOM gives free :hover/:focus styling,
+// native click handling and accessibility, which canvas-drawn particles don't.
+const FLOAT_SPEED = 0.15; // CSS px per frame
+
+const navButtons = {
+  layer: null,
+  particles: null,
+  rafId: null,
+
+  attach(layerEl, onNavigate) {
+    this.detach();
+    this.layer = layerEl;
+
+    this.particles = NAV_ITEMS.map((item) => {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "nav-particle";
+      el.textContent = item.label;
+      el.addEventListener("click", () => onNavigate(item.hash));
+      layerEl.appendChild(el);
+
+      const angle = Math.random() * Math.PI * 2;
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+      return {
+        el,
+        width,
+        height,
+        x: Math.random() * Math.max(window.innerWidth - width, 1),
+        y: Math.random() * Math.max(window.innerHeight - height, 1),
+        vx: Math.cos(angle) * FLOAT_SPEED,
+        vy: Math.sin(angle) * FLOAT_SPEED,
+      };
+    });
+
+    const tick = () => {
+      this.update();
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  },
+
+  detach() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.rafId = null;
+    if (this.particles) {
+      for (const p of this.particles) p.el.remove();
+    }
+    this.particles = null;
+    this.layer = null;
+  },
+
+  update() {
+    if (!this.particles) return;
+    const maxX = window.innerWidth;
+    const maxY = window.innerHeight;
+
+    for (const p of this.particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0) {
+        p.x = 0;
+        p.vx = Math.abs(p.vx);
+      } else if (p.x + p.width > maxX) {
+        p.x = maxX - p.width;
+        p.vx = -Math.abs(p.vx);
+      }
+
+      if (p.y < 0) {
+        p.y = 0;
+        p.vy = Math.abs(p.vy);
+      } else if (p.y + p.height > maxY) {
+        p.y = maxY - p.height;
+        p.vy = -Math.abs(p.vy);
+      }
+
+      p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+    }
+  },
+};
+
 const registered = new Set();
 
 async function ensurePresetRegistered(preset) {
@@ -277,10 +368,25 @@ async function ensurePresetRegistered(preset) {
   registered.add(preset);
 }
 
-async function loadPreset(preset) {
-  await ensurePresetRegistered(preset);
+// tsParticles locks its plugin manager on the first tsParticles.load() call —
+// any preset not registered before that first call can never be registered
+// later (PluginManager.register() throws "Register plugins can only be done
+// before calling tsParticles.load()"). So every preset must be registered up
+// front; loadPreset() itself only swaps which already-registered preset is
+// displayed.
+async function registerAllPresets() {
+  await Promise.all(Object.keys(PRESET_LOADERS).map((preset) => ensurePresetRegistered(preset)));
+}
 
+let currentContainer = null;
+
+async function loadPreset(preset) {
   blackHole.detach();
+
+  // tsParticles.load() doesn't replace an existing container at the same id —
+  // it stacks a new one on top, leaving the old one's render loop running
+  // forever in the background. Destroy it explicitly before swapping presets.
+  currentContainer?.destroy();
 
   const old = document.getElementById("tsparticles");
   const fresh = document.createElement("div");
@@ -296,6 +402,7 @@ async function loadPreset(preset) {
       ...PRESET_OVERRIDES[preset],
     },
   });
+  currentContainer = container;
 
   if (preset === "stars") {
     blackHole.attach(container, fresh);
@@ -305,9 +412,69 @@ async function loadPreset(preset) {
 const select = document.getElementById("preset");
 select.addEventListener("change", () => loadPreset(select.value));
 
+// Hash-based routing: "#/cv", "#/climatemapper", etc. land on a blank
+// destination view. Anything else (including no hash) is the home view with
+// the background effect, preset picker and floating nav buttons. Per-page
+// landscapes are out of scope here — the destination view is intentionally
+// bare.
+const HOME_DEFAULT_PRESET = "stars";
+const HYPERSPACE_TRAVEL_MS = 2200;
+const DESTINATIONS = new Map(NAV_ITEMS.map((item) => [item.hash, item.label]));
+
+const homeView = document.getElementById("home-view");
+const destinationView = document.getElementById("destination-view");
+const destinationLabel = document.getElementById("destination-label");
+const navLayer = document.getElementById("nav-layer");
+
+let traveling = false;
+
+function showHome() {
+  homeView.hidden = false;
+  destinationView.hidden = true;
+  navButtons.attach(navLayer, travelTo);
+}
+
+function showDestination(label) {
+  navButtons.detach();
+  homeView.hidden = true;
+  destinationView.hidden = false;
+  destinationLabel.textContent = label;
+}
+
+function renderRoute() {
+  const hash = window.location.hash.replace(/^#\/?/, "");
+  const label = DESTINATIONS.get(hash);
+  if (label) {
+    showDestination(label);
+  } else {
+    showHome();
+  }
+}
+
+async function travelTo(hash) {
+  if (traveling) return;
+  traveling = true;
+  select.disabled = true;
+  navButtons.detach();
+
+  await loadPreset("hyperspace");
+
+  setTimeout(async () => {
+    window.location.hash = `/${hash}`;
+    select.value = HOME_DEFAULT_PRESET;
+    await loadPreset(HOME_DEFAULT_PRESET);
+    select.disabled = false;
+    traveling = false;
+  }, HYPERSPACE_TRAVEL_MS);
+}
+
+window.addEventListener("hashchange", renderRoute);
+
 async function init() {
   await loadSlim(tsParticles);
+  await registerAllPresets();
   await loadPreset(select.value);
+  renderRoute();
 }
 
 init();
