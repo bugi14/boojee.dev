@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>tsParticles playground</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #0b1020;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+    }
+    #tsparticles {
+      position: fixed;
+      inset: 0;
+    }
+    #controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+    }
+    select {
+      font-size: 14px;
+      padding: 4px 8px;
+    }
+    h1 {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 10;
+      margin: 0;
+      font-weight: 300;
+      font-size: 2rem;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="tsparticles"></div>
+
+  <div id="controls">
+    <label for="preset">Preset:</label>
+    <select id="preset">
+      <option value="stars">stars</option>
+      <option value="links">links</option>
+      <option value="snow">snow</option>
+      <option value="firefly">firefly</option>
+      <option value="bubbles">bubbles</option>
+      <option value="fountain">fountain</option>
+      <option value="hyperspace">hyperspace</option>
+      <option value="fire">fire</option>
+    </select>
+  </div>
+
+  <h1>Darren Buttigieg</h1>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

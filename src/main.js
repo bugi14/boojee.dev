@@ -1,0 +1,313 @@
+import { tsParticles } from "@tsparticles/engine";
+import { loadSlim } from "@tsparticles/slim";
+import { loadStarsPreset } from "@tsparticles/preset-stars";
+import { loadLinksPreset } from "@tsparticles/preset-links";
+import { loadSnowPreset } from "@tsparticles/preset-snow";
+import { loadFireflyPreset } from "@tsparticles/preset-firefly";
+import { loadBubblesPreset } from "@tsparticles/preset-bubbles";
+import { loadFountainPreset } from "@tsparticles/preset-fountain";
+import { loadHyperspacePreset } from "@tsparticles/preset-hyperspace";
+import { loadFirePreset } from "@tsparticles/preset-fire";
+
+const PRESET_LOADERS = {
+  stars: loadStarsPreset,
+  links: loadLinksPreset,
+  snow: loadSnowPreset,
+  firefly: loadFireflyPreset,
+  bubbles: loadBubblesPreset,
+  fountain: loadFountainPreset,
+  hyperspace: loadHyperspacePreset,
+  fire: loadFirePreset,
+};
+
+// Extra options merged on top of a preset's defaults (tsParticles deep-merges
+// these with the named preset when both are passed in the same options object).
+const PRESET_OVERRIDES = {
+  stars: {
+    particles: {
+      move: {
+        enable: true,
+        speed: 0.6,
+        random: true,
+        direction: "none",
+        outModes: { default: "out" },
+      },
+    },
+  },
+};
+
+// "Black hole" effect for the stars preset: every star accelerates toward
+// the cursor following an inverse-square law (like gravity) — there's no
+// pull radius, distance alone determines strength, so distant stars barely
+// move while close ones plunge in fast. Stars pulled inside
+// EVENT_HORIZON_RADIUS are consumed — a flash particle is spawned in their
+// place. Population is maintained at a constant density (stars per unit
+// area, not a fixed count) every tick, topping up or trimming at the frame
+// edges as needed — this covers absorption, stars slingshotted off-screen
+// and destroyed by tsParticles' own out-of-bounds handling, and window
+// resizes. New stars spawn with no initial velocity of their own, so they
+// ease in under the same gravity as everything else, like a star just
+// beyond the frame drifting into the cursor's pull. Distances are CSS px.
+const EVENT_HORIZON_RADIUS = 16;
+const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
+const GRAVITY = 2000;
+const MAX_SPEED = 40;
+const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
+
+const blackHole = {
+  container: null,
+  mouse: null,
+  rafId: null,
+  velocities: null,
+  baseDensity: 0, // stars per retina px², so total count scales with actual canvas area
+
+  attach(container, wrapperEl) {
+    this.detach();
+    this.container = container;
+    this.velocities = new WeakMap();
+    const { width, height } = container.canvas.size;
+    this.baseDensity = container.particles.count / (width * height);
+
+    // Listen on the wrapper div, not the <canvas> — tsParticles can recreate
+    // its internal canvas element (e.g. on retina/resize adjustments), which
+    // would silently orphan a listener attached directly to it. The wrapper
+    // is ours and stays put for the lifetime of this preset.
+    const onMove = (e) => {
+      const rect = wrapperEl.getBoundingClientRect();
+      const ratio = container.retina.pixelRatio;
+      this.mouse = {
+        x: (e.clientX - rect.left) * ratio,
+        y: (e.clientY - rect.top) * ratio,
+      };
+    };
+    const onLeave = () => {
+      this.mouse = null;
+    };
+
+    wrapperEl.addEventListener("mousemove", onMove);
+    wrapperEl.addEventListener("mouseleave", onLeave);
+    this._cleanup = () => {
+      wrapperEl.removeEventListener("mousemove", onMove);
+      wrapperEl.removeEventListener("mouseleave", onLeave);
+    };
+
+    const tick = () => {
+      this.update();
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  },
+
+  detach() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    if (this._cleanup) this._cleanup();
+    this.rafId = null;
+    this._cleanup = null;
+    this.container = null;
+    this.mouse = null;
+    this.velocities = null;
+  },
+
+  update() {
+    const { container, mouse } = this;
+    if (!container || container.destroyed) return;
+
+    const ratio = container.retina.pixelRatio;
+    const horizonSq = (EVENT_HORIZON_RADIUS * ratio) ** 2;
+    // Clamp the minimum distance used in the 1/dist² falloff so acceleration
+    // can't blow up to Infinity/NaN as a star nears the cursor — it's capped
+    // at a large-but-finite value right at the event horizon boundary.
+    const minDist = EVENT_HORIZON_RADIUS * ratio;
+    const maxSpeed = MAX_SPEED * ratio;
+    // Safety net: a star can only be absorbed once per frame in practice.
+    // Cap it hard so a future edge case degrades instead of hanging the tab.
+    const MAX_ABSORPTIONS_PER_TICK = 10;
+    let absorptions = 0;
+    let flashCount = 0;
+
+    for (let i = container.particles.count - 1; i >= 0; i--) {
+      const particle = container.particles.get(i);
+      if (!particle || particle.destroyed) continue;
+      if (particle.isFlash) {
+        flashCount++;
+        continue;
+      }
+
+      const vel = this.velocities.get(particle) ?? { x: 0, y: 0 };
+
+      if (mouse) {
+        const dx = mouse.x - particle.position.x;
+        const dy = mouse.y - particle.position.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < horizonSq) {
+          if (absorptions >= MAX_ABSORPTIONS_PER_TICK) continue;
+          absorptions++;
+          this.spawnFlash(container, particle.position);
+          container.particles.remove(particle);
+          continue;
+        }
+
+        // Inverse-square "gravity", applied to every star regardless of
+        // distance — acceleration falls off with the square of the
+        // distance, so distant stars barely feel it while close ones get
+        // pulled in hard and fast.
+        const dist = Math.sqrt(distSq) || 1;
+        const clampedDist = Math.max(dist, minDist);
+        const accel = GRAVITY / (clampedDist * clampedDist);
+        vel.x += (dx / dist) * accel;
+        vel.y += (dy / dist) * accel;
+      }
+
+      // Friction applies whether or not the star is currently being pulled,
+      // so a slingshotted star gradually settles instead of drifting at top
+      // speed forever.
+      vel.x *= FRICTION;
+      vel.y *= FRICTION;
+
+      const speed = Math.hypot(vel.x, vel.y);
+      if (speed > maxSpeed) {
+        vel.x = (vel.x / speed) * maxSpeed;
+        vel.y = (vel.y / speed) * maxSpeed;
+      }
+
+      if (vel.x !== 0 || vel.y !== 0) {
+        particle.position.x += vel.x;
+        particle.position.y += vel.y;
+        this.velocities.set(particle, vel);
+      }
+    }
+
+    // Maintain a constant density (not a constant count) — target scales
+    // with the current canvas area, recomputed every tick so it tracks
+    // window resizes. Tops up stars lost to absorption or to tsParticles'
+    // own out-of-bounds handling, and trims the surplus if the window
+    // shrinks, so density never drifts up on a smaller viewport.
+    const { width, height } = container.canvas.size;
+    const targetStarCount = Math.round(this.baseDensity * width * height);
+    const currentStars = container.particles.count - flashCount;
+
+    if (currentStars < targetStarCount) {
+      for (let i = currentStars; i < targetStarCount; i++) {
+        this.spawnAtEdge(container);
+      }
+    } else if (currentStars > targetStarCount) {
+      let excess = currentStars - targetStarCount;
+      for (let i = container.particles.count - 1; i >= 0 && excess > 0; i--) {
+        const particle = container.particles.get(i);
+        if (!particle || particle.destroyed || particle.isFlash) continue;
+        container.particles.remove(particle);
+        excess--;
+      }
+    }
+  },
+
+  spawnAtEdge(container) {
+    const { width, height } = container.canvas.size;
+    const ratio = container.retina.pixelRatio;
+    // A point picked anywhere along the edge can coincidentally land right
+    // next to the cursor if it's currently near that edge — inverse-square
+    // gravity then yanks the new star in instantly, reading as a sudden
+    // burst of speed instead of the same gentle drift every other star
+    // gets. Resample a few times to keep spawns a safe distance away.
+    const minDistSq = (MIN_SPAWN_DISTANCE * ratio) ** 2;
+    let x, y;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      switch (Math.floor(Math.random() * 4)) {
+        case 0: // top
+          x = Math.random() * width;
+          y = 0;
+          break;
+        case 1: // bottom
+          x = Math.random() * width;
+          y = height;
+          break;
+        case 2: // left
+          x = 0;
+          y = Math.random() * height;
+          break;
+        default: // right
+          x = width;
+          y = Math.random() * height;
+          break;
+      }
+      if (!this.mouse) break;
+      const dx = this.mouse.x - x;
+      const dy = this.mouse.y - y;
+      if (dx * dx + dy * dy >= minDistSq) break;
+    }
+    // No initial velocity of its own — tsParticles' default particle
+    // creation assigns a random ambient drift (from the stars preset's
+    // move.random setting), which read as an unwanted burst of speed and
+    // direction on spawn. Disabling move here means the star is stationary
+    // until our own gravity loop (which runs independent of this setting)
+    // starts pulling it in, exactly like any other star's motion once
+    // gravity takes over from its ambient drift.
+    container.particles.addParticle({ x, y }, { move: { enable: false } });
+  },
+
+  spawnFlash(container, position) {
+    const flash = container.particles.addParticle(
+      { x: position.x, y: position.y },
+      {
+        shape: { type: "circle" },
+        move: { enable: false },
+        color: { value: "#ffffff" },
+        opacity: {
+          value: { min: 0, max: 1 },
+          animation: { enable: true, speed: 5, startValue: "max", destroy: "min", sync: true },
+        },
+        size: {
+          value: { min: 6, max: 16 },
+          animation: { enable: true, speed: 30, startValue: "min", destroy: "max", sync: true },
+        },
+      },
+    );
+    // Exempt the flash itself from absorption — it's spawned inside the
+    // event horizon by definition and would otherwise re-trigger endlessly.
+    if (flash) flash.isFlash = true;
+  },
+};
+
+const registered = new Set();
+
+async function ensurePresetRegistered(preset) {
+  if (registered.has(preset)) return;
+  await PRESET_LOADERS[preset](tsParticles);
+  registered.add(preset);
+}
+
+async function loadPreset(preset) {
+  await ensurePresetRegistered(preset);
+
+  blackHole.detach();
+
+  const old = document.getElementById("tsparticles");
+  const fresh = document.createElement("div");
+  fresh.id = "tsparticles";
+  old.replaceWith(fresh);
+
+  const container = await tsParticles.load({
+    id: "tsparticles",
+    options: {
+      preset,
+      background: { color: "transparent" },
+      fullScreen: { enable: false },
+      ...PRESET_OVERRIDES[preset],
+    },
+  });
+
+  if (preset === "stars") {
+    blackHole.attach(container, fresh);
+  }
+}
+
+const select = document.getElementById("preset");
+select.addEventListener("change", () => loadPreset(select.value));
+
+async function init() {
+  await loadSlim(tsParticles);
+  await loadPreset(select.value);
+}
+
+init();
