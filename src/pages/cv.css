@@ -1,0 +1,145 @@
+#cv-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+#cv-page[hidden] {
+  display: none;
+}
+#cv-page a {
+  color: #9fb3ff;
+  text-decoration: none;
+}
+#cv-page a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+.cv-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.cv-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(159, 179, 255, 0.25);
+}
+.cv-header h1 {
+  position: static;
+  pointer-events: auto;
+  font-weight: 300;
+  font-size: 2.25rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 4px;
+}
+.cv-title {
+  margin: 0 0 12px;
+  color: #b9c6f0;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+.cv-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.9rem;
+  color: #cdd6f4;
+}
+@media (max-width: 480px) {
+  .cv-header {
+    flex-wrap: wrap;
+  }
+}
+.cv-body {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.cv-summary {
+  margin: 0;
+  color: #dfe7ff;
+}
+.cv-section {
+  margin-bottom: 32px;
+}
+.cv-sidebar .cv-section:last-child,
+.cv-main .cv-section:last-child {
+  margin-bottom: 0;
+}
+.cv-section h2 {
+  font-weight: 400;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9fb3ff;
+  margin: 0 0 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(159, 179, 255, 0.25);
+}
+.cv-entry {
+  margin-bottom: 20px;
+}
+.cv-entry:last-child {
+  margin-bottom: 0;
+}
+.cv-entry-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.cv-entry-head h3 {
+  margin: 0;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #f4f6ff;
+}
+.cv-entry-sub {
+  margin: 2px 0 8px;
+  font-size: 0.88rem;
+  color: #9aa5c9;
+}
+.cv-dates {
+  font-style: italic;
+  font-size: 0.85rem;
+  color: #9aa5c9;
+  white-space: nowrap;
+}
+.cv-entry ul {
+  margin: 0;
+  padding-left: 1.1em;
+}
+.cv-entry li {
+  margin-bottom: 4px;
+}
+.cv-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cv-skills dt {
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  color: #9aa5c9;
+  margin: 0 0 3px;
+}
+.cv-skills dd {
+  margin: 0;
+  color: #dfe7ff;
+  font-size: 0.9rem;
+}
+@media (max-width: 700px) {
+  .cv-body {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}

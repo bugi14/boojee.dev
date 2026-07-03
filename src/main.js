@@ -1,3 +1,8 @@
+import "./styles/base.css";
+import "./styles/home.css";
+import "./styles/destination.css";
+import "./pages/cv.css";
+
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import { loadStarsPreset } from "@tsparticles/preset-stars";
