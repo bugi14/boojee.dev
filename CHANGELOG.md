@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-03
+
+Static CV page at `#/cv`, styled after [cv.diogotc.com](https://cv.diogotc.com/). See [#5](https://github.com/bugi14/boojee.dev/issues/5).
+
+### Added
+- **CV page content** (`index.html`, `src/main.js`): the `#/cv` destination, previously a bare placeholder, now renders the full resume — header with photo, title, and contact links (email, LinkedIn, GitHub), an About/Skills sidebar, and Experience/Education in the main column. Other destinations (ClimateMapper, Other Projects, About) remain placeholders.
+- **Two-column layout**: About and Skills sit in a left sidebar under the full-width header, matching cv.diogotc.com's layout; Experience and Education fill the main column. Columns stack on narrow viewports. Skills are listed as plain text, with no rating indicators.
+- **Profile photo**: served from `public/assets/images/darren.jpg`, shown next to the name in the CV header.
+
+### Dev
+- Preview/dev launch config (`.claude/launch.json`) now defaults to a fixed alternate port so it doesn't collide with a manually-run `vite` dev server on 5173.
+
 ## [0.2.0] - 2026-07-02
 
 Floating text nav buttons that travel through hyperspace to a destination page. See [#3](https://github.com/bugi14/boojee.dev/issues/3).

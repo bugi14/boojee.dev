@@ -426,9 +426,11 @@ const DESTINATIONS = new Map(NAV_ITEMS.map((item) => [item.hash, item.label]));
 
 const homeView = document.getElementById("home-view");
 const destinationView = document.getElementById("destination-view");
+const destinationContent = document.getElementById("destination-content");
 const destinationLabel = document.getElementById("destination-label");
 const destinationBack = document.getElementById("destination-back");
 const navLayer = document.getElementById("nav-layer");
+const cvPage = document.getElementById("cv-page");
 
 let traveling = false;
 
@@ -438,18 +440,25 @@ function showHome() {
   navButtons.attach(navLayer, travelTo);
 }
 
-function showDestination(label) {
+// The "cv" destination renders the static CV markup already in the page
+// (#cv-page); every other destination is still just a bare placeholder label.
+function showDestination(hash, label) {
   navButtons.detach();
   homeView.hidden = true;
   destinationView.hidden = false;
-  destinationLabel.textContent = label;
+
+  const isCv = hash === "cv";
+  destinationContent.classList.toggle("is-cv", isCv);
+  destinationLabel.hidden = isCv;
+  destinationLabel.textContent = isCv ? "" : label;
+  cvPage.hidden = !isCv;
 }
 
 function renderRoute() {
   const hash = window.location.hash.replace(/^#\/?/, "");
   const label = DESTINATIONS.get(hash);
   if (label) {
-    showDestination(label);
+    showDestination(hash, label);
   } else {
     showHome();
   }
