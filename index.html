@@ -139,7 +139,18 @@
       text-decoration: underline;
     }
     .cv-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
       margin-bottom: 32px;
+    }
+    .cv-photo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid rgba(159, 179, 255, 0.25);
     }
     .cv-header h1 {
       position: static;
@@ -161,6 +172,11 @@
       gap: 4px 14px;
       font-size: 0.9rem;
       color: #cdd6f4;
+    }
+    @media (max-width: 480px) {
+      .cv-header {
+        flex-wrap: wrap;
+      }
     }
     .cv-body {
       display: grid;
@@ -280,13 +296,18 @@
 
       <div id="cv-page" hidden>
         <header class="cv-header">
-          <h1>Darren Buttigieg</h1>
-          <p class="cv-title">Python Developer | Backend Systems | Data Engineering</p>
-          <p class="cv-contact">
-            <a href="mailto:dbuttigieg92@gmail.com">dbuttigieg92@gmail.com</a>
-            <span>·</span>
-            <a href="https://www.linkedin.com/in/darren-buttigieg" target="_blank" rel="noreferrer">LinkedIn</a>
-          </p>
+          <img class="cv-photo" src="/assets/images/darren.jpg" alt="Darren Buttigieg" width="96" height="96" />
+          <div>
+            <h1>Darren Buttigieg</h1>
+            <p class="cv-title">Python Developer | Backend Systems | Data Engineering</p>
+            <p class="cv-contact">
+              <a href="mailto:dbuttigieg92@gmail.com">dbuttigieg92@gmail.com</a>
+              <span>·</span>
+              <a href="https://www.linkedin.com/in/darren-buttigieg" target="_blank" rel="noreferrer">LinkedIn</a>
+              <span>·</span>
+              <a href="https://github.com/bugi14" target="_blank" rel="noreferrer">GitHub</a>
+            </p>
+          </div>
         </header>
 
         <div class="cv-body">
