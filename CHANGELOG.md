@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-03
+
+### Changed
+- **Split `index.html` into modules** (`src/styles/`, `src/pages/cv.js`): the inline `<style>` block is now four CSS files (`base`, `home`, `destination`, and CV-specific) imported directly from `src/main.js`, and the CV markup now lives in `src/pages/cv.js`, which builds the `#cv-page` DOM instead of it being hardcoded in `index.html`. `index.html` is now just the document skeleton (~40 lines, down from ~425). No behavior or visual changes; routing, hyperspace transitions, and nav buttons are unchanged. See [#8](https://github.com/bugi14/boojee.dev/issues/8).
+
 ## [0.3.0] - 2026-07-03
 
 Static CV page at `#/cv`, styled after [cv.diogotc.com](https://cv.diogotc.com/). See [#5](https://github.com/bugi14/boojee.dev/issues/5).
