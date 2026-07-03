@@ -1,7 +1,6 @@
 import "./styles/base.css";
 import "./styles/home.css";
 import "./styles/destination.css";
-import "./pages/cv.css";
 
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
@@ -13,6 +12,8 @@ import { loadBubblesPreset } from "@tsparticles/preset-bubbles";
 import { loadFountainPreset } from "@tsparticles/preset-fountain";
 import { loadHyperspacePreset } from "@tsparticles/preset-hyperspace";
 import { loadFirePreset } from "@tsparticles/preset-fire";
+
+import { createCvPage } from "./pages/cv.js";
 
 const PRESET_LOADERS = {
   stars: loadStarsPreset,
@@ -435,7 +436,8 @@ const destinationContent = document.getElementById("destination-content");
 const destinationLabel = document.getElementById("destination-label");
 const destinationBack = document.getElementById("destination-back");
 const navLayer = document.getElementById("nav-layer");
-const cvPage = document.getElementById("cv-page");
+const cvPage = createCvPage();
+destinationContent.appendChild(cvPage);
 
 let traveling = false;
 
