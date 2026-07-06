@@ -1,0 +1,47 @@
+#placeholder-view {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+#placeholder-view[hidden] {
+  display: none;
+}
+
+#placeholder-message {
+  max-width: 480px;
+  text-align: center;
+  font-weight: 300;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  color: #dfe7ff;
+  margin: 0;
+}
+
+#placeholder-back {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 11;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  color: #9fb3ff;
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+#placeholder-back:hover {
+  color: #ffffff;
+}
