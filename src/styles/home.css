@@ -3,25 +3,6 @@
   inset: 0;
 }
 
-#controls {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 8px 12px;
-  border-radius: 8px;
-  backdrop-filter: blur(4px);
-}
-
-select {
-  font-size: 14px;
-  padding: 4px 8px;
-}
-
 h1 {
   position: fixed;
   bottom: 24px;
