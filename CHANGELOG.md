@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-07-06
+
 ### Changed
 - **ClimateMapper nav item now links out to `climatemapper.boojee.dev`** (`src/main.js`): ClimateMapper is a separate, already-deployed application, so clicking it plays the hyperspace transition and then navigates to its own subdomain instead of landing on an in-app `#/climatemapper` placeholder. Other placeholder destinations (Other Projects, About) are unchanged. See [#12](https://github.com/bugi14/boojee.dev/issues/12).
 
