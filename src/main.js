@@ -499,6 +499,10 @@ async function travelTo(item) {
   await playHyperspace();
 
   if (item.href) {
+    // Reset before the real navigation so that if the browser freezes this
+    // page into its back-forward cache (bfcache) instead of discarding it,
+    // the snapshot it restores on "back" isn't stuck mid-travel.
+    traveling = false;
     window.location.href = item.href;
     return;
   }
@@ -527,6 +531,22 @@ destinationBack.addEventListener("click", (e) => {
 });
 
 window.addEventListener("hashchange", renderRoute);
+
+// Returning via the browser's back button after navigating to an external
+// page (e.g. ClimateMapper) can restore this page from the back-forward
+// cache (bfcache) instead of reloading it — resurrecting whatever in-memory
+// state existed the instant it was left, including a frozen hyperspace
+// preset. `pageshow`'s `persisted` flag is how a bfcache restore is detected;
+// there's no equivalent for a fresh load, so re-running init()'s setup is
+// safe here without risking a double-init.
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return;
+  traveling = false;
+  renderRoute();
+  if (!homeView.hidden) {
+    loadPreset(HOME_DEFAULT_PRESET);
+  }
+});
 
 async function init() {
   await loadSlim(tsParticles);
