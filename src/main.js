@@ -422,9 +422,6 @@ async function loadPreset(preset) {
   }
 }
 
-const select = document.getElementById("preset");
-select.addEventListener("change", () => loadPreset(select.value));
-
 // Hash-based routing: "#/cv", "#/climatemapper", etc. land on a blank
 // destination view. Anything else (including no hash) is the home view with
 // the background effect, preset picker and floating nav buttons. Per-page
@@ -487,8 +484,6 @@ function wait(ms) {
 // display:none leaves tsParticles measuring a zero-size canvas, which is
 // also why stars never reappeared after a plain (non-animated) "back".
 async function playHyperspace() {
-  select.value = "hyperspace";
-  select.disabled = true;
   await loadPreset("hyperspace");
   await wait(HYPERSPACE_TRAVEL_MS);
 }
@@ -521,9 +516,7 @@ async function travelHome() {
 
   await playHyperspace();
 
-  select.value = HOME_DEFAULT_PRESET;
   await loadPreset(HOME_DEFAULT_PRESET);
-  select.disabled = false;
   window.location.hash = "";
   traveling = false;
 }
@@ -538,7 +531,7 @@ window.addEventListener("hashchange", renderRoute);
 async function init() {
   await loadSlim(tsParticles);
   await registerAllPresets();
-  await loadPreset(select.value);
+  await loadPreset(HOME_DEFAULT_PRESET);
   renderRoute();
 }
 
