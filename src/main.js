@@ -456,6 +456,10 @@ function showHome() {
   placeholderView.hidden = true;
   destinationView.hidden = true;
   navButtons.attach(navLayer, travelTo);
+  // Mirrors showPlaceholder() reloading "stars" itself: landing on home
+  // always resets the background regardless of which preset was showing
+  // beforehand (e.g. hyperspace, left over from CV having never touched it).
+  loadPreset(HOME_DEFAULT_PRESET);
 }
 
 // The "cv" destination renders the static CV markup already in the page
@@ -512,6 +516,16 @@ async function playHyperspace() {
   await wait(HYPERSPACE_TRAVEL_MS);
 }
 
+// Set right before we change the hash ourselves (as opposed to the user
+// pressing the browser's back/forward buttons), so the hashchange listener
+// below can tell the two apart — see handleHashChange().
+let pendingHashChange = false;
+
+function setHash(hash) {
+  pendingHashChange = true;
+  window.location.hash = hash;
+}
+
 // Nav items with an `href` (e.g. ClimateMapper) are separate applications
 // living outside this SPA: after the hyperspace transition, navigate away
 // for real instead of setting an in-app hash route.
@@ -531,7 +545,7 @@ async function travelTo(item) {
     return;
   }
 
-  window.location.hash = `/${item.hash}`;
+  setHash(`/${item.hash}`);
   traveling = false;
 }
 
@@ -546,8 +560,7 @@ async function travelHome() {
 
   await playHyperspace();
 
-  await loadPreset(HOME_DEFAULT_PRESET);
-  window.location.hash = "";
+  setHash("");
   traveling = false;
 }
 
@@ -559,7 +572,38 @@ function goHome(e) {
 destinationBack.addEventListener("click", goHome);
 placeholderBack.addEventListener("click", goHome);
 
-window.addEventListener("hashchange", renderRoute);
+// The browser's own back/forward buttons change the hash directly,
+// bypassing travelTo()/travelHome() (and the hyperspace transition they
+// play) entirely — landing straight on the new view. pendingHashChange
+// distinguishes that from a hash change we triggered ourselves (which
+// already played hyperspace before setting the hash, so only needs to
+// render the new route) — see setHash().
+async function handleHashChange() {
+  if (pendingHashChange) {
+    pendingHashChange = false;
+    renderRoute();
+    return;
+  }
+
+  if (traveling) return;
+  traveling = true;
+  navButtons.detach();
+
+  // Reveal the home view before playing hyperspace: the particle canvas only
+  // lives there, and loading a preset while its container is display:none
+  // leaves tsParticles measuring a zero-size canvas (see playHyperspace()).
+  destinationView.hidden = true;
+  placeholderView.hidden = true;
+  homeHeading.hidden = false;
+  homeView.hidden = false;
+
+  await playHyperspace();
+
+  traveling = false;
+  renderRoute();
+}
+
+window.addEventListener("hashchange", handleHashChange);
 
 // Returning via the browser's back button after navigating to an external
 // page (e.g. ClimateMapper) can restore this page from the back-forward
@@ -572,7 +616,6 @@ window.addEventListener("hashchange", renderRoute);
 async function recoverFromBfcache() {
   traveling = true;
   await playHyperspace();
-  await loadPreset(HOME_DEFAULT_PRESET);
   traveling = false;
   renderRoute();
 }
@@ -590,7 +633,6 @@ window.addEventListener("pageshow", (event) => {
 async function init() {
   await loadSlim(tsParticles);
   await registerAllPresets();
-  await loadPreset(HOME_DEFAULT_PRESET);
   renderRoute();
 }
 
