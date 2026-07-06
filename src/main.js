@@ -536,15 +536,25 @@ window.addEventListener("hashchange", renderRoute);
 // page (e.g. ClimateMapper) can restore this page from the back-forward
 // cache (bfcache) instead of reloading it — resurrecting whatever in-memory
 // state existed the instant it was left, including a frozen hyperspace
-// preset. `pageshow`'s `persisted` flag is how a bfcache restore is detected;
-// there's no equivalent for a fresh load, so re-running init()'s setup is
-// safe here without risking a double-init.
+// preset and detached nav buttons. `pageshow`'s `persisted` flag is how a
+// bfcache restore is detected. Replaying the hyperspace transition here
+// mirrors travelHome()'s reveal, so "back" from ClimateMapper still plays
+// out as a travel sequence rather than snapping straight to the homepage.
+async function recoverFromBfcache() {
+  traveling = true;
+  await playHyperspace();
+  await loadPreset(HOME_DEFAULT_PRESET);
+  traveling = false;
+  renderRoute();
+}
+
 window.addEventListener("pageshow", (event) => {
   if (!event.persisted) return;
   traveling = false;
-  renderRoute();
-  if (!homeView.hidden) {
-    loadPreset(HOME_DEFAULT_PRESET);
+  if (homeView.hidden) {
+    renderRoute();
+  } else {
+    recoverFromBfcache();
   }
 });
 
