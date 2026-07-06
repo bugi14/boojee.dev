@@ -275,9 +275,13 @@ const blackHole = {
   },
 };
 
+// ClimateMapper is a separate, already-deployed application (its own
+// codebase/backend/deploy pipeline) rather than content that lives in this
+// SPA, so it gets `href` (a real navigation to its own subdomain) instead of
+// `hash` (an in-app destination rendered by this app, like the CV).
 const NAV_ITEMS = [
   { label: "CV", hash: "cv" },
-  { label: "ClimateMapper", hash: "climatemapper" },
+  { label: "ClimateMapper", href: "https://climatemapper.boojee.dev" },
   { label: "Other Projects", hash: "other-projects" },
   { label: "About", hash: "about" },
 ];
@@ -303,7 +307,7 @@ const navButtons = {
       el.type = "button";
       el.className = "nav-particle";
       el.textContent = item.label;
-      el.addEventListener("click", () => onNavigate(item.hash));
+      el.addEventListener("click", () => onNavigate(item));
       layerEl.appendChild(el);
 
       const angle = Math.random() * Math.PI * 2;
@@ -428,7 +432,9 @@ select.addEventListener("change", () => loadPreset(select.value));
 // bare.
 const HOME_DEFAULT_PRESET = "stars";
 const HYPERSPACE_TRAVEL_MS = 2200;
-const DESTINATIONS = new Map(NAV_ITEMS.map((item) => [item.hash, item.label]));
+const DESTINATIONS = new Map(
+  NAV_ITEMS.filter((item) => item.hash).map((item) => [item.hash, item.label]),
+);
 
 const homeView = document.getElementById("home-view");
 const destinationView = document.getElementById("destination-view");
@@ -487,14 +493,22 @@ async function playHyperspace() {
   await wait(HYPERSPACE_TRAVEL_MS);
 }
 
-async function travelTo(hash) {
+// Nav items with an `href` (e.g. ClimateMapper) are separate applications
+// living outside this SPA: after the hyperspace transition, navigate away
+// for real instead of setting an in-app hash route.
+async function travelTo(item) {
   if (traveling) return;
   traveling = true;
   navButtons.detach();
 
   await playHyperspace();
 
-  window.location.hash = `/${hash}`;
+  if (item.href) {
+    window.location.href = item.href;
+    return;
+  }
+
+  window.location.hash = `/${item.hash}`;
   traveling = false;
 }
 
