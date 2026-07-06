@@ -1,6 +1,7 @@
 import "./styles/base.css";
 import "./styles/home.css";
 import "./styles/destination.css";
+import "./styles/placeholder.css";
 
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
@@ -422,22 +423,27 @@ async function loadPreset(preset) {
   }
 }
 
-// Hash-based routing: "#/cv", "#/climatemapper", etc. land on a blank
-// destination view. Anything else (including no hash) is the home view with
-// the background effect, preset picker and floating nav buttons. Per-page
-// landscapes are out of scope here — the destination view is intentionally
-// bare.
+// Hash-based routing: "#/cv" lands on the real destination view; other hash
+// routes with no content yet (see IMPLEMENTED_HASHES) get the shared
+// placeholder instead. No hash is the home view with the background effect
+// and floating nav buttons.
 const HOME_DEFAULT_PRESET = "stars";
 const HYPERSPACE_TRAVEL_MS = 2200;
 const DESTINATIONS = new Map(
   NAV_ITEMS.filter((item) => item.hash).map((item) => [item.hash, item.label]),
 );
+// Hash routes with real content. Everything else in DESTINATIONS renders the
+// shared "still under formation" placeholder instead of a blank label.
+const IMPLEMENTED_HASHES = new Set(["cv"]);
 
 const homeView = document.getElementById("home-view");
+const homeHeading = document.getElementById("home-heading");
 const destinationView = document.getElementById("destination-view");
 const destinationContent = document.getElementById("destination-content");
 const destinationLabel = document.getElementById("destination-label");
 const destinationBack = document.getElementById("destination-back");
+const placeholderView = document.getElementById("placeholder-view");
+const placeholderBack = document.getElementById("placeholder-back");
 const navLayer = document.getElementById("nav-layer");
 const cvPage = createCvPage();
 destinationContent.appendChild(cvPage);
@@ -446,12 +452,15 @@ let traveling = false;
 
 function showHome() {
   homeView.hidden = false;
+  homeHeading.hidden = false;
+  placeholderView.hidden = true;
   destinationView.hidden = true;
   navButtons.attach(navLayer, travelTo);
 }
 
 // The "cv" destination renders the static CV markup already in the page
-// (#cv-page); every other destination is still just a bare placeholder label.
+// (#cv-page); every other implemented destination would follow the same
+// pattern here.
 function showDestination(hash, label) {
   navButtons.detach();
   homeView.hidden = true;
@@ -464,13 +473,28 @@ function showDestination(hash, label) {
   cvPage.hidden = !isCv;
 }
 
+// Not-yet-implemented destinations keep the homepage's tsparticles/black-hole
+// background running (loadPreset() re-attaches blackHole for "stars") rather
+// than the destination view's usual blank background, so they still feel
+// like part of the same site instead of a dead end.
+function showPlaceholder() {
+  navButtons.detach();
+  destinationView.hidden = true;
+  homeView.hidden = false;
+  homeHeading.hidden = true;
+  placeholderView.hidden = false;
+  loadPreset(HOME_DEFAULT_PRESET);
+}
+
 function renderRoute() {
   const hash = window.location.hash.replace(/^#\/?/, "");
   const label = DESTINATIONS.get(hash);
-  if (label) {
+  if (!label) {
+    showHome();
+  } else if (IMPLEMENTED_HASHES.has(hash)) {
     showDestination(hash, label);
   } else {
-    showHome();
+    showPlaceholder();
   }
 }
 
@@ -516,6 +540,8 @@ async function travelHome() {
   traveling = true;
 
   destinationView.hidden = true;
+  placeholderView.hidden = true;
+  homeHeading.hidden = false;
   homeView.hidden = false;
 
   await playHyperspace();
@@ -525,10 +551,13 @@ async function travelHome() {
   traveling = false;
 }
 
-destinationBack.addEventListener("click", (e) => {
+function goHome(e) {
   e.preventDefault();
   travelHome();
-});
+}
+
+destinationBack.addEventListener("click", goHome);
+placeholderBack.addEventListener("click", goHome);
 
 window.addEventListener("hashchange", renderRoute);
 
