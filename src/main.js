@@ -79,6 +79,7 @@ const PRESET_OVERRIDES = {
 const EVENT_HORIZON_RADIUS = 16;
 const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
 const GRAVITY = 20000;
+const AMBIENT_DRIFT_SPEED = 0.6; // matches the stars preset's own move.speed, so edge spawns don't look inert
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
 
@@ -264,14 +265,24 @@ const blackHole = {
       const dy = this.mouse.y - y;
       if (dx * dx + dy * dy >= minDistSq) break;
     }
-    // No initial velocity of its own — tsParticles' default particle
-    // creation assigns a random ambient drift (from the stars preset's
-    // move.random setting), which read as an unwanted burst of speed and
-    // direction on spawn. Disabling move here means the star is stationary
-    // until our own gravity loop (which runs independent of this setting)
-    // starts pulling it in, exactly like any other star's motion once
-    // gravity takes over from its ambient drift.
-    container.particles.addParticle({ x, y }, { move: { enable: false } });
+    // tsParticles' own move plugin is disabled here — its default ambient
+    // drift (from the stars preset's move.random setting) reads as an
+    // unwanted burst of speed and direction right on spawn. Instead we seed
+    // blackHole's own velocity map with a gentle random drift of the same
+    // rough speed, so the star still looks alive while it's far from the
+    // cursor's gravity — without gravity, a purely zero-velocity star would
+    // otherwise sit frozen at the edge it spawned on, which at this particle
+    // size reads as visibly "stuck" rather than a subtle background star.
+    const ratio = container.retina.pixelRatio;
+    const angle = Math.random() * Math.PI * 2;
+    const driftSpeed = AMBIENT_DRIFT_SPEED * ratio;
+    const particle = container.particles.addParticle({ x, y }, { move: { enable: false } });
+    if (particle) {
+      this.velocities.set(particle, {
+        x: Math.cos(angle) * driftSpeed,
+        y: Math.sin(angle) * driftSpeed,
+      });
+    }
   },
 
   spawnFlash(container, position) {
