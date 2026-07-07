@@ -112,6 +112,12 @@ const EDGE_SPAWN_DRIFT_SPEED = 0.05; // barely-perceptible nudge inward, just en
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
 const MAX_SPAWNS_PER_TICK = 5; // safety net against a bad density reading flooding the screen
+const EXPLOSION_DURATION_MS = 1000;
+const EXPLOSION_MIN_RADIUS = 6;
+const EXPLOSION_MAX_RADIUS = 45;
+// Absorbed stars don't respawn immediately — the explosion gets a beat to
+// play out on its own before a replacement drifts back in from the edge.
+const RESPAWN_DELAY_MS = 5000;
 
 const blackHole = {
   container: null,
@@ -124,6 +130,8 @@ const blackHole = {
   // container.particles.count each tick — see the comment above the density
   // top-up/trim block in update() for why derivation was unreliable.
   starCount: 0,
+  explosions: null, // { particle, startTime }[] — absorption flashes mid-animation
+  pendingSpawns: null, // timestamps (ms) at which a delayed replacement star is due
 
   attach(container, wrapperEl) {
     this.detach();
@@ -131,6 +139,8 @@ const blackHole = {
     this.velocities = new WeakMap();
     this.imageIndex = 0;
     this.starCount = container.particles.count;
+    this.explosions = [];
+    this.pendingSpawns = [];
     this.setBaseDensity(container);
 
     // Listen on the wrapper div, not the <canvas> — tsParticles can recreate
@@ -194,6 +204,8 @@ const blackHole = {
     this.container = null;
     this.mouse = null;
     this.velocities = null;
+    this.explosions = null;
+    this.pendingSpawns = null;
   },
 
   update() {
@@ -247,9 +259,10 @@ const blackHole = {
         if (distSq < horizonSq) {
           if (absorptions >= MAX_ABSORPTIONS_PER_TICK) continue;
           absorptions++;
-          this.spawnFlash(container, particle.position);
+          this.spawnExplosion(container, particle.position);
           container.particles.remove(particle);
           this.starCount--;
+          this.pendingSpawns.push(performance.now() + RESPAWN_DELAY_MS);
           continue;
         }
 
@@ -286,11 +299,23 @@ const blackHole = {
       }
     }
 
+    this.updateExplosions(container);
+
+    // Fire any delayed replacement spawns whose wait is over. Each of these
+    // was deliberately withheld from the immediate top-up below (see
+    // "reserved" comment) so the absorption's explosion gets to play out
+    // undisturbed before its replacement drifts back in.
+    const now = performance.now();
+    while (this.pendingSpawns.length && this.pendingSpawns[0] <= now) {
+      this.pendingSpawns.shift();
+      this.spawnAtEdge(container);
+    }
+
     // Maintain a constant density (not a constant count) — target scales
     // with the current canvas area, recomputed every tick so it tracks
-    // window resizes. Tops up stars lost to absorption or to tsParticles'
-    // own out-of-bounds handling, and trims the surplus if the window
-    // shrinks, so density never drifts up on a smaller viewport.
+    // window resizes. Tops up stars lost to tsParticles' own out-of-bounds
+    // handling or NaN cleanup, and trims the surplus if the window shrinks,
+    // so density never drifts up on a smaller viewport.
     //
     // starCount is a manually maintained tally (incremented in spawnAtEdge,
     // decremented on every removal above) rather than being derived here from
@@ -306,21 +331,27 @@ const blackHole = {
     // delayed by a tick — a slow population creep, one extra star per
     // absorption, some of which then sat at the edge alongside a healthy
     // replacement.
+    //
+    // Stars still waiting out RESPAWN_DELAY_MS count as already "reserved"
+    // toward the target, so this top-up doesn't immediately refill a gap
+    // that's intentionally being held open — only gaps from something other
+    // than a pending delayed respawn (e.g. a resize) get filled right away.
     const { width, height } = container.canvas.size;
     const targetStarCount = Math.round(this.baseDensity * width * height);
+    const reservedStarCount = this.starCount + this.pendingSpawns.length;
 
-    if (this.starCount < targetStarCount) {
+    if (reservedStarCount < targetStarCount) {
       // Safety net: if baseDensity or the canvas size is ever momentarily
       // bogus (e.g. a zero-area canvas produced a bad density reading before
       // this fix), cap how many stars can be created in a single frame so a
       // bad reading degrades gracefully instead of flooding the screen with
       // new stars every tick.
-      const toSpawn = Math.min(targetStarCount - this.starCount, MAX_SPAWNS_PER_TICK);
+      const toSpawn = Math.min(targetStarCount - reservedStarCount, MAX_SPAWNS_PER_TICK);
       for (let i = 0; i < toSpawn; i++) {
         this.spawnAtEdge(container);
       }
-    } else if (this.starCount > targetStarCount) {
-      let excess = this.starCount - targetStarCount;
+    } else if (reservedStarCount > targetStarCount) {
+      let excess = reservedStarCount - targetStarCount;
       for (let i = container.particles.count - 1; i >= 0 && excess > 0; i--) {
         const particle = container.particles.get(i);
         if (!particle || particle.destroyed || particle.isFlash) continue;
@@ -399,26 +430,48 @@ const blackHole = {
     }
   },
 
-  spawnFlash(container, position) {
-    const flash = container.particles.addParticle(
+  // Grow/fade driven manually every tick (see updateExplosions) rather than
+  // through tsParticles' own animation system, which only eases linearly —
+  // a hand-rolled curve gets the "grows quickly, then slows but keeps
+  // creeping outward, fades gradually" shape the linear one can't produce.
+  spawnExplosion(container, position) {
+    const explosion = container.particles.addParticle(
       { x: position.x, y: position.y },
       {
         shape: { type: "circle" },
         move: { enable: false },
         color: { value: "#ffffff" },
-        opacity: {
-          value: { min: 0, max: 1 },
-          animation: { enable: true, speed: 5, startValue: "max", destroy: "min", sync: true },
-        },
-        size: {
-          value: { min: 6, max: 16 },
-          animation: { enable: true, speed: 30, startValue: "min", destroy: "max", sync: true },
-        },
+        opacity: { value: 1, animation: { enable: false } },
+        size: { value: EXPLOSION_MIN_RADIUS, animation: { enable: false } },
       },
     );
-    // Exempt the flash itself from absorption — it's spawned inside the
+    if (!explosion) return;
+    // Exempt the explosion itself from absorption — it's spawned inside the
     // event horizon by definition and would otherwise re-trigger endlessly.
-    if (flash) flash.isFlash = true;
+    explosion.isFlash = true;
+    this.explosions.push({ particle: explosion, startTime: performance.now() });
+  },
+
+  updateExplosions(container) {
+    const now = performance.now();
+    for (let i = this.explosions.length - 1; i >= 0; i--) {
+      const explosion = this.explosions[i];
+      const t = (now - explosion.startTime) / EXPLOSION_DURATION_MS;
+
+      if (t >= 1 || explosion.particle.destroyed) {
+        container.particles.remove(explosion.particle);
+        this.explosions.splice(i, 1);
+        continue;
+      }
+
+      // Cubic ease-out: rises fast at first, then keeps inching outward at a
+      // steadily slowing rate rather than snapping straight to full size.
+      const growth = 1 - (1 - t) ** 3;
+      explosion.particle.size.value =
+        EXPLOSION_MIN_RADIUS + (EXPLOSION_MAX_RADIUS - EXPLOSION_MIN_RADIUS) * growth;
+      // Stays bright a little longer than a linear fade before easing out.
+      explosion.particle.opacity.value = (1 - t) ** 1.5;
+    }
   },
 };
 
