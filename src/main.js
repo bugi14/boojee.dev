@@ -490,6 +490,57 @@ const navButtons = {
   },
 };
 
+// Small twinkling star dots layered behind the SVG particles — a separate
+// container so we can give them completely different size/color/shape settings
+// without fighting the SVG layer's image shape config.
+let bgToken = 0;
+const bgStars = {
+  container: null,
+
+  async load() {
+    const token = ++bgToken;
+    this.container?.destroy();
+    const old = document.getElementById("tsparticles-bg");
+    const fresh = document.createElement("div");
+    fresh.id = "tsparticles-bg";
+    old.replaceWith(fresh);
+
+    const container = await tsParticles.load({
+      id: "tsparticles-bg",
+      options: {
+        background: { color: "transparent" },
+        fullScreen: { enable: false },
+        particles: {
+          number: { value: 80 },
+          color: { value: ["#dfe7ff", "#78aaff", "#a8c4ff", "#ffffff", "#c8b8ff"] },
+          shape: { type: "circle" },
+          size: { value: { min: 0.5, max: 2.5 } },
+          opacity: {
+            value: { min: 0.15, max: 0.75 },
+            animation: { enable: true, speed: 0.4, sync: false },
+          },
+          move: {
+            enable: true,
+            speed: 0.15,
+            random: true,
+            direction: "none",
+            outModes: { default: "out" },
+          },
+        },
+      },
+    });
+
+    if (token !== bgToken) { container.destroy(); return; }
+    this.container = container;
+  },
+
+  destroy() {
+    bgToken++;
+    this.container?.destroy();
+    this.container = null;
+  },
+};
+
 const registered = new Set();
 
 async function ensurePresetRegistered(preset) {
@@ -524,6 +575,7 @@ let loadToken = 0;
 async function loadPreset(preset) {
   const token = ++loadToken;
   blackHole.detach();
+  bgStars.destroy();
 
   // tsParticles.load() doesn't replace an existing container at the same id —
   // it stacks a new one on top, leaving the old one's render loop running
@@ -557,6 +609,7 @@ async function loadPreset(preset) {
 
   if (preset === "stars") {
     blackHole.attach(container, fresh);
+    bgStars.load();
   }
 }
 
