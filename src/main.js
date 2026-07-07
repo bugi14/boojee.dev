@@ -5,6 +5,7 @@ import "./styles/placeholder.css";
 
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
+import { loadImageShape } from "@tsparticles/shape-image";
 import { loadStarsPreset } from "@tsparticles/preset-stars";
 import { loadLinksPreset } from "@tsparticles/preset-links";
 import { loadSnowPreset } from "@tsparticles/preset-snow";
@@ -15,6 +16,7 @@ import { loadHyperspacePreset } from "@tsparticles/preset-hyperspace";
 import { loadFirePreset } from "@tsparticles/preset-fire";
 
 import { createCvPage } from "./pages/cv.js";
+import fireflyPlanetSvg from "./assets/particles/firefly-planet.svg";
 
 const PRESET_LOADERS = {
   stars: loadStarsPreset,
@@ -38,6 +40,16 @@ const PRESET_OVERRIDES = {
         random: true,
         direction: "none",
         outModes: { default: "out" },
+      },
+      shape: {
+        type: "image",
+        options: {
+          image: {
+            src: fireflyPlanetSvg,
+            width: 32,
+            height: 32,
+          },
+        },
       },
     },
   },
@@ -632,6 +644,7 @@ window.addEventListener("pageshow", (event) => {
 
 async function init() {
   await loadSlim(tsParticles);
+  await loadImageShape(tsParticles);
   await registerAllPresets();
   renderRoute();
 }
