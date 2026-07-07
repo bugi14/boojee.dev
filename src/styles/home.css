@@ -18,18 +18,13 @@ h1 {
   margin: 0;
   font-family: "Lunatic Superstar", sans-serif;
   font-weight: 300;
-  /* Nav items are 3.25rem; 2 sizes up at the 0.25rem step used elsewhere. */
-  font-size: 3.75rem;
+  /* Nav items are 3rem; 2 sizes up at the 0.25rem step = 3.5rem → 4.25rem. */
+  font-size: 4.25rem;
   text-align: center;
-  color: #F2A65A; /* dark-scheme gold, per issue #22's colour palette */
+  color: var(--color-heading);
   pointer-events: none;
   animation: heading-pulse 3s ease-in-out infinite;
-}
-
-@media (prefers-color-scheme: light) {
-  h1 {
-    color: #A8D8EA; /* light-scheme accent blue */
-  }
+  transition: color 0.3s ease;
 }
 
 @keyframes heading-pulse {
@@ -52,10 +47,9 @@ h1 {
   border: none;
   margin: 0;
   padding: 4px 8px;
-  color: #dfe7ff;
   font: inherit;
   font-family: "Lunatic Superstar", sans-serif;
-  font-size: 3.25rem;
+  font-size: 3rem;
   font-weight: 300;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -64,13 +58,15 @@ h1 {
   will-change: transform;
 }
 
-.nav-particle:nth-child(1) { color: #dfe7ff; }
-.nav-particle:nth-child(2) { color: #78aaff; }
-.nav-particle:nth-child(3) { color: #c8b8ff; }
-.nav-particle:nth-child(4) { color: #a8c4ff; }
+.nav-particle:nth-child(1) { color: var(--color-nav-1); }
+.nav-particle:nth-child(2) { color: var(--color-nav-2); }
+.nav-particle:nth-child(3) { color: var(--color-nav-3); }
+.nav-particle:nth-child(4) { color: var(--color-nav-4); }
 
 .nav-particle:hover,
 .nav-particle:focus-visible {
-  color: #ffffff;
-  text-shadow: 0 0 12px rgba(120, 170, 255, 0.9), 0 0 24px rgba(120, 170, 255, 0.5);
+  color: var(--color-nav-hover);
+  text-shadow:
+    0 0 12px rgba(var(--color-nav-glow-rgb), 0.9),
+    0 0 24px rgba(var(--color-nav-glow-rgb), 0.5);
 }
