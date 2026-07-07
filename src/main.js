@@ -193,6 +193,24 @@ const blackHole = {
         continue;
       }
 
+      // tsParticles rescales every particle's position on a canvas resize
+      // by multiplying in a newSize/oldSize factor (see CanvasManager). If
+      // the container is ever measured at 0×0 for a moment — e.g. its
+      // ancestor is `hidden` (display:none) during a route transition and a
+      // resize event fires while that's true — that factor becomes Infinity,
+      // and any particle sitting at position 0 on either axis (like our
+      // edge spawns) goes to 0 × Infinity = NaN. A NaN position poisons all
+      // the arithmetic below forever (NaN comparisons are always false, so
+      // it can never be absorbed or accelerated again) and silently no-ops
+      // in the canvas draw call, leaving it visually frozen in place. Rather
+      // than trying to prevent every way tsParticles' internal resize
+      // handling could go wrong, just detect and remove corrupted particles
+      // here — the density top-up spawns a fresh, healthy one next tick.
+      if (!Number.isFinite(particle.position.x) || !Number.isFinite(particle.position.y)) {
+        container.particles.remove(particle);
+        continue;
+      }
+
       const vel = this.velocities.get(particle) ?? { x: 0, y: 0 };
 
       if (mouse) {
