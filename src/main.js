@@ -25,10 +25,16 @@ import fireflyGalaxySvg from "./assets/particles/firefly-galaxy.svg";
 
 // One entry per SVG type — cycled through on each edge-spawn so the steady-state
 // set contains at most one of each kind (planet, saturn, astronaut, rocket, galaxy).
+// sizeOverride (if set) is the radius in CSS px passed to addParticle() for
+// that type — used to compensate for non-square SVGs. tsParticles renders image
+// particles at width = 2*radius and height = 2*radius*(imgHeight/imgWidth), so
+// a portrait astronaut (318×677) at the default radius 30 would render at
+// 60×128px — much taller than the 60×60 of the square types. A radius of ~14
+// makes its largest side (height) come out at 60px instead.
 const PLANET_IMAGES = [
   { src: fireflyPlanetSvg,    width: 1024, height: 1024 },
   { src: fireflySaturnSvg,    width: 1024, height: 1024 },
-  { src: fireflyAstronautSvg, width: 318,  height: 677  },
+  { src: fireflyAstronautSvg, width: 318,  height: 677, sizeOverride: 14 },
   { src: fireflyRocketSvg,    width: 1024, height: 1024 },
   { src: fireflyGalaxySvg,    width: 1024, height: 1024 },
 ];
@@ -50,7 +56,9 @@ const PRESET_OVERRIDES = {
   stars: {
     particles: {
       number: {
-        value: PLANET_IMAGES.length, // one of each SVG type
+        // Zero initial particles — all spawned via spawnAtEdge() so every
+        // particle gets its per-type size override applied correctly.
+        value: 0,
       },
       move: {
         enable: true,
@@ -93,7 +101,7 @@ const PRESET_OVERRIDES = {
 // beyond the frame drifting into the cursor's pull. Distances are CSS px.
 const EVENT_HORIZON_RADIUS = 16;
 const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
-const GRAVITY = 30000;
+const GRAVITY = 7500;
 // Pure inverse-square falloff makes the pull vanish at any real distance —
 // beyond this range the effective distance used in the 1/dist² calculation
 // is capped, so a star clear across the screen still feels a small but
@@ -173,7 +181,9 @@ const blackHole = {
       });
       return;
     }
-    this.baseDensity = container.particles.count / area;
+    // Use a fixed target of one particle per image type regardless of how
+    // many tsParticles happened to spawn initially (which is 0 — see number.value).
+    this.baseDensity = PLANET_IMAGES.length / area;
   },
 
   detach() {
@@ -372,13 +382,14 @@ const blackHole = {
     // Cycle through images in order so the steady-state set contains one of each type.
     const img = PLANET_IMAGES[this.imageIndex % PLANET_IMAGES.length];
     this.imageIndex++;
-    const particle = container.particles.addParticle(
-      { x, y },
-      {
-        move: { enable: false },
-        shape: { type: "image", options: { image: img } },
-      },
-    );
+    const particleOpts = {
+      move: { enable: false },
+      shape: { type: "image", options: { image: img } },
+    };
+    if (img.sizeOverride !== undefined) {
+      particleOpts.size = { value: img.sizeOverride };
+    }
+    const particle = container.particles.addParticle({ x, y }, particleOpts);
     if (particle) {
       this.starCount++;
       this.velocities.set(particle, {
@@ -530,12 +541,12 @@ const bgStars = {
         background: { color: "transparent" },
         fullScreen: { enable: false },
         particles: {
-          number: { value: 80 },
+          number: { value: 160 },
           color: { value: ["#dfe7ff", "#78aaff", "#a8c4ff", "#ffffff", "#c8b8ff"] },
           shape: { type: "circle" },
-          size: { value: { min: 0.5, max: 2.5 } },
+          size: { value: { min: 1, max: 5 } },
           opacity: {
-            value: { min: 0.15, max: 0.75 },
+            value: { min: 0.4, max: 0.95 },
             animation: { enable: true, speed: 0.4, sync: false },
           },
           move: {

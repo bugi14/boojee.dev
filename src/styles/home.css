@@ -39,7 +39,7 @@ h1 {
   color: #dfe7ff;
   font: inherit;
   font-family: "Lunatic Superstar", sans-serif;
-  font-size: 2.25rem;
+  font-size: 3.25rem;
   font-weight: 300;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -47,6 +47,11 @@ h1 {
   transition: color 0.2s ease, text-shadow 0.2s ease;
   will-change: transform;
 }
+
+.nav-particle:nth-child(1) { color: #dfe7ff; }
+.nav-particle:nth-child(2) { color: #78aaff; }
+.nav-particle:nth-child(3) { color: #c8b8ff; }
+.nav-particle:nth-child(4) { color: #a8c4ff; }
 
 .nav-particle:hover,
 .nav-particle:focus-visible {
