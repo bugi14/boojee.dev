@@ -43,8 +43,12 @@ const PRESET_OVERRIDES = {
         outModes: { default: "out" },
       },
       size: {
-        value: 60,
-        random: { enable: true, minimumValue: 20 },
+        value: 30,
+        random: { enable: true, minimumValue: 10 },
+      },
+      opacity: {
+        value: 1,
+        animation: { enable: false },
       },
       shape: {
         type: "image",
@@ -74,7 +78,7 @@ const PRESET_OVERRIDES = {
 // beyond the frame drifting into the cursor's pull. Distances are CSS px.
 const EVENT_HORIZON_RADIUS = 16;
 const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
-const GRAVITY = 2000;
+const GRAVITY = 20000;
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
 
