@@ -18,6 +18,20 @@ import { loadFirePreset } from "@tsparticles/preset-fire";
 
 import { createCvPage } from "./pages/cv.js";
 import fireflyPlanetSvg from "./assets/particles/firefly-planet.svg";
+import fireflySaturnSvg from "./assets/particles/firefly-saturn.svg";
+import fireflyAstronautSvg from "./assets/particles/firefly-astronaut.svg";
+import fireflyRocketSvg from "./assets/particles/firefly-rocket.svg";
+import fireflyGalaxySvg from "./assets/particles/firefly-galaxy.svg";
+
+// One entry per SVG type — cycled through on each edge-spawn so the steady-state
+// set contains at most one of each kind (planet, saturn, astronaut, rocket, galaxy).
+const PLANET_IMAGES = [
+  { src: fireflyPlanetSvg,    width: 1024, height: 1024 },
+  { src: fireflySaturnSvg,    width: 1024, height: 1024 },
+  { src: fireflyAstronautSvg, width: 318,  height: 677  },
+  { src: fireflyRocketSvg,    width: 1024, height: 1024 },
+  { src: fireflyGalaxySvg,    width: 1024, height: 1024 },
+];
 
 const PRESET_LOADERS = {
   stars: loadStarsPreset,
@@ -36,7 +50,7 @@ const PRESET_OVERRIDES = {
   stars: {
     particles: {
       number: {
-        value: 10, // 10% of the stars preset's default 100
+        value: PLANET_IMAGES.length, // one of each SVG type
       },
       move: {
         enable: true,
@@ -47,7 +61,7 @@ const PRESET_OVERRIDES = {
       },
       size: {
         value: 30,
-        random: { enable: true, minimumValue: 10 },
+        random: { enable: true, minimumValue: 15 },
       },
       opacity: {
         value: 1,
@@ -56,11 +70,9 @@ const PRESET_OVERRIDES = {
       shape: {
         type: "image",
         options: {
-          image: {
-            src: fireflyPlanetSvg,
-            width: 1024,
-            height: 1024,
-          },
+          // Provide all images so tsParticles can assign them on initial load;
+          // subsequent spawns are cycled in order via spawnAtEdge() below.
+          image: PLANET_IMAGES,
         },
       },
     },
@@ -99,11 +111,13 @@ const blackHole = {
   rafId: null,
   velocities: null,
   baseDensity: 0, // stars per retina px², so total count scales with actual canvas area
+  imageIndex: 0,  // cycles through PLANET_IMAGES so each spawn gets the next type in order
 
   attach(container, wrapperEl) {
     this.detach();
     this.container = container;
     this.velocities = new WeakMap();
+    this.imageIndex = 0;
     this.setBaseDensity(container);
 
     // Listen on the wrapper div, not the <canvas> — tsParticles can recreate
@@ -337,7 +351,16 @@ const blackHole = {
     const dy = height / 2 - y;
     const dist = Math.hypot(dx, dy) || 1;
     const driftSpeed = EDGE_SPAWN_DRIFT_SPEED * ratio;
-    const particle = container.particles.addParticle({ x, y }, { move: { enable: false } });
+    // Cycle through images in order so the steady-state set contains one of each type.
+    const img = PLANET_IMAGES[this.imageIndex % PLANET_IMAGES.length];
+    this.imageIndex++;
+    const particle = container.particles.addParticle(
+      { x, y },
+      {
+        move: { enable: false },
+        shape: { type: "image", options: { image: img } },
+      },
+    );
     if (particle) {
       this.velocities.set(particle, {
         x: (dx / dist) * driftSpeed,
