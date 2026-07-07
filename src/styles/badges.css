@@ -130,7 +130,22 @@
   display: none;
 }
 
+/* Light-scheme divider matches badge text color rather than Toptal brand cyan. */
+.toptal-badge--light .toptal-divider {
+  background: #204ecf;
+}
+
 @media (prefers-color-scheme: light) {
+  .contact-icon {
+    background: #296bff;
+    box-shadow: 0 8px 20px rgba(41, 107, 255, 0.3);
+  }
+
+  .contact-icon:hover,
+  .contact-icon:focus-visible {
+    box-shadow: 0 12px 26px rgba(41, 107, 255, 0.45);
+  }
+
   .toptal-badge--dark {
     display: none;
   }

@@ -719,6 +719,7 @@ const destinationBack = document.getElementById("destination-back");
 const placeholderView = document.getElementById("placeholder-view");
 const placeholderBack = document.getElementById("placeholder-back");
 const navLayer = document.getElementById("nav-layer");
+const contactBadges = document.getElementById("contact-badges");
 const cvPage = createCvPage();
 destinationContent.appendChild(cvPage);
 
@@ -729,6 +730,7 @@ function showHome() {
   homeHeading.hidden = false;
   placeholderView.hidden = true;
   destinationView.hidden = true;
+  contactBadges.hidden = false;
   navButtons.attach(navLayer, travelTo);
   // Mirrors showPlaceholder() reloading "stars" itself: landing on home
   // always resets the background regardless of which preset was showing
@@ -743,6 +745,7 @@ function showDestination(hash, label) {
   navButtons.detach();
   homeView.hidden = true;
   destinationView.hidden = false;
+  contactBadges.hidden = false;
 
   const isCv = hash === "cv";
   destinationContent.classList.toggle("is-cv", isCv);
@@ -761,6 +764,7 @@ function showPlaceholder() {
   homeView.hidden = false;
   homeHeading.hidden = true;
   placeholderView.hidden = false;
+  contactBadges.hidden = false;
   loadPreset(HOME_DEFAULT_PRESET);
 }
 
@@ -786,6 +790,8 @@ function wait(ms) {
 // display:none leaves tsParticles measuring a zero-size canvas, which is
 // also why stars never reappeared after a plain (non-animated) "back".
 async function playHyperspace() {
+  homeHeading.hidden = true;
+  contactBadges.hidden = true;
   await loadPreset("hyperspace");
   await wait(HYPERSPACE_TRAVEL_MS);
 }
@@ -829,7 +835,7 @@ async function travelHome() {
 
   destinationView.hidden = true;
   placeholderView.hidden = true;
-  homeHeading.hidden = false;
+  homeHeading.hidden = true;
   homeView.hidden = false;
 
   await playHyperspace();
@@ -868,7 +874,7 @@ async function handleHashChange() {
   // leaves tsParticles measuring a zero-size canvas (see playHyperspace()).
   destinationView.hidden = true;
   placeholderView.hidden = true;
-  homeHeading.hidden = false;
+  homeHeading.hidden = true;
   homeView.hidden = false;
 
   await playHyperspace();
