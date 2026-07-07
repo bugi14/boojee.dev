@@ -15,11 +15,22 @@
   gap: 14px;
 }
 
+/* #contact-badges's own `display: flex` (an ID selector) otherwise beats the
+   UA stylesheet's `[hidden] { display: none }` (an attribute selector) —
+   ID specificity outranks attribute specificity regardless of source order,
+   so the badge cluster stayed visible through hyperspace travel without this. */
+#contact-badges[hidden] {
+  display: none;
+}
+
 .contact-icons {
   display: flex;
   gap: 14px;
 }
 
+/* Icon colours mirror the h1 heading's scheme accent (gold dark / light-blue
+   light — see home.css) rather than an arbitrary brand blue, so the badge
+   cluster reads as part of the site instead of a bolted-on widget. */
 .contact-icon {
   display: flex;
   align-items: center;
@@ -27,9 +38,9 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #204ecf;
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(6, 30, 96, 0.35);
+  background: #F2A65A;
+  color: #1a1200;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -55,74 +66,103 @@
 
 .toptal-hex {
   display: inline-block;
-  background: #25a9ef;
-  padding: 6px;
+  padding: 5px;
   clip-path: var(--toptal-clip);
 }
 
+/* Sized at 80% of Toptal's supplied dimensions (170px card / 100px divider /
+   etc.) so the badge sits smaller relative to the contact icons above it. */
 .toptal-card {
-  width: 170px;
-  padding: 20px 0 32px;
+  width: 136px;
+  padding: 16px 0 26px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-align: center;
   clip-path: var(--toptal-clip);
-  box-shadow: 0 28px 50px rgba(6, 30, 96, 0.35);
+  box-shadow: 0 28px 50px rgba(0, 0, 0, 0.35);
 }
 
 .toptal-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
 }
 
 .toptal-divider {
-  width: 100px;
+  width: 80px;
   height: 1px;
-  background: #25a9ef;
 }
 
 .toptal-label {
-  font-size: 14px;
-  margin-bottom: -6px;
+  font-size: 11px;
+  margin-bottom: -5px;
 }
 
 .toptal-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 18px;
+  padding: 3px 14px;
   border-radius: 6px;
-  background: #296bff;
-  color: #fff;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 500;
   text-decoration-thickness: 0.5px;
   text-underline-offset: 2px;
 }
 
-/* Dark-scheme variant */
+/* Both variants below use the h1 heading's scheme accent (gold dark /
+   light-blue light — see home.css) instead of Toptal's own brand blue/cyan,
+   so the badge reads as part of the site's palette rather than a bolted-on
+   third-party widget. The Toptal wordmark/star SVGs keep their own brand
+   fills (set inline in index.html) since recoloring the logo itself would
+   misrepresent it — only the card chrome (hex border, divider, CTA) is retinted. */
+.toptal-badge--dark .toptal-hex {
+  background: #F2A65A;
+}
+
 .toptal-badge--dark .toptal-card {
   color: #fff;
-  background: linear-gradient(153deg, #0667ff 18%, #204ecf 40%, #0f256e 80%);
+  background: linear-gradient(153deg, #1a2140 18%, #0f1730 45%, #05070f 85%);
+}
+
+.toptal-badge--dark .toptal-divider {
+  background: #F2A65A;
 }
 
 .toptal-badge--dark .toptal-label {
   opacity: 0.8;
 }
 
+.toptal-badge--dark .toptal-cta {
+  background: #F2A65A;
+  color: #1a1200;
+}
+
 /* Light-scheme variant */
+.toptal-badge--light .toptal-hex {
+  background: #A8D8EA;
+}
+
 .toptal-badge--light .toptal-card {
   color: #204ecf;
   background:
-    radial-gradient(circle at 20% -10%, #00c3ff -80%, #fff 30%),
-    radial-gradient(circle at -20% 20%, #00c3ff -80%, #fff 30%),
-    radial-gradient(circle at 70% 100%, #00c3ff -80%, #fff 30%),
-    radial-gradient(circle at 120% 80%, #00c3ff -80%, #fff 30%);
+    radial-gradient(circle at 20% -10%, #A8D8EA -80%, #fff 30%),
+    radial-gradient(circle at -20% 20%, #A8D8EA -80%, #fff 30%),
+    radial-gradient(circle at 70% 100%, #A8D8EA -80%, #fff 30%),
+    radial-gradient(circle at 120% 80%, #A8D8EA -80%, #fff 30%);
   background-blend-mode: multiply;
+}
+
+.toptal-badge--light .toptal-divider {
+  background: #204ecf;
+}
+
+.toptal-badge--light .toptal-cta {
+  background: #A8D8EA;
+  color: #0b1020;
 }
 
 /* Show the dark variant by default; swap to light under a light scheme. */
@@ -130,20 +170,16 @@
   display: none;
 }
 
-/* Light-scheme divider matches badge text color rather than Toptal brand cyan. */
-.toptal-badge--light .toptal-divider {
-  background: #204ecf;
-}
-
 @media (prefers-color-scheme: light) {
   .contact-icon {
-    background: #296bff;
-    box-shadow: 0 8px 20px rgba(41, 107, 255, 0.3);
+    background: #A8D8EA;
+    color: #0b1020;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   }
 
   .contact-icon:hover,
   .contact-icon:focus-visible {
-    box-shadow: 0 12px 26px rgba(41, 107, 255, 0.45);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
   }
 
   .toptal-badge--dark {
