@@ -47,8 +47,8 @@ const PRESET_OVERRIDES = {
         options: {
           image: {
             src: fireflyPlanetSvg,
-            width: 160,
-            height: 160,
+            width: 320,
+            height: 320,
           },
         },
       },
