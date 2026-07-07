@@ -78,7 +78,13 @@ const PRESET_OVERRIDES = {
 // beyond the frame drifting into the cursor's pull. Distances are CSS px.
 const EVENT_HORIZON_RADIUS = 16;
 const MIN_SPAWN_DISTANCE = 200; // keep new stars from spawning right next to the cursor
-const GRAVITY = 20000;
+const GRAVITY = 30000;
+// Pure inverse-square falloff makes the pull vanish at any real distance —
+// beyond this range the effective distance used in the 1/dist² calculation
+// is capped, so a star clear across the screen still feels a small but
+// steady pull toward the cursor instead of an imperceptible one that only
+// becomes noticeable once it's already almost on top of the cursor.
+const MAX_GRAVITY_DISTANCE = 500;
 const AMBIENT_DRIFT_SPEED = 0.6; // matches the stars preset's own move.speed, so edge spawns don't look inert
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
@@ -147,6 +153,7 @@ const blackHole = {
     // can't blow up to Infinity/NaN as a star nears the cursor — it's capped
     // at a large-but-finite value right at the event horizon boundary.
     const minDist = EVENT_HORIZON_RADIUS * ratio;
+    const maxDist = MAX_GRAVITY_DISTANCE * ratio;
     const maxSpeed = MAX_SPEED * ratio;
     // Safety net: a star can only be absorbed once per frame in practice.
     // Cap it hard so a future edge case degrades instead of hanging the tab.
@@ -180,9 +187,12 @@ const blackHole = {
         // Inverse-square "gravity", applied to every star regardless of
         // distance — acceleration falls off with the square of the
         // distance, so distant stars barely feel it while close ones get
-        // pulled in hard and fast.
+        // pulled in hard and fast. The effective distance is clamped to
+        // MAX_GRAVITY_DISTANCE so it never decays away to nothing — a star
+        // clear across the screen still feels the same steady pull as one
+        // right at that boundary, instead of an imperceptible fraction of it.
         const dist = Math.sqrt(distSq) || 1;
-        const clampedDist = Math.max(dist, minDist);
+        const clampedDist = Math.min(Math.max(dist, minDist), maxDist);
         const accel = GRAVITY / (clampedDist * clampedDist);
         vel.x += (dx / dist) * accel;
         vel.y += (dy / dist) * accel;
