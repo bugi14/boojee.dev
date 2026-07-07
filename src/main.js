@@ -1,3 +1,4 @@
+import "./styles/fonts.css";
 import "./styles/base.css";
 import "./styles/home.css";
 import "./styles/destination.css";

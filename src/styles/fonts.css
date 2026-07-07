@@ -1,0 +1,23 @@
+@font-face {
+  font-family: "Avayx";
+  src: url("../assets/fonts/avayx-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lunatic Superstar";
+  src: url("../assets/fonts/lunatic-superstar.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Orbitronio";
+  src: url("../assets/fonts/orbitronio.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
