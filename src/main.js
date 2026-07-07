@@ -42,13 +42,17 @@ const PRESET_OVERRIDES = {
         direction: "none",
         outModes: { default: "out" },
       },
+      size: {
+        value: 60,
+        random: { enable: true, minimumValue: 20 },
+      },
       shape: {
         type: "image",
         options: {
           image: {
             src: fireflyPlanetSvg,
-            width: 320,
-            height: 320,
+            width: 1024,
+            height: 1024,
           },
         },
       },
