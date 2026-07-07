@@ -112,12 +112,17 @@ const blackHole = {
   velocities: null,
   baseDensity: 0, // stars per retina px², so total count scales with actual canvas area
   imageIndex: 0,  // cycles through PLANET_IMAGES so each spawn gets the next type in order
+  // Real (non-flash) particle count, tracked directly rather than derived from
+  // container.particles.count each tick — see the comment above the density
+  // top-up/trim block in update() for why derivation was unreliable.
+  starCount: 0,
 
   attach(container, wrapperEl) {
     this.detach();
     this.container = container;
     this.velocities = new WeakMap();
     this.imageIndex = 0;
+    this.starCount = container.particles.count;
     this.setBaseDensity(container);
 
     // Listen on the wrapper div, not the <canvas> — tsParticles can recreate
@@ -197,15 +202,11 @@ const blackHole = {
     // Cap it hard so a future edge case degrades instead of hanging the tab.
     const MAX_ABSORPTIONS_PER_TICK = 10;
     let absorptions = 0;
-    let flashCount = 0;
 
     for (let i = container.particles.count - 1; i >= 0; i--) {
       const particle = container.particles.get(i);
       if (!particle || particle.destroyed) continue;
-      if (particle.isFlash) {
-        flashCount++;
-        continue;
-      }
+      if (particle.isFlash) continue;
 
       // tsParticles rescales every particle's position on a canvas resize
       // by multiplying in a newSize/oldSize factor (see CanvasManager). If
@@ -222,6 +223,7 @@ const blackHole = {
       // here — the density top-up spawns a fresh, healthy one next tick.
       if (!Number.isFinite(particle.position.x) || !Number.isFinite(particle.position.y)) {
         container.particles.remove(particle);
+        this.starCount--;
         continue;
       }
 
@@ -237,6 +239,7 @@ const blackHole = {
           absorptions++;
           this.spawnFlash(container, particle.position);
           container.particles.remove(particle);
+          this.starCount--;
           continue;
         }
 
@@ -278,26 +281,41 @@ const blackHole = {
     // window resizes. Tops up stars lost to absorption or to tsParticles'
     // own out-of-bounds handling, and trims the surplus if the window
     // shrinks, so density never drifts up on a smaller viewport.
+    //
+    // starCount is a manually maintained tally (incremented in spawnAtEdge,
+    // decremented on every removal above) rather than being derived here from
+    // container.particles.count - flashCount. That derivation used to
+    // undercount on the very tick a flash was spawned — the new flash is
+    // pushed to the end of the particles array, past the point this tick's
+    // downward loop had already reached, so it went uncounted by flashCount
+    // and briefly inflated the apparent star count by one. Combined with
+    // tsParticles running its own render loop independently of this one
+    // (destroying the flash on its own schedule once its animation finishes),
+    // that made the top-up for a single absorption land off-by-one across two
+    // ticks in a way that could spawn an extra star instead of just one
+    // delayed by a tick — a slow population creep, one extra star per
+    // absorption, some of which then sat at the edge alongside a healthy
+    // replacement.
     const { width, height } = container.canvas.size;
     const targetStarCount = Math.round(this.baseDensity * width * height);
-    const currentStars = container.particles.count - flashCount;
 
-    if (currentStars < targetStarCount) {
+    if (this.starCount < targetStarCount) {
       // Safety net: if baseDensity or the canvas size is ever momentarily
       // bogus (e.g. a zero-area canvas produced a bad density reading before
       // this fix), cap how many stars can be created in a single frame so a
       // bad reading degrades gracefully instead of flooding the screen with
       // new stars every tick.
-      const toSpawn = Math.min(targetStarCount - currentStars, MAX_SPAWNS_PER_TICK);
+      const toSpawn = Math.min(targetStarCount - this.starCount, MAX_SPAWNS_PER_TICK);
       for (let i = 0; i < toSpawn; i++) {
         this.spawnAtEdge(container);
       }
-    } else if (currentStars > targetStarCount) {
-      let excess = currentStars - targetStarCount;
+    } else if (this.starCount > targetStarCount) {
+      let excess = this.starCount - targetStarCount;
       for (let i = container.particles.count - 1; i >= 0 && excess > 0; i--) {
         const particle = container.particles.get(i);
         if (!particle || particle.destroyed || particle.isFlash) continue;
         container.particles.remove(particle);
+        this.starCount--;
         excess--;
       }
     }
@@ -362,6 +380,7 @@ const blackHole = {
       },
     );
     if (particle) {
+      this.starCount++;
       this.velocities.set(particle, {
         x: (dx / dist) * driftSpeed,
         y: (dy / dist) * driftSpeed,
