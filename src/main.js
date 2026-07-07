@@ -35,6 +35,9 @@ const PRESET_LOADERS = {
 const PRESET_OVERRIDES = {
   stars: {
     particles: {
+      number: {
+        value: 10, // 10% of the stars preset's default 100
+      },
       move: {
         enable: true,
         speed: 0.6,
@@ -85,7 +88,7 @@ const GRAVITY = 30000;
 // steady pull toward the cursor instead of an imperceptible one that only
 // becomes noticeable once it's already almost on top of the cursor.
 const MAX_GRAVITY_DISTANCE = 500;
-const AMBIENT_DRIFT_SPEED = 0.6; // matches the stars preset's own move.speed, so edge spawns don't look inert
+const EDGE_SPAWN_DRIFT_SPEED = 0.05; // barely-perceptible nudge inward, just enough for gravity to take over
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
 
@@ -277,19 +280,23 @@ const blackHole = {
     }
     // tsParticles' own move plugin is disabled here — its default ambient
     // drift (from the stars preset's move.random setting) reads as an
-    // unwanted burst of speed and direction right on spawn. Instead we seed
-    // blackHole's own velocity map with a gentle random drift of the same
-    // rough speed, so the star still looks alive while it's far from the
-    // cursor's gravity — without gravity, a purely zero-velocity star would
-    // otherwise sit frozen at the edge it spawned on, which at this particle
-    // size reads as visibly "stuck" rather than a subtle background star.
-    const angle = Math.random() * Math.PI * 2;
-    const driftSpeed = AMBIENT_DRIFT_SPEED * ratio;
+    // unwanted burst of speed and direction right on spawn. A star with
+    // literally zero velocity of its own would otherwise sit frozen right on
+    // the edge it spawned on until the cursor's gravity happens to reach it,
+    // which at this particle size reads as visibly "stuck". Instead we seed
+    // blackHole's own velocity map with a barely-perceptible nudge straight
+    // toward the canvas center — just enough that it's already moving away
+    // from the edge, so gravity picks it up and takes over smoothly rather
+    // than accelerating it from a dead stop.
+    const dx = width / 2 - x;
+    const dy = height / 2 - y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const driftSpeed = EDGE_SPAWN_DRIFT_SPEED * ratio;
     const particle = container.particles.addParticle({ x, y }, { move: { enable: false } });
     if (particle) {
       this.velocities.set(particle, {
-        x: Math.cos(angle) * driftSpeed,
-        y: Math.sin(angle) * driftSpeed,
+        x: (dx / dist) * driftSpeed,
+        y: (dy / dist) * driftSpeed,
       });
     }
   },
