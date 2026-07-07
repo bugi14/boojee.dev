@@ -91,6 +91,7 @@ const MAX_GRAVITY_DISTANCE = 500;
 const EDGE_SPAWN_DRIFT_SPEED = 0.05; // barely-perceptible nudge inward, just enough for gravity to take over
 const MAX_SPEED = 40;
 const FRICTION = 0.98; // gentle decay so a slingshotted star doesn't accelerate forever
+const MAX_SPAWNS_PER_TICK = 5; // safety net against a bad density reading flooding the screen
 
 const blackHole = {
   container: null,
@@ -103,8 +104,7 @@ const blackHole = {
     this.detach();
     this.container = container;
     this.velocities = new WeakMap();
-    const { width, height } = container.canvas.size;
-    this.baseDensity = container.particles.count / (width * height);
+    this.setBaseDensity(container);
 
     // Listen on the wrapper div, not the <canvas> — tsParticles can recreate
     // its internal canvas element (e.g. on retina/resize adjustments), which
@@ -134,6 +134,27 @@ const blackHole = {
       this.rafId = requestAnimationFrame(tick);
     };
     this.rafId = requestAnimationFrame(tick);
+  },
+
+  // The canvas can briefly report a zero-area size right after a fresh
+  // container is attached (e.g. the wrapper div was just swapped into the
+  // DOM and hasn't been through a layout pass yet), which would make
+  // count/(width*height) evaluate to Infinity. Left unguarded, that flows
+  // straight into update()'s target-star-count calculation and the density
+  // top-up loop tries to spawn an unbounded number of stars every single
+  // frame — visually a flood of stars piling up, and heavy enough to hang
+  // the tab. Falls back to 0 (no top-up) until a real measurement lands.
+  setBaseDensity(container) {
+    const { width, height } = container.canvas.size;
+    const area = width * height;
+    if (!(area > 0)) {
+      this.baseDensity = 0;
+      requestAnimationFrame(() => {
+        if (this.container === container) this.setBaseDensity(container);
+      });
+      return;
+    }
+    this.baseDensity = container.particles.count / area;
   },
 
   detach() {
@@ -230,7 +251,13 @@ const blackHole = {
     const currentStars = container.particles.count - flashCount;
 
     if (currentStars < targetStarCount) {
-      for (let i = currentStars; i < targetStarCount; i++) {
+      // Safety net: if baseDensity or the canvas size is ever momentarily
+      // bogus (e.g. a zero-area canvas produced a bad density reading before
+      // this fix), cap how many stars can be created in a single frame so a
+      // bad reading degrades gracefully instead of flooding the screen with
+      // new stars every tick.
+      const toSpawn = Math.min(targetStarCount - currentStars, MAX_SPAWNS_PER_TICK);
+      for (let i = 0; i < toSpawn; i++) {
         this.spawnAtEdge(container);
       }
     } else if (currentStars > targetStarCount) {
