@@ -468,8 +468,20 @@ async function registerAllPresets() {
 }
 
 let currentContainer = null;
+// loadPreset() is async but every caller fires it without awaiting (showHome()
+// and showPlaceholder() are synchronous, and route changes can happen in
+// rapid succession — e.g. a hashchange landing right as a bfcache pageshow
+// recovery is also in flight). Without a guard, an earlier call's
+// tsParticles.load() can resolve after a later call has already swapped in
+// its own div and container, wiring up a "ghost": a container attached to a
+// wrapper element that's no longer the visible one, whose blackHole never
+// receives real mouse coordinates and whose stars sit frozen forever. This
+// token lets a stale resolution detect it's no longer the latest call and
+// destroy itself instead of taking over.
+let loadToken = 0;
 
 async function loadPreset(preset) {
+  const token = ++loadToken;
   blackHole.detach();
 
   // tsParticles.load() doesn't replace an existing container at the same id —
@@ -491,6 +503,15 @@ async function loadPreset(preset) {
       ...PRESET_OVERRIDES[preset],
     },
   });
+
+  if (token !== loadToken) {
+    // A newer loadPreset() call has already taken over while this one was
+    // awaiting tsParticles.load() — this container is stale. Destroy it
+    // immediately rather than wiring it up as a ghost.
+    container.destroy();
+    return;
+  }
+
   currentContainer = container;
 
   if (preset === "stars") {
