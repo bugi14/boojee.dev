@@ -3,6 +3,7 @@ import "./styles/base.css";
 import "./styles/home.css";
 import "./styles/destination.css";
 import "./styles/placeholder.css";
+import "./styles/badges.css";
 
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
