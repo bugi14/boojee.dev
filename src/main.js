@@ -273,7 +273,6 @@ const blackHole = {
     // cursor's gravity — without gravity, a purely zero-velocity star would
     // otherwise sit frozen at the edge it spawned on, which at this particle
     // size reads as visibly "stuck" rather than a subtle background star.
-    const ratio = container.retina.pixelRatio;
     const angle = Math.random() * Math.PI * 2;
     const driftSpeed = AMBIENT_DRIFT_SPEED * ratio;
     const particle = container.particles.addParticle({ x, y }, { move: { enable: false } });
