@@ -12,13 +12,29 @@
 
 h1 {
   position: fixed;
-  bottom: 24px;
-  left: 24px;
+  top: 50%;
+  left: 50%;
   z-index: 10;
   margin: 0;
+  font-family: "Lunatic Superstar", sans-serif;
   font-weight: 300;
-  font-size: 2rem;
+  /* Nav items are 3.25rem; 2 sizes up at the 0.25rem step used elsewhere. */
+  font-size: 3.75rem;
+  text-align: center;
+  color: #F2A65A; /* dark-scheme gold, per issue #22's colour palette */
   pointer-events: none;
+  animation: heading-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: light) {
+  h1 {
+    color: #A8D8EA; /* light-scheme accent blue */
+  }
+}
+
+@keyframes heading-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.92; }
+  50% { transform: translate(-50%, -50%) scale(1.03); opacity: 1; }
 }
 
 #nav-layer {
