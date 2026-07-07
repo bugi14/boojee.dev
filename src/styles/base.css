@@ -1,7 +1,96 @@
+/* ── Theme custom properties ─────────────────────────────────────────────────
+   Dark is the default. JS sets data-theme="dark"|"light" on <html> from
+   localStorage / prefers-color-scheme before first paint (see the inline
+   script in index.html <head>), so there is never a flash of the wrong theme.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* surfaces */
+  --color-bg:            #0b1020;
+  /* typography */
+  --color-text:          #dfe7ff;
+  --color-text-muted:    #9aa5c9;
+  --color-text-bright:   #f4f6ff;
+  --color-accent:        #9fb3ff;
+  /* homepage heading */
+  --color-heading:       #F2A65A;
+  /* floating nav particles */
+  --color-nav-1:         #dfe7ff;
+  --color-nav-2:         #78aaff;
+  --color-nav-3:         #c8b8ff;
+  --color-nav-4:         #a8c4ff;
+  --color-nav-hover:     #ffffff;
+  --color-nav-glow-rgb:  120, 170, 255;
+  /* contact / badge icons */
+  --color-icon-bg:       #204ecf;
+  --color-icon-shadow-rgb: 6, 30, 96;
+  /* destination-view back button */
+  --color-back-bg:       rgba(0, 0, 0, 0.4);
+  --color-back-text:     #9fb3ff;
+  --color-back-hover:    #ffffff;
+  /* CV page */
+  --color-cv-title:      #b9c6f0;
+  --color-cv-contact:    #cdd6f4;
+  --color-cv-section:    #9fb3ff;
+  --color-cv-border:     rgba(159, 179, 255, 0.25);
+  --color-cv-h3:         #f4f6ff;
+  --color-cv-sub:        #9aa5c9;
+  --color-cv-summary:    #dfe7ff;
+  --color-cv-skills-dt:  #9aa5c9;
+  --color-cv-skills-dd:  #dfe7ff;
+  --color-cv-link:       #9fb3ff;
+  --color-cv-link-hover: #ffffff;
+  --color-cv-photo:      rgba(159, 179, 255, 0.25);
+  /* theme toggle */
+  --toggle-track-bg:     rgba(255, 255, 255, 0.15);
+  --toggle-track-border: rgba(255, 255, 255, 0.2);
+  --toggle-thumb:        #ffffff;
+  --toggle-icon-color:   rgba(255, 255, 255, 0.55);
+  --toggle-thumb-x:      0px;
+}
+
+:root[data-theme="light"] {
+  /* Light palette from issue #22: bg #FAF7F2, heading #1C2541, text #2D2D34 */
+  --color-bg:            #FAF7F2;
+  --color-text:          #2D2D34;
+  --color-text-muted:    #5a6080;
+  --color-text-bright:   #1C2541;
+  --color-accent:        #1d4fc4;
+  --color-heading:       #1C2541;
+  --color-nav-1:         #1C2541;
+  --color-nav-2:         #1d4fc4;
+  --color-nav-3:         #5a3a9f;
+  --color-nav-4:         #2a5cb0;
+  --color-nav-hover:     #000820;
+  --color-nav-glow-rgb:  29, 79, 196;
+  --color-icon-bg:       #1C2541;
+  --color-icon-shadow-rgb: 28, 37, 65;
+  --color-back-bg:       rgba(255, 255, 255, 0.8);
+  --color-back-text:     #1d4fc4;
+  --color-back-hover:    #000820;
+  --color-cv-title:      #5a6080;
+  --color-cv-contact:    #2D2D34;
+  --color-cv-section:    #1d4fc4;
+  --color-cv-border:     rgba(29, 79, 196, 0.2);
+  --color-cv-h3:         #1C2541;
+  --color-cv-sub:        #5a6080;
+  --color-cv-summary:    #2D2D34;
+  --color-cv-skills-dt:  #5a6080;
+  --color-cv-skills-dd:  #2D2D34;
+  --color-cv-link:       #1d4fc4;
+  --color-cv-link-hover: #000820;
+  --color-cv-photo:      rgba(29, 79, 196, 0.2);
+  --toggle-track-bg:     rgba(0, 0, 0, 0.08);
+  --toggle-track-border: rgba(0, 0, 0, 0.13);
+  --toggle-thumb:        #1C2541;
+  --toggle-icon-color:   rgba(28, 37, 65, 0.5);
+  --toggle-thumb-x:      20px;
+}
+
 html, body {
   margin: 0;
   height: 100%;
-  background: #0b1020;
-  color: #eee;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: "Inter", system-ui, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
 }

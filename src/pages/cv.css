@@ -9,11 +9,11 @@
   display: none;
 }
 #cv-page a {
-  color: #9fb3ff;
+  color: var(--color-cv-link);
   text-decoration: none;
 }
 #cv-page a:hover {
-  color: #ffffff;
+  color: var(--color-cv-link-hover);
   text-decoration: underline;
 }
 .cv-header {
@@ -28,7 +28,7 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 1px solid rgba(159, 179, 255, 0.25);
+  border: 1px solid var(--color-cv-photo);
 }
 .cv-header h1 {
   position: static;
@@ -38,7 +38,7 @@
   font-size: 2.25rem;
   letter-spacing: 0.02em;
   margin: 0 0 4px;
-  color: #f4f6ff;
+  color: var(--color-cv-h3);
   text-align: left;
   /* Cancel the heading-pulse animation (and its translate(-50%,-50%) transform)
      that the global h1 rule applies from home.css. */
@@ -47,7 +47,7 @@
 }
 .cv-title {
   margin: 0 0 12px;
-  color: #b9c6f0;
+  color: var(--color-cv-title);
   font-weight: 300;
   letter-spacing: 0.02em;
 }
@@ -56,7 +56,7 @@
   flex-wrap: wrap;
   gap: 4px 14px;
   font-size: 0.9rem;
-  color: #cdd6f4;
+  color: var(--color-cv-contact);
 }
 @media (max-width: 480px) {
   .cv-header {
@@ -71,7 +71,7 @@
 }
 .cv-summary {
   margin: 0;
-  color: #dfe7ff;
+  color: var(--color-cv-summary);
 }
 .cv-section {
   margin-bottom: 32px;
@@ -85,10 +85,10 @@
   font-size: 1.05rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #9fb3ff;
+  color: var(--color-cv-section);
   margin: 0 0 16px;
   padding-bottom: 6px;
-  border-bottom: 1px solid rgba(159, 179, 255, 0.25);
+  border-bottom: 1px solid var(--color-cv-border);
 }
 .cv-entry {
   margin-bottom: 20px;
@@ -107,17 +107,17 @@
   margin: 0;
   font-weight: 500;
   font-size: 1rem;
-  color: #f4f6ff;
+  color: var(--color-cv-h3);
 }
 .cv-entry-sub {
   margin: 2px 0 8px;
   font-size: 0.88rem;
-  color: #9aa5c9;
+  color: var(--color-cv-sub);
 }
 .cv-dates {
   font-style: italic;
   font-size: 0.85rem;
-  color: #9aa5c9;
+  color: var(--color-cv-sub);
   white-space: nowrap;
 }
 .cv-entry ul {
@@ -136,12 +136,12 @@
   font-weight: 500;
   font-size: 0.85rem;
   letter-spacing: 0.03em;
-  color: #9aa5c9;
+  color: var(--color-cv-skills-dt);
   margin: 0 0 3px;
 }
 .cv-skills dd {
   margin: 0;
-  color: #dfe7ff;
+  color: var(--color-cv-skills-dd);
   font-size: 0.9rem;
 }
 @media (max-width: 700px) {

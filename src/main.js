@@ -4,6 +4,7 @@ import "./styles/home.css";
 import "./styles/destination.css";
 import "./styles/placeholder.css";
 import "./styles/badges.css";
+import "./styles/theme-toggle.css";
 
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
@@ -549,24 +550,46 @@ const navButtons = {
     const maxX = window.innerWidth - NAV_EDGE_MARGIN;
     const maxY = window.innerHeight - NAV_EDGE_MARGIN;
 
+    // Collect exclusion zones once per frame — nav items bounce off these just
+    // as they bounce off the viewport edges, so they never overlap the heading,
+    // badges cluster, or theme toggle. getBoundingClientRect is cheap for
+    // fixed-position elements (no layout reflow triggered).
+    const ZONE_PAD = 20;
+    const zones = [];
+    const headingEl = document.getElementById("home-heading");
+    if (headingEl && !headingEl.hidden) zones.push(headingEl.getBoundingClientRect());
+    const badgesEl = document.getElementById("contact-badges");
+    if (badgesEl && !badgesEl.hidden) zones.push(badgesEl.getBoundingClientRect());
+    const toggleEl = document.getElementById("theme-toggle");
+    if (toggleEl && !toggleEl.hidden) zones.push(toggleEl.getBoundingClientRect());
+
     for (const p of this.particles) {
       p.x += p.vx;
       p.y += p.vy;
 
-      if (p.x < minX) {
-        p.x = minX;
-        p.vx = Math.abs(p.vx);
-      } else if (p.x + p.width > maxX) {
-        p.x = maxX - p.width;
-        p.vx = -Math.abs(p.vx);
-      }
+      // Viewport edge bounce
+      if (p.x < minX) { p.x = minX; p.vx = Math.abs(p.vx); }
+      else if (p.x + p.width > maxX) { p.x = maxX - p.width; p.vx = -Math.abs(p.vx); }
+      if (p.y < minY) { p.y = minY; p.vy = Math.abs(p.vy); }
+      else if (p.y + p.height > maxY) { p.y = maxY - p.height; p.vy = -Math.abs(p.vy); }
 
-      if (p.y < minY) {
-        p.y = minY;
-        p.vy = Math.abs(p.vy);
-      } else if (p.y + p.height > maxY) {
-        p.y = maxY - p.height;
-        p.vy = -Math.abs(p.vy);
+      // Exclusion zone AABB resolution: snap to the nearest exit edge and
+      // reverse the velocity component that pushed the particle in.
+      for (const zone of zones) {
+        const zx1 = zone.left - ZONE_PAD, zy1 = zone.top - ZONE_PAD;
+        const zx2 = zone.right + ZONE_PAD, zy2 = zone.bottom + ZONE_PAD;
+        const px2 = p.x + p.width, py2 = p.y + p.height;
+        if (px2 <= zx1 || p.x >= zx2 || py2 <= zy1 || p.y >= zy2) continue;
+
+        const dLeft   = px2 - zx1;
+        const dRight  = zx2 - p.x;
+        const dTop    = py2 - zy1;
+        const dBottom = zy2 - p.y;
+        const min = Math.min(dLeft, dRight, dTop, dBottom);
+        if      (min === dLeft)   { p.x = zx1 - p.width; p.vx = -Math.abs(p.vx); }
+        else if (min === dRight)  { p.x = zx2;            p.vx =  Math.abs(p.vx); }
+        else if (min === dTop)    { p.y = zy1 - p.height; p.vy = -Math.abs(p.vy); }
+        else                      { p.y = zy2;             p.vy =  Math.abs(p.vy); }
       }
 
       p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
@@ -576,7 +599,13 @@ const navButtons = {
 
 // Small twinkling star dots layered behind the SVG particles — a separate
 // container so we can give them completely different size/color/shape settings
-// without fighting the SVG layer's image shape config.
+// without fighting the SVG layer's image shape config. Colors adapt to the
+// active colour scheme: light colours on dark bg, dark colours on light bg.
+const BG_STAR_COLORS = {
+  dark:  ["#dfe7ff", "#78aaff", "#a8c4ff", "#ffffff", "#c8b8ff"],
+  light: ["#1C2541", "#1d4fc4", "#5a3a9f", "#2a5cb0", "#6b4a9e"],
+};
+
 let bgToken = 0;
 const bgStars = {
   container: null,
@@ -589,6 +618,9 @@ const bgStars = {
     fresh.id = "tsparticles-bg";
     old.replaceWith(fresh);
 
+    const theme = document.documentElement.getAttribute("data-theme") ?? "dark";
+    const starColors = BG_STAR_COLORS[theme] ?? BG_STAR_COLORS.dark;
+
     const container = await tsParticles.load({
       id: "tsparticles-bg",
       options: {
@@ -596,7 +628,7 @@ const bgStars = {
         fullScreen: { enable: false },
         particles: {
           number: { value: 160 },
-          color: { value: ["#dfe7ff", "#78aaff", "#a8c4ff", "#ffffff", "#c8b8ff"] },
+          color: { value: starColors },
           shape: { type: "circle" },
           size: { value: { min: 1, max: 5 } },
           opacity: {
@@ -720,10 +752,32 @@ const placeholderView = document.getElementById("placeholder-view");
 const placeholderBack = document.getElementById("placeholder-back");
 const navLayer = document.getElementById("nav-layer");
 const contactBadges = document.getElementById("contact-badges");
+const themeToggleEl = document.getElementById("theme-toggle");
+const themeToggleBtn = themeToggleEl.querySelector(".toggle-track");
 const cvPage = createCvPage();
 destinationContent.appendChild(cvPage);
 
 let traveling = false;
+
+function setTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+  // Reload background stars so their colour matches the new scheme.
+  if (bgStars.container) bgStars.load();
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  setTheme(current === "light" ? "dark" : "light");
+});
+
+// Follow OS changes when the user hasn't set a manual preference.
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  if (!localStorage.getItem("theme")) {
+    document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light");
+    if (bgStars.container) bgStars.load();
+  }
+});
 
 function showHome() {
   homeView.hidden = false;
@@ -731,6 +785,7 @@ function showHome() {
   placeholderView.hidden = true;
   destinationView.hidden = true;
   contactBadges.hidden = false;
+  themeToggleEl.hidden = false;
   navButtons.attach(navLayer, travelTo);
   // Mirrors showPlaceholder() reloading "stars" itself: landing on home
   // always resets the background regardless of which preset was showing
@@ -746,6 +801,7 @@ function showDestination(hash, label) {
   homeView.hidden = true;
   destinationView.hidden = false;
   contactBadges.hidden = false;
+  themeToggleEl.hidden = false;
 
   const isCv = hash === "cv";
   destinationContent.classList.toggle("is-cv", isCv);
@@ -765,6 +821,7 @@ function showPlaceholder() {
   homeHeading.hidden = true;
   placeholderView.hidden = false;
   contactBadges.hidden = false;
+  themeToggleEl.hidden = false;
   loadPreset(HOME_DEFAULT_PRESET);
 }
 
@@ -792,6 +849,7 @@ function wait(ms) {
 async function playHyperspace() {
   homeHeading.hidden = true;
   contactBadges.hidden = true;
+  themeToggleEl.hidden = true;
   await loadPreset("hyperspace");
   await wait(HYPERSPACE_TRAVEL_MS);
 }
