@@ -36,7 +36,7 @@
 #destination-back {
   position: fixed;
   top: 24px;
-  left: 24px;
+  left: 84px; /* clears the fixed top-left logo (20px + 48px + gap) */
   z-index: 11;
   background: var(--color-back-bg);
   border: none;

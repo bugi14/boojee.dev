@@ -5,6 +5,7 @@ import "./styles/destination.css";
 import "./styles/placeholder.css";
 import "./styles/badges.css";
 import "./styles/theme-toggle.css";
+import "./styles/logo.css";
 
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
@@ -516,7 +517,15 @@ const navButtons = {
     this.detach();
     this.layer = layerEl;
 
-    this.particles = NAV_ITEMS.map((item) => {
+    // Seed positions at equidistant points inside the ellipse: split it into
+    // one angular sector per nav item and place each item at the middle of
+    // its own sector, at a fixed radius fraction — so on load they start
+    // evenly spread around the centre rather than randomly clustered.
+    const ellipse = getNavEllipse();
+    const sectorAngle = (Math.PI * 2) / NAV_ITEMS.length;
+    const SPAWN_RADIUS_FRACTION = 0.55;
+
+    this.particles = NAV_ITEMS.map((item, index) => {
       const el = document.createElement("button");
       el.type = "button";
       el.className = "nav-particle";
@@ -528,16 +537,11 @@ const navButtons = {
       const width = el.offsetWidth;
       const height = el.offsetHeight;
 
-      // Spawn uniformly within the ellipse (sqrt(random) gives a uniform
-      // radial distribution rather than clustering points near the centre),
-      // inset by the particle's own half-size so the full box starts inside.
-      const ellipse = getNavEllipse();
-      const spawnAngle = Math.random() * Math.PI * 2;
-      const spawnR = Math.sqrt(Math.random());
+      const sectorMidAngle = sectorAngle * index + sectorAngle / 2;
       const ex = Math.max(ellipse.rx - width / 2, 1);
       const ey = Math.max(ellipse.ry - height / 2, 1);
-      const cx = ellipse.cx + Math.cos(spawnAngle) * spawnR * ex;
-      const cy = ellipse.cy + Math.sin(spawnAngle) * spawnR * ey;
+      const cx = ellipse.cx + Math.cos(sectorMidAngle) * ex * SPAWN_RADIUS_FRACTION;
+      const cy = ellipse.cy + Math.sin(sectorMidAngle) * ey * SPAWN_RADIUS_FRACTION;
 
       return {
         el,
@@ -573,9 +577,9 @@ const navButtons = {
 
     // Collect exclusion zones once per frame — nav items bounce off these just
     // as they bounce off the ellipse boundary, so they never overlap the
-    // heading or the contact-badges cluster (which contains both the Toptal
-    // badge and the icon row above it, so one zone covers both), or the
-    // theme toggle. getBoundingClientRect is cheap for fixed-position
+    // heading, the contact-badges cluster (which contains both the Toptal
+    // badge and the icon row above it, so one zone covers both), the theme
+    // toggle, or the logo. getBoundingClientRect is cheap for fixed-position
     // elements (no layout reflow triggered).
     const ZONE_PAD = 20;
     const zones = [];
@@ -585,6 +589,8 @@ const navButtons = {
     if (badgesEl && !badgesEl.hidden) zones.push(badgesEl.getBoundingClientRect());
     const toggleEl = document.getElementById("theme-toggle");
     if (toggleEl && !toggleEl.hidden) zones.push(toggleEl.getBoundingClientRect());
+    const logoEl = document.getElementById("site-logo");
+    if (logoEl && !logoEl.hidden) zones.push(logoEl.getBoundingClientRect());
 
     for (const p of this.particles) {
       p.x += p.vx;
@@ -882,6 +888,7 @@ const navLayer = document.getElementById("nav-layer");
 const contactBadges = document.getElementById("contact-badges");
 const themeToggleEl = document.getElementById("theme-toggle");
 const themeToggleBtn = themeToggleEl.querySelector(".toggle-track");
+const siteLogo = document.getElementById("site-logo");
 const cvPage = createCvPage();
 destinationContent.appendChild(cvPage);
 
@@ -917,6 +924,7 @@ function showHome() {
   destinationView.hidden = true;
   contactBadges.hidden = false;
   themeToggleEl.hidden = false;
+  siteLogo.hidden = false;
   navButtons.attach(navLayer, travelTo);
   // Mirrors showPlaceholder() reloading "stars" itself: landing on home
   // always resets the background regardless of which preset was showing
@@ -933,6 +941,7 @@ function showDestination(hash, label) {
   destinationView.hidden = false;
   contactBadges.hidden = false;
   themeToggleEl.hidden = false;
+  siteLogo.hidden = false;
 
   const isCv = hash === "cv";
   destinationContent.classList.toggle("is-cv", isCv);
@@ -953,6 +962,7 @@ function showPlaceholder() {
   placeholderView.hidden = false;
   contactBadges.hidden = false;
   themeToggleEl.hidden = false;
+  siteLogo.hidden = false;
   loadPreset(HOME_DEFAULT_PRESET);
 }
 
@@ -981,6 +991,7 @@ async function playHyperspace() {
   homeHeading.hidden = true;
   contactBadges.hidden = true;
   themeToggleEl.hidden = true;
+  siteLogo.hidden = true;
   await loadPreset("hyperspace");
   await wait(HYPERSPACE_TRAVEL_MS);
 }

@@ -1,0 +1,12 @@
+/* Brand mark pinned to the top-left corner, visible on every route. Hidden
+   during hyperspace travel alongside the heading, contact badges, and theme
+   toggle. */
+#site-logo {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 20;
+  height: 48px;
+  width: auto;
+  pointer-events: none;
+}
