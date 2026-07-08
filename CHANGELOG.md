@@ -23,6 +23,7 @@ Visual polish pass: colour themes, SVG particles, and site chrome. See [#22](htt
 ### Fixed
 - Theme toggle and contact badges were still visible during the hyperspace transition; they now hide alongside the rest of the UI.
 - Background stars stayed white in light mode, and hyperspace colours ignored the active theme — both were caused by tsParticles v4 silently ignoring `particles.color` (fixed by using `particles.paint.fill.color`) and the hyperspace preset's visible background actually being driven by `trail.fill.color`, not `background.color`.
+- Edge-spawned particles previously sat frozen at the edge of the frame until the cursor's gravity happened to reach them, reading as visibly "stuck"; they're now seeded with ambient drift toward the centre so they ease into motion immediately.
 
 ## [0.3.2] - 2026-07-06
 
