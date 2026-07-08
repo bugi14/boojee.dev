@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-08
+
+Visual polish pass: colour themes, SVG particles, and site chrome. See [#22](https://github.com/bugi14/boojee.dev/issues/22).
+
+### Added
+- **Light/dark colour theme** (`src/styles/base.css`, `index.html`): every page now follows a CSS-variable palette, with a manual toggle pinned top-right. The chosen theme is written to `localStorage` and read back before first paint (falling back to dark if nothing is stored yet), so it persists across visits without a flash of the wrong theme.
+- **Themed background stars and hyperspace** (`src/main.js`): the star field and the hyperspace jump now recolour to match the active theme instead of staying a fixed white/default.
+- **Bigger absorption explosion**: particles pulled into the cursor now flash a larger burst on contact.
+- **Site logo + favicon**: the boojee logo sits fixed top-left on every page (`public/assets/images/logo.svg`), with an opaque variant as the favicon.
+- **Elliptical nav movement** (`src/main.js`): floating nav items are now confined to an ellipse (85% of the viewport half-dimensions), start seeded at equidistant sector positions, bounce off the ellipse boundary, bounce off each other, and stay clear of the heading, Toptal badge, contact icons, theme toggle, and logo.
+- **Toptal / GitHub / LinkedIn / email badges** (`src/styles/badges.css`): a persistent hire-me badge cluster, bottom-right, restyled to match the site's colour scheme in both themes.
+
+### Fixed
+- Theme toggle and contact badges were still visible during the hyperspace transition; they now hide alongside the rest of the UI.
+- Background stars stayed white in light mode, and hyperspace colours ignored the active theme — both were caused by tsParticles v4 silently ignoring `particles.color` (fixed by using `particles.paint.fill.color`) and the hyperspace preset's visible background actually being driven by `trail.fill.color`, not `background.color`.
+
 ## [0.3.2] - 2026-07-06
 
 ### Changed
