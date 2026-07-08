@@ -58,7 +58,6 @@
 
 .toptal-hex {
   display: inline-block;
-  background: #25a9ef;
   padding: 6px;
   clip-path: var(--toptal-clip);
 }
@@ -72,7 +71,6 @@
   gap: 8px;
   text-align: center;
   clip-path: var(--toptal-clip);
-  box-shadow: 0 28px 50px rgba(6, 30, 96, 0.35);
 }
 
 .toptal-title {
@@ -85,7 +83,6 @@
 .toptal-divider {
   width: 100px;
   height: 1px;
-  background: #25a9ef;
 }
 
 .toptal-label {
@@ -99,37 +96,54 @@
   justify-content: center;
   padding: 4px 18px;
   border-radius: 6px;
-  background: #296bff;
-  color: #fff;
   font-size: 14px;
   font-weight: 500;
   text-decoration-thickness: 0.5px;
   text-underline-offset: 2px;
 }
 
-/* Dark-scheme variant */
+/* ── Dark scheme variant ──────────────────────────────────────────────────── */
+.toptal-badge--dark .toptal-hex {
+  background: #D6549C;
+}
+
 .toptal-badge--dark .toptal-card {
-  color: #fff;
-  background: linear-gradient(153deg, #0667ff 18%, #204ecf 40%, #0f256e 80%);
+  color: #F7E9C6;
+  background: linear-gradient(153deg, #4A2A8A 10%, #2A1060 45%, #170F26 85%);
+  box-shadow: 0 28px 50px rgba(18, 10, 36, 0.55);
 }
 
 .toptal-badge--dark .toptal-label {
   opacity: 0.8;
 }
 
-/* Light-scheme variant */
+.toptal-badge--dark .toptal-divider {
+  background: #D6549C;
+}
+
+.toptal-badge--dark .toptal-cta {
+  background: #D6549C;
+  color: #F7E9C6;
+}
+
+/* ── Light scheme variant ─────────────────────────────────────────────────── */
+.toptal-badge--light .toptal-hex {
+  background: #A8D8EA;
+}
+
 .toptal-badge--light .toptal-card {
-  color: #204ecf;
-  background:
-    radial-gradient(circle at 20% -10%, #00c3ff -80%, #fff 30%),
-    radial-gradient(circle at -20% 20%, #00c3ff -80%, #fff 30%),
-    radial-gradient(circle at 70% 100%, #00c3ff -80%, #fff 30%),
-    radial-gradient(circle at 120% 80%, #00c3ff -80%, #fff 30%);
-  background-blend-mode: multiply;
+  color: #1C2541;
+  background: linear-gradient(153deg, #e0f4fa 0%, #FFFDF9 50%, #fde8ef 100%);
+  box-shadow: 0 28px 50px rgba(28, 37, 65, 0.15);
 }
 
 .toptal-badge--light .toptal-divider {
-  background: #204ecf;
+  background: #A8D8EA;
+}
+
+.toptal-badge--light .toptal-cta {
+  background: #1C2541;
+  color: #FAF7F2;
 }
 
 /* Show dark by default; swap to light when data-theme="light" is set on <html>

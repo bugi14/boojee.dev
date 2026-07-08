@@ -2,83 +2,95 @@
    Dark is the default. JS sets data-theme="dark"|"light" on <html> from
    localStorage / prefers-color-scheme before first paint (see the inline
    script in index.html <head>), so there is never a flash of the wrong theme.
+
+   Dark palette:  bg #170F26 · accent magenta #D6549C · purple #6C4AB6
+                  gold #F2A65A · text #E8E3F0 · heading #F7E9C6
+   Light palette: bg #FAF7F2 · accent pastel-blue #A8D8EA · pink #F6B8C4
+                  yellow #FDE9A0 · text #2D2D34 · heading #1C2541
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
   /* surfaces */
-  --color-bg:            #0b1020;
+  --color-bg:            #170F26;
   /* typography */
-  --color-text:          #dfe7ff;
-  --color-text-muted:    #9aa5c9;
-  --color-text-bright:   #f4f6ff;
-  --color-accent:        #9fb3ff;
+  --color-text:          #E8E3F0;
+  --color-text-muted:    #9B8FAA;
+  --color-text-bright:   #F7E9C6;
+  --color-accent:        #D6549C;
   /* homepage heading */
-  --color-heading:       #F2A65A;
+  --color-heading:       #F7E9C6;
   /* floating nav particles */
-  --color-nav-1:         #dfe7ff;
-  --color-nav-2:         #78aaff;
-  --color-nav-3:         #c8b8ff;
-  --color-nav-4:         #a8c4ff;
-  --color-nav-hover:     #ffffff;
-  --color-nav-glow-rgb:  120, 170, 255;
+  --color-nav-1:         #E8E3F0;
+  --color-nav-2:         #D6549C;
+  --color-nav-3:         #6C4AB6;
+  --color-nav-4:         #F2A65A;
+  --color-nav-hover:     #F7E9C6;
+  --color-nav-glow-rgb:  214, 84, 156;
   /* contact / badge icons */
-  --color-icon-bg:       #204ecf;
-  --color-icon-shadow-rgb: 6, 30, 96;
+  --color-icon-bg:       #6C4AB6;
+  --color-icon-shadow-rgb: 18, 10, 36;
   /* destination-view back button */
-  --color-back-bg:       rgba(0, 0, 0, 0.4);
-  --color-back-text:     #9fb3ff;
-  --color-back-hover:    #ffffff;
+  --color-back-bg:       rgba(23, 15, 38, 0.75);
+  --color-back-text:     #D6549C;
+  --color-back-hover:    #F7E9C6;
   /* CV page */
-  --color-cv-title:      #b9c6f0;
-  --color-cv-contact:    #cdd6f4;
-  --color-cv-section:    #9fb3ff;
-  --color-cv-border:     rgba(159, 179, 255, 0.25);
-  --color-cv-h3:         #f4f6ff;
-  --color-cv-sub:        #9aa5c9;
-  --color-cv-summary:    #dfe7ff;
-  --color-cv-skills-dt:  #9aa5c9;
-  --color-cv-skills-dd:  #dfe7ff;
-  --color-cv-link:       #9fb3ff;
-  --color-cv-link-hover: #ffffff;
-  --color-cv-photo:      rgba(159, 179, 255, 0.25);
+  --color-cv-title:      #9B8FAA;
+  --color-cv-contact:    #C9C0DC;
+  --color-cv-section:    #D6549C;
+  --color-cv-border:     rgba(108, 74, 182, 0.3);
+  --color-cv-h3:         #F7E9C6;
+  --color-cv-sub:        #9B8FAA;
+  --color-cv-summary:    #E8E3F0;
+  --color-cv-skills-dt:  #9B8FAA;
+  --color-cv-skills-dd:  #E8E3F0;
+  --color-cv-link:       #D6549C;
+  --color-cv-link-hover: #F7E9C6;
+  --color-cv-photo:      rgba(108, 74, 182, 0.35);
   /* theme toggle */
-  --toggle-track-bg:     rgba(255, 255, 255, 0.15);
-  --toggle-track-border: rgba(255, 255, 255, 0.2);
-  --toggle-thumb:        #ffffff;
-  --toggle-icon-color:   rgba(255, 255, 255, 0.55);
+  --toggle-track-bg:     rgba(255, 255, 255, 0.1);
+  --toggle-track-border: rgba(255, 255, 255, 0.15);
+  --toggle-thumb:        #D6549C;
+  --toggle-icon-color:   rgba(232, 227, 240, 0.5);
   --toggle-thumb-x:      0px;
 }
 
 :root[data-theme="light"] {
-  /* Light palette from issue #22: bg #FAF7F2, heading #1C2541, text #2D2D34 */
+  /* surfaces */
   --color-bg:            #FAF7F2;
+  /* typography */
   --color-text:          #2D2D34;
-  --color-text-muted:    #5a6080;
+  --color-text-muted:    #6B6B77;
   --color-text-bright:   #1C2541;
-  --color-accent:        #1d4fc4;
+  --color-accent:        #A8D8EA;
+  /* homepage heading */
   --color-heading:       #1C2541;
-  --color-nav-1:         #1C2541;
-  --color-nav-2:         #1d4fc4;
-  --color-nav-3:         #5a3a9f;
-  --color-nav-4:         #2a5cb0;
-  --color-nav-hover:     #000820;
-  --color-nav-glow-rgb:  29, 79, 196;
+  /* floating nav particles */
+  --color-nav-1:         #2D2D34;
+  --color-nav-2:         #A8D8EA;
+  --color-nav-3:         #F6B8C4;
+  --color-nav-4:         #FDE9A0;
+  --color-nav-hover:     #1C2541;
+  --color-nav-glow-rgb:  168, 216, 234;
+  /* contact / badge icons */
   --color-icon-bg:       #1C2541;
   --color-icon-shadow-rgb: 28, 37, 65;
-  --color-back-bg:       rgba(255, 255, 255, 0.8);
-  --color-back-text:     #1d4fc4;
-  --color-back-hover:    #000820;
-  --color-cv-title:      #5a6080;
+  /* destination-view back button */
+  --color-back-bg:       rgba(255, 253, 249, 0.88);
+  --color-back-text:     #5BA8C4;
+  --color-back-hover:    #1C2541;
+  /* CV page */
+  --color-cv-title:      #6B6B77;
   --color-cv-contact:    #2D2D34;
-  --color-cv-section:    #1d4fc4;
-  --color-cv-border:     rgba(29, 79, 196, 0.2);
+  --color-cv-section:    #5BA8C4;
+  --color-cv-border:     rgba(168, 216, 234, 0.5);
   --color-cv-h3:         #1C2541;
-  --color-cv-sub:        #5a6080;
+  --color-cv-sub:        #6B6B77;
   --color-cv-summary:    #2D2D34;
-  --color-cv-skills-dt:  #5a6080;
+  --color-cv-skills-dt:  #6B6B77;
   --color-cv-skills-dd:  #2D2D34;
-  --color-cv-link:       #1d4fc4;
-  --color-cv-link-hover: #000820;
-  --color-cv-photo:      rgba(29, 79, 196, 0.2);
+  --color-cv-link:       #5BA8C4;
+  --color-cv-link-hover: #1C2541;
+  --color-cv-photo:      rgba(168, 216, 234, 0.5);
+  /* theme toggle */
   --toggle-track-bg:     rgba(0, 0, 0, 0.08);
   --toggle-track-border: rgba(0, 0, 0, 0.13);
   --toggle-thumb:        #1C2541;

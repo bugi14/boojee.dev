@@ -602,8 +602,8 @@ const navButtons = {
 // without fighting the SVG layer's image shape config. Colors adapt to the
 // active colour scheme: light colours on dark bg, dark colours on light bg.
 const BG_STAR_COLORS = {
-  dark:  ["#dfe7ff", "#78aaff", "#a8c4ff", "#ffffff", "#c8b8ff"],
-  light: ["#1C2541", "#1d4fc4", "#5a3a9f", "#2a5cb0", "#6b4a9e"],
+  dark:  ["#E8E3F0", "#D6549C", "#6C4AB6", "#F2A65A", "#F7E9C6"],
+  light: ["#1C2541", "#A8D8EA", "#F6B8C4", "#FDE9A0", "#2D2D34"],
 };
 
 let bgToken = 0;
@@ -707,7 +707,7 @@ async function loadPreset(preset) {
   // match the active colour scheme so the transition feels cohesive.
   const theme = document.documentElement.getAttribute("data-theme") ?? "dark";
   const hyperspaceOverrides = preset === "hyperspace" ? {
-    background: { color: theme === "light" ? "#FAF7F2" : "#0b1020" },
+    background: { color: theme === "light" ? "#FAF7F2" : "#170F26" },
     particles: { color: { value: BG_STAR_COLORS[theme] } },
   } : {};
 
