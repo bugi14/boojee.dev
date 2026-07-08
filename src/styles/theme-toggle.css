@@ -1,0 +1,52 @@
+/* Subtle light/dark toggle pinned to the top-right corner. Hidden during
+   hyperspace travel alongside the heading and contact badges. */
+#theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The unconditional `display: flex` above beats the UA [hidden] rule's
+   `display: none` on specificity (id vs attribute selector alone), so the
+   hyperspace hide (main.js sets .hidden = true) would otherwise have no
+   visible effect. Re-assert it here with matching specificity. */
+#theme-toggle[hidden] {
+  display: none;
+}
+
+.toggle-icon {
+  width: 14px;
+  height: 14px;
+  fill: var(--toggle-icon-color);
+  flex-shrink: 0;
+  transition: fill 0.3s ease;
+}
+
+.toggle-track {
+  width: 44px;
+  height: 24px;
+  padding: 0;
+  border-radius: 12px;
+  background: var(--toggle-track-bg);
+  border: 1px solid var(--toggle-track-border);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--toggle-thumb);
+  transition: transform 0.25s ease, background 0.3s ease;
+  transform: translateX(var(--toggle-thumb-x));
+}

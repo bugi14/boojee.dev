@@ -1,0 +1,164 @@
+@import url("https://use.typekit.net/kmj5qkr.css");
+
+/* Toptal "Top 3% Talent" badge + GitHub/LinkedIn/email contact icons, pinned
+   to the bottom-right corner. Persistent across every route (markup lives
+   outside the home/destination view containers in index.html), so it works as
+   a permanent hire-me CTA rather than a homepage-only decoration. */
+#contact-badges {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* The unconditional `display: flex` above beats the UA [hidden] rule's
+   `display: none` on specificity (id vs attribute selector alone), so the
+   hyperspace hide (main.js sets .hidden = true) would otherwise have no
+   visible effect. Re-assert it here with matching specificity. */
+#contact-badges[hidden] {
+  display: none;
+}
+
+.contact-icons {
+  display: flex;
+  gap: 14px;
+}
+
+.contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-icon-bg);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(var(--color-icon-shadow-rgb), 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+}
+
+.contact-icon:hover,
+.contact-icon:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(var(--color-icon-shadow-rgb), 0.45);
+}
+
+.contact-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Toptal badge, adapted from Toptal's supplied embed snippets ---
+   Original class names (.a/.b/.c/.d/.f/.h, #r) were single letters, too
+   generic to safely drop into a growing stylesheet, so they're renamed with
+   a toptal- prefix here. Visual output is unchanged from the supplied code.
+   Dark/light switching is driven by data-theme on <html> (set via JS from
+   localStorage / prefers-color-scheme) instead of a @media query, so it
+   follows the same manual toggle as everything else on the site. */
+.toptal-badge {
+  font-family: proxima-nova, Arial, sans-serif;
+  --toptal-clip: polygon(50% 0, 100% 24%, 100% 76%, 50% 100%, 0 76%, 0 24%);
+}
+
+.toptal-hex {
+  display: inline-block;
+  padding: 6px;
+  clip-path: var(--toptal-clip);
+}
+
+.toptal-card {
+  width: 170px;
+  padding: 20px 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  clip-path: var(--toptal-clip);
+}
+
+.toptal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.toptal-divider {
+  width: 100px;
+  height: 1px;
+}
+
+.toptal-label {
+  font-size: 14px;
+  margin-bottom: -6px;
+}
+
+.toptal-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 2px;
+}
+
+/* ── Dark scheme variant ──────────────────────────────────────────────────── */
+.toptal-badge--dark .toptal-hex {
+  background: #D6549C;
+}
+
+.toptal-badge--dark .toptal-card {
+  color: #F7E9C6;
+  background: linear-gradient(153deg, #4A2A8A 10%, #2A1060 45%, #170F26 85%);
+  box-shadow: 0 28px 50px rgba(18, 10, 36, 0.55);
+}
+
+.toptal-badge--dark .toptal-label {
+  opacity: 0.8;
+}
+
+.toptal-badge--dark .toptal-divider {
+  background: #D6549C;
+}
+
+.toptal-badge--dark .toptal-cta {
+  background: #D6549C;
+  color: #F7E9C6;
+}
+
+/* ── Light scheme variant ─────────────────────────────────────────────────── */
+.toptal-badge--light .toptal-hex {
+  background: #A8D8EA;
+}
+
+.toptal-badge--light .toptal-card {
+  color: #1C2541;
+  background: linear-gradient(153deg, #e0f4fa 0%, #FFFDF9 50%, #fde8ef 100%);
+  box-shadow: 0 28px 50px rgba(28, 37, 65, 0.15);
+}
+
+.toptal-badge--light .toptal-divider {
+  background: #A8D8EA;
+}
+
+.toptal-badge--light .toptal-cta {
+  background: #1C2541;
+  color: #FAF7F2;
+}
+
+/* Show dark by default; swap to light when data-theme="light" is set on <html>
+   (the inline <script> in index.html <head> sets this before first paint). */
+.toptal-badge--light {
+  display: none;
+}
+
+:root[data-theme="light"] .toptal-badge--dark  { display: none; }
+:root[data-theme="light"] .toptal-badge--light { display: block; }
