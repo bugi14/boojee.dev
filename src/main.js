@@ -703,6 +703,14 @@ async function loadPreset(preset) {
   fresh.id = "tsparticles";
   old.replaceWith(fresh);
 
+  // Hyperspace has hardcoded white streaks and a dark bg — override both to
+  // match the active colour scheme so the transition feels cohesive.
+  const theme = document.documentElement.getAttribute("data-theme") ?? "dark";
+  const hyperspaceOverrides = preset === "hyperspace" ? {
+    background: { color: theme === "light" ? "#FAF7F2" : "#0b1020" },
+    particles: { color: { value: BG_STAR_COLORS[theme] } },
+  } : {};
+
   const container = await tsParticles.load({
     id: "tsparticles",
     options: {
@@ -710,6 +718,7 @@ async function loadPreset(preset) {
       background: { color: "transparent" },
       fullScreen: { enable: false },
       ...PRESET_OVERRIDES[preset],
+      ...hyperspaceOverrides,
     },
   });
 
@@ -762,8 +771,11 @@ let traveling = false;
 function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
-  // Reload background stars so their colour matches the new scheme.
-  if (bgStars.container) bgStars.load();
+  // Always reload background stars — bgToken cancels any stale in-flight load,
+  // so it's safe even if a load is already in progress (fixes the race where
+  // the user toggles before the initial bgStars.load() from loadPreset completes,
+  // leaving white stars visible on the light background).
+  bgStars.load();
 }
 
 themeToggleBtn.addEventListener("click", () => {
