@@ -493,7 +493,19 @@ const NAV_ITEMS = [
 // the blackHole gravity loop above. DOM gives free :hover/:focus styling,
 // native click handling and accessibility, which canvas-drawn particles don't.
 const FLOAT_SPEED = 0.15; // CSS px per frame
-const NAV_EDGE_MARGIN = 32; // keep floating text off the viewport edges
+// Nav items are confined to an ellipse centred on the viewport, its semi-axes
+// reaching 85% of the way to the edge on both axes — keeps them clear of the
+// very edges of the frame without a hard rectangular margin.
+const NAV_ELLIPSE_FRACTION = 0.85;
+
+function getNavEllipse() {
+  return {
+    cx: window.innerWidth / 2,
+    cy: window.innerHeight / 2,
+    rx: (window.innerWidth / 2) * NAV_ELLIPSE_FRACTION,
+    ry: (window.innerHeight / 2) * NAV_ELLIPSE_FRACTION,
+  };
+}
 
 const navButtons = {
   layer: null,
@@ -515,12 +527,24 @@ const navButtons = {
       const angle = Math.random() * Math.PI * 2;
       const width = el.offsetWidth;
       const height = el.offsetHeight;
+
+      // Spawn uniformly within the ellipse (sqrt(random) gives a uniform
+      // radial distribution rather than clustering points near the centre),
+      // inset by the particle's own half-size so the full box starts inside.
+      const ellipse = getNavEllipse();
+      const spawnAngle = Math.random() * Math.PI * 2;
+      const spawnR = Math.sqrt(Math.random());
+      const ex = Math.max(ellipse.rx - width / 2, 1);
+      const ey = Math.max(ellipse.ry - height / 2, 1);
+      const cx = ellipse.cx + Math.cos(spawnAngle) * spawnR * ex;
+      const cy = ellipse.cy + Math.sin(spawnAngle) * spawnR * ey;
+
       return {
         el,
         width,
         height,
-        x: NAV_EDGE_MARGIN + Math.random() * Math.max(window.innerWidth - width - NAV_EDGE_MARGIN * 2, 1),
-        y: NAV_EDGE_MARGIN + Math.random() * Math.max(window.innerHeight - height - NAV_EDGE_MARGIN * 2, 1),
+        x: cx - width / 2,
+        y: cy - height / 2,
         vx: Math.cos(angle) * FLOAT_SPEED,
         vy: Math.sin(angle) * FLOAT_SPEED,
       };
@@ -545,15 +569,14 @@ const navButtons = {
 
   update() {
     if (!this.particles) return;
-    const minX = NAV_EDGE_MARGIN;
-    const minY = NAV_EDGE_MARGIN;
-    const maxX = window.innerWidth - NAV_EDGE_MARGIN;
-    const maxY = window.innerHeight - NAV_EDGE_MARGIN;
+    const ellipse = getNavEllipse();
 
     // Collect exclusion zones once per frame — nav items bounce off these just
-    // as they bounce off the viewport edges, so they never overlap the heading,
-    // badges cluster, or theme toggle. getBoundingClientRect is cheap for
-    // fixed-position elements (no layout reflow triggered).
+    // as they bounce off the ellipse boundary, so they never overlap the
+    // heading or the contact-badges cluster (which contains both the Toptal
+    // badge and the icon row above it, so one zone covers both), or the
+    // theme toggle. getBoundingClientRect is cheap for fixed-position
+    // elements (no layout reflow triggered).
     const ZONE_PAD = 20;
     const zones = [];
     const headingEl = document.getElementById("home-heading");
@@ -567,11 +590,39 @@ const navButtons = {
       p.x += p.vx;
       p.y += p.vy;
 
-      // Viewport edge bounce
-      if (p.x < minX) { p.x = minX; p.vx = Math.abs(p.vx); }
-      else if (p.x + p.width > maxX) { p.x = maxX - p.width; p.vx = -Math.abs(p.vx); }
-      if (p.y < minY) { p.y = minY; p.vy = Math.abs(p.vy); }
-      else if (p.y + p.height > maxY) { p.y = maxY - p.height; p.vy = -Math.abs(p.vy); }
+      // Ellipse boundary bounce: the particle's own half-size insets the
+      // ellipse radii so the full box (not just its centre) stays inside.
+      // The centre's position is tested against that inset ellipse via its
+      // implicit equation (nx² + ny² <= 1); once outside, the centre is
+      // snapped back to the boundary and the velocity is reflected across
+      // the ellipse's normal at that point (gradient of the implicit
+      // function), which for an ellipse is proportional to (nx/ex, ny/ey).
+      const cx = p.x + p.width / 2;
+      const cy = p.y + p.height / 2;
+      const ex = Math.max(ellipse.rx - p.width / 2, 1);
+      const ey = Math.max(ellipse.ry - p.height / 2, 1);
+      const dx = cx - ellipse.cx;
+      const dy = cy - ellipse.cy;
+      let nx = dx / ex;
+      let ny = dy / ey;
+      const dist = Math.hypot(nx, ny);
+      if (dist > 1) {
+        nx /= dist;
+        ny /= dist;
+        const newCx = ellipse.cx + nx * ex;
+        const newCy = ellipse.cy + ny * ey;
+        p.x = newCx - p.width / 2;
+        p.y = newCy - p.height / 2;
+
+        let normalX = nx / ex;
+        let normalY = ny / ey;
+        const normalLen = Math.hypot(normalX, normalY) || 1;
+        normalX /= normalLen;
+        normalY /= normalLen;
+        const dot = p.vx * normalX + p.vy * normalY;
+        p.vx -= 2 * dot * normalX;
+        p.vy -= 2 * dot * normalY;
+      }
 
       // Exclusion zone AABB resolution: snap to the nearest exit edge and
       // reverse the velocity component that pushed the particle in.
@@ -591,7 +642,62 @@ const navButtons = {
         else if (min === dTop)    { p.y = zy1 - p.height; p.vy = -Math.abs(p.vy); }
         else                      { p.y = zy2;             p.vy =  Math.abs(p.vy); }
       }
+    }
 
+    // Pairwise collision between nav items themselves, so their floating
+    // labels never overlap one another. Rectangle-overlap test (same style
+    // as the exclusion-zone resolution above), but symmetric: both particles
+    // are pushed apart along the axis of least penetration, and each has its
+    // velocity component along that axis set (not swapped) to point away
+    // from the other — swapping velocities instead can leave both moving in
+    // the same net direction after a graze, which with only 4 items causes
+    // visible re-collisions; forcing "away" every time guarantees they
+    // separate. O(n²) but n is the nav item count (a handful), negligible.
+    // A few iterations per frame let chain overlaps (resolving one pair can
+    // reintroduce overlap with a third item) settle before the frame renders.
+    const COLLISION_ITERATIONS = 8;
+    // Small extra clearance on top of the exact overlap so items separate
+    // to a visible gap instead of ending up exactly touching (which, at
+    // these slow drift speeds, tends to immediately re-trigger next frame).
+    const COLLISION_BUFFER = 2;
+    for (let iter = 0; iter < COLLISION_ITERATIONS; iter++) {
+      for (let i = 0; i < this.particles.length; i++) {
+        for (let j = i + 1; j < this.particles.length; j++) {
+          const a = this.particles[i];
+          const b = this.particles[j];
+          const ax2 = a.x + a.width, ay2 = a.y + a.height;
+          const bx2 = b.x + b.width, by2 = b.y + b.height;
+          if (ax2 <= b.x || a.x >= bx2 || ay2 <= b.y || a.y >= by2) continue;
+
+          const overlapLeft = ax2 - b.x;
+          const overlapRight = bx2 - a.x;
+          const overlapTop = ay2 - b.y;
+          const overlapBottom = by2 - a.y;
+          const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+          const push = minOverlap / 2 + COLLISION_BUFFER;
+
+          if (minOverlap === overlapLeft || minOverlap === overlapRight) {
+            if (minOverlap === overlapLeft) {
+              a.x -= push; b.x += push;
+              a.vx = -Math.abs(a.vx); b.vx = Math.abs(b.vx);
+            } else {
+              a.x += push; b.x -= push;
+              a.vx = Math.abs(a.vx); b.vx = -Math.abs(b.vx);
+            }
+          } else {
+            if (minOverlap === overlapTop) {
+              a.y -= push; b.y += push;
+              a.vy = -Math.abs(a.vy); b.vy = Math.abs(b.vy);
+            } else {
+              a.y += push; b.y -= push;
+              a.vy = Math.abs(a.vy); b.vy = -Math.abs(b.vy);
+            }
+          }
+        }
+      }
+    }
+
+    for (const p of this.particles) {
       p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
     }
   },
