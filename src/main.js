@@ -442,7 +442,7 @@ const blackHole = {
       {
         shape: { type: "circle" },
         move: { enable: false },
-        color: { value: "#ffffff" },
+        paint: { fill: { color: { value: "#ffffff" } } },
         opacity: { value: 1, animation: { enable: false } },
         size: { value: EXPLOSION_MIN_RADIUS, animation: { enable: false } },
       },
@@ -628,7 +628,11 @@ const bgStars = {
         fullScreen: { enable: false },
         particles: {
           number: { value: 160 },
-          color: { value: starColors },
+          // This engine version has no back-compat for the legacy root
+          // particles.color key (ParticlesOptions.load() only reads
+          // data.paint) — it silently falls back to white if used. The real
+          // key is particles.paint.fill.color.
+          paint: { fill: { color: { value: starColors } } },
           shape: { type: "circle" },
           size: { value: { min: 1, max: 5 } },
           opacity: {
@@ -703,12 +707,21 @@ async function loadPreset(preset) {
   fresh.id = "tsparticles";
   old.replaceWith(fresh);
 
-  // Hyperspace has hardcoded white streaks and a dark bg — override both to
-  // match the active colour scheme so the transition feels cohesive.
+  // The hyperspace preset doesn't clear each frame via background.color —
+  // its trail plugin repaints the canvas with trail.fill.color at low
+  // opacity every tick, and that overlay colour (not background.color) is
+  // what actually reads as the "background" once streaks are moving. Its
+  // particles are also painted via particles.paint.fill.color, not the
+  // legacy particles.color, so overriding the wrong keys (as before) had no
+  // visible effect at all. Override both real keys to match the scheme.
   const theme = document.documentElement.getAttribute("data-theme") ?? "dark";
+  const hyperspaceBg = theme === "light" ? "#FAF7F2" : "#170F26";
   const hyperspaceOverrides = preset === "hyperspace" ? {
-    background: { color: theme === "light" ? "#FAF7F2" : "#170F26" },
-    particles: { color: { value: BG_STAR_COLORS[theme] } },
+    background: { color: hyperspaceBg },
+    trail: { fill: { color: hyperspaceBg } },
+    particles: {
+      paint: { fill: { color: { value: BG_STAR_COLORS[theme] } } },
+    },
   } : {};
 
   const container = await tsParticles.load({
