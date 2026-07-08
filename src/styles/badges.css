@@ -15,6 +15,14 @@
   gap: 14px;
 }
 
+/* The unconditional `display: flex` above beats the UA [hidden] rule's
+   `display: none` on specificity (id vs attribute selector alone), so the
+   hyperspace hide (main.js sets .hidden = true) would otherwise have no
+   visible effect. Re-assert it here with matching specificity. */
+#contact-badges[hidden] {
+  display: none;
+}
+
 .contact-icons {
   display: flex;
   gap: 14px;
