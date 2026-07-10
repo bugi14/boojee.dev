@@ -1,9 +1,15 @@
 import "./cv.css";
+import { cvNav } from "../particles/cv-nav.js";
+import { SUBTITLE, ABOUT, SKILLS, EXPERIENCE, EDUCATION, TRIGGERS } from "./cv-data.js";
 
-// Builds the static CV DOM for the "#/cv" destination. Content is fully
-// static today; kept as a template string here (rather than the actual
-// resume data) so it's a straightforward next step to template from data
-// later without touching index.html or the router.
+// Order also doubles as render order for open sections.
+const SECTION_ORDER = ["about", "skills", "experience", "education"];
+const SECTION_LABELS = { about: "About", skills: "Skills", experience: "Experience", education: "Education" };
+
+// Builds the CV page: header + About visible on landing, Skills/Experience/
+// Education starting as floating nav pills (see cv-nav.js) that open inline
+// when clicked. Content lives in cv-data.js as short (CV) / detailed
+// (LinkedIn) variants per section, toggled by a "Read more/less" button.
 export function createCvPage() {
   const page = document.createElement("div");
   page.id = "cv-page";
@@ -13,7 +19,7 @@ export function createCvPage() {
       <img class="cv-photo" src="/assets/images/darren.jpg" alt="Darren Buttigieg" width="96" height="96" />
       <div>
         <h1>Darren Buttigieg</h1>
-        <p class="cv-title">Python Developer | Backend Systems | Data Engineering</p>
+        <p class="cv-title">${SUBTITLE}</p>
         <p class="cv-contact">
           <a href="mailto:dbuttigieg92@gmail.com">dbuttigieg92@gmail.com</a>
           <span>·</span>
@@ -23,113 +29,133 @@ export function createCvPage() {
         </p>
       </div>
     </header>
-
-    <div class="cv-body">
-      <aside class="cv-sidebar">
-        <section class="cv-section">
-          <h2>About</h2>
-          <p class="cv-summary">
-            Astrophysics-trained Python engineer with 5+ years of experience building production-grade
-            data systems across freelance and industry roles. Specialised in large-scale data pipelines,
-            numerical processing, and transforming complex datasets into reliable, high-performance systems.
-          </p>
-        </section>
-
-        <section class="cv-section">
-          <h2>Skills</h2>
-          <dl class="cv-skills">
-            <dt>Programming Languages</dt>
-            <dd>Python, JavaScript, C++, MATLAB, Fortran, Wolfram Mathematica</dd>
-
-            <dt>Backend &amp; Data</dt>
-            <dd>REST APIs, Flask, Asyncio, SQLAlchemy, ETL pipelines, Data processing, NumPy, Pandas, Typed Python</dd>
-
-            <dt>DevOps &amp; Infrastructure</dt>
-            <dd>Docker, Kubernetes, CI/CD (GitHub Actions), Linux, Redis, RabbitMQ, Observability</dd>
-
-            <dt>Monitoring &amp; Quality</dt>
-            <dd>Grafana, Prometheus, Pytest, TDD, Ruff, Poetry, Testing, Refactoring</dd>
-
-            <dt>Languages</dt>
-            <dd>Maltese (native), English (fluent), Spanish &amp; Italian (very good), French (basic)</dd>
-          </dl>
-        </section>
-      </aside>
-
-      <main class="cv-main">
-        <section class="cv-section">
-          <h2>Experience</h2>
-
-          <article class="cv-entry">
-            <div class="cv-entry-head">
-              <h3>Freelance Python Developer</h3>
-              <span class="cv-dates">Nov 2018 – May 2019, May 2022 – Present</span>
-            </div>
-            <ul>
-              <li>End-to-end delivery: architecture, implementation, client alignment, and deployment</li>
-              <li>Designed and built scalable backend (Python 3.x) services</li>
-              <li>Developed ETL pipelines and data processing systems for real-world applications</li>
-              <li>Translated mathematical models and research into production-grade systems</li>
-              <li>Built geospatial model for mapping, coverage algorithms, and layered visual encoding</li>
-              <li>Ensured reliability through testing, typing, and observability (Pytest, TDD, Ruff, Poetry)</li>
-            </ul>
-          </article>
-
-          <article class="cv-entry">
-            <div class="cv-entry-head">
-              <h3>Software Engineer, Connectors Team — <a href="https://onna.com/" target="_blank" rel="noreferrer">Onna</a></h3>
-              <span class="cv-dates">Jun 2020 – Feb 2022</span>
-            </div>
-            <p class="cv-entry-sub">Barcelona &amp; Remote</p>
-            <ul>
-              <li>Contributed to 20+ third-party API connectors for large-scale backend systems (billion-file / multi-petabyte scale)</li>
-              <li>Designed data synchronisation logic improving efficiency and system performance</li>
-              <li>Relational databases (SQLAlchemy), asynchronous processing and messaging systems (Redis, RabbitMQ)</li>
-              <li>Containerised services using Docker and contributed to Kubernetes-based deployments</li>
-              <li>Implemented monitoring and observability using Grafana and Prometheus</li>
-              <li>Contributed to CI/CD pipelines, testing, and system modularisation</li>
-            </ul>
-          </article>
-
-          <article class="cv-entry">
-            <div class="cv-entry-head">
-              <h3>Junior Software Developer and Mathematician — <a href="https://meetsherpa.com/" target="_blank" rel="noreferrer">Sherpa</a></h3>
-              <span class="cv-dates">Oct 2016 – Oct 2017</span>
-            </div>
-            <p class="cv-entry-sub">Malta</p>
-            <ul>
-              <li>Backend services and REST APIs (Python, Flask)</li>
-              <li>Mathematical models for insurance and financial risk</li>
-              <li>Model implementation with focus on correctness and stability</li>
-              <li>Integration with relational databases</li>
-              <li>Contributed to research paper underpinning system</li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="cv-section">
-          <h2>Education</h2>
-
-          <article class="cv-entry">
-            <div class="cv-entry-head">
-              <h3>MSc in Astronomy, Cosmology — Leiden University, Netherlands</h3>
-              <span class="cv-dates">2014 – 2016</span>
-            </div>
-            <ul>
-              <li>Thesis: Dark Energy / Modified Gravity models</li>
-              <li>Numerical simulations and data analysis pipelines</li>
-            </ul>
-          </article>
-
-          <article class="cv-entry">
-            <div class="cv-entry-head">
-              <h3>BSc (Hons) Mathematics and Physics, Summa Cum Laude — University of Malta</h3>
-              <span class="cv-dates">2010 – 2014</span>
-            </div>
-          </article>
-        </section>
-      </main>
-    </div>
+    <div class="cv-nav-layer"></div>
+    <div class="cv-content"></div>
   `;
+
+  const navLayer = page.querySelector(".cv-nav-layer");
+  const content = page.querySelector(".cv-content");
+
+  // Which sections are currently expanded inline (vs. floating pills), which
+  // variant (short/detailed) each expanded section is showing, and which
+  // trigger (if any) is currently driving a highlight.
+  const state = {
+    open: new Set(["about"]),
+    mode: { about: "short", skills: "short", experience: "short", education: "short" },
+    highlight: null, // { sections: string[], flag: string }
+  };
+
+  function entryHighlighted(sectionId, entry) {
+    if (!state.highlight) return false;
+    if (!state.highlight.sections.includes(sectionId)) return false;
+    return entry.python && state.highlight.flag === "python";
+  }
+
+  function renderSectionBody(id) {
+    const mode = state.mode[id];
+    if (id === "about") return ABOUT[mode];
+    if (id === "skills") return SKILLS[mode];
+
+    const data = id === "experience" ? EXPERIENCE : EDUCATION;
+    return data.entries
+      .map((entry) => {
+        const highlighted = entryHighlighted(id, entry);
+        return `
+          <article class="cv-entry${highlighted ? " cv-entry--highlight" : ""}">
+            <div class="cv-entry-head">
+              <h3>${entry.title}</h3>
+              <span class="cv-dates">${entry.dates}</span>
+            </div>
+            ${entry.sub ? `<p class="cv-entry-sub">${entry.sub}</p>` : ""}
+            ${entry[mode]}
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  function render() {
+    const closed = SECTION_ORDER.filter((id) => !state.open.has(id));
+    if (cvNav.layer) {
+      cvNav.setItems(closed.map((id) => ({ id, label: SECTION_LABELS[id] })));
+    }
+
+    content.innerHTML = SECTION_ORDER.filter((id) => state.open.has(id))
+      .map((id) => {
+        const mode = state.mode[id];
+        return `
+          <section class="cv-section cv-section--open" data-section="${id}">
+            <div class="cv-section-head">
+              <h2 data-action="collapse" data-section="${id}" tabindex="0" role="button"
+                  aria-label="Collapse ${SECTION_LABELS[id]}">${SECTION_LABELS[id]}</h2>
+              <button type="button" class="cv-toggle-mode" data-action="toggle-mode" data-section="${id}">
+                ${mode === "short" ? "Read more" : "Read less"}
+              </button>
+            </div>
+            <div class="cv-section-body">${renderSectionBody(id)}</div>
+          </section>
+        `;
+      })
+      .join("");
+  }
+
+  function openOnly(ids, highlight) {
+    state.open = new Set(ids);
+    state.highlight = highlight || null;
+    render();
+  }
+
+  function handleNavSelect(id) {
+    openOnly([id]);
+  }
+
+  content.addEventListener("click", (e) => {
+    const collapseEl = e.target.closest('[data-action="collapse"]');
+    if (collapseEl) {
+      state.open.delete(collapseEl.dataset.section);
+      state.highlight = null;
+      if (state.open.size === 0) state.open.add("about");
+      render();
+      return;
+    }
+
+    const toggleEl = e.target.closest('[data-action="toggle-mode"]');
+    if (toggleEl) {
+      const id = toggleEl.dataset.section;
+      state.mode[id] = state.mode[id] === "short" ? "detailed" : "short";
+      render();
+      return;
+    }
+
+    const triggerEl = e.target.closest(".cv-trigger");
+    if (triggerEl) {
+      const trigger = TRIGGERS[triggerEl.dataset.trigger];
+      if (trigger) openOnly(trigger.sections, { sections: trigger.sections, flag: trigger.highlight });
+    }
+  });
+
+  content.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const collapseEl = e.target.closest('[data-action="collapse"]');
+    if (collapseEl) {
+      e.preventDefault();
+      collapseEl.click();
+    }
+  });
+
+  // The page starts `hidden`; the router (main.js) flips that attribute
+  // without any other lifecycle hook, so this observer is what starts/stops
+  // the floating-pill animation loop as the CV page becomes visible/hidden.
+  const visibilityObserver = new MutationObserver(() => {
+    if (page.hidden) {
+      cvNav.detach();
+    } else {
+      cvNav.attach(navLayer, handleNavSelect);
+      render();
+    }
+  });
+  visibilityObserver.observe(page, { attributes: true, attributeFilter: ["hidden"] });
+
+  render();
   return page;
 }
