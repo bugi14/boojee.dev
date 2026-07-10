@@ -177,6 +177,23 @@
   top: 24px;
   display: flex;
   flex-direction: column;
+  /* Caps the pinned Skills panel to the viewport so it gets its own
+     scrollbar (see .cv-section--pinned below) instead of growing the
+     whole sticky column past the fold. */
+  max-height: calc(100vh - 48px);
+}
+.cv-section--pinned {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.cv-section--pinned .cv-section-head {
+  flex-shrink: 0;
+}
+.cv-section--pinned .cv-section-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 .cv-main {
   /* Narrower than the available column on wide screens, without shrinking
@@ -185,12 +202,21 @@
 }
 
 /* Floating pill layer for collapsed sections (Experience/Education, and
-   About once it's been collapsed). Fixed band height so drifting pills
-   never overlap the open section content below. */
+   About once it's been collapsed). Fixed positioned — rather than sitting
+   in the main column's flow — so it never pushes section content down;
+   cv.js's updateNavLayerPosition() sizes/positions it beside the header
+   (or, once the header docks on scroll, just below it) via inline styles,
+   and this layer's own pointer-events: none lets clicks fall through to
+   whatever's underneath it everywhere except the pills themselves. */
 .cv-nav-layer {
-  position: relative;
-  height: clamp(140px, 24vh, 220px);
-  margin-bottom: 8px;
+  position: fixed;
+  z-index: 15;
+  pointer-events: none;
+  /* No transition here (unlike the header) — it's kept in sync with the
+     header's own animated position via updateNavLayerPosition() (cv.js),
+     called on scroll and again on the header's transitionend; adding a
+     second, independently-timed transition on top of that just makes it
+     lag behind and briefly overlap the header mid-animation. */
 }
 .cv-nav-particle {
   position: absolute;
@@ -207,6 +233,7 @@
   letter-spacing: 0.03em;
   color: var(--color-cv-section);
   cursor: pointer;
+  pointer-events: auto;
   transition: color 0.2s ease, text-shadow 0.2s ease;
   will-change: transform;
 }

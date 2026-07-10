@@ -16,6 +16,14 @@ const DOCK_SCROLL_THRESHOLD = 24;
 // Vertical clearance kept between the docked header and the contact badges
 // (#contact-badges, fixed bottom-right — see badges.css) it sits above.
 const DOCK_GAP = 16;
+// Gap kept between the floating nav-pill layer and whatever it's anchored
+// to (the header, undocked or docked).
+const NAV_LAYER_GAP = 16;
+const NAV_LAYER_WIDTH = 300;
+// Fixed height reserved for the nav-pill layer once the header is docked,
+// so it has a defined slot between the docked header and the contact
+// badges below it — see updateDockPosition()/updateNavLayerPosition().
+const NAV_LAYER_DOCKED_HEIGHT = 96;
 
 // Builds the CV page: header + About visible on landing, Experience/Education
 // starting as floating nav pills (see cv-nav.js) that open inline when
@@ -180,17 +188,41 @@ export function createCvPage() {
   let scrollContainer = null;
 
   // The docked header is position: fixed, so its bottom offset has to clear
-  // the contact badges (also fixed, bottom-right) by measuring their actual
-  // rendered top edge rather than assuming a fixed pixel height for them.
+  // both the contact badges (also fixed, bottom-right) and — above those —
+  // a reserved slot for the docked nav-pill layer, by measuring the badges'
+  // actual rendered top edge rather than assuming a fixed pixel height for
+  // any of it.
   function updateDockPosition() {
     const badges = document.getElementById("contact-badges");
     if (!badges) return;
     const rect = badges.getBoundingClientRect();
-    header.style.setProperty("--cv-header-dock-bottom", `${window.innerHeight - rect.top + DOCK_GAP}px`);
+    const bottom = window.innerHeight - rect.top + DOCK_GAP + NAV_LAYER_DOCKED_HEIGHT + NAV_LAYER_GAP;
+    header.style.setProperty("--cv-header-dock-bottom", `${bottom}px`);
+    updateNavLayerPosition();
+  }
+
+  // The nav-pill layer is fixed positioned (see cv.css) so it never pushes
+  // main-column content down. Undocked, it sits beside the header at the
+  // top of the page; once the header docks into the bottom-right corner on
+  // scroll, it moves to sit in the slot updateDockPosition() reserved for
+  // it just below the docked header, above the contact badges.
+  function updateNavLayerPosition() {
+    const headerRect = header.getBoundingClientRect();
+    const width = Math.min(NAV_LAYER_WIDTH, window.innerWidth * 0.8);
+    navLayer.style.right = "20px";
+    navLayer.style.width = `${width}px`;
+    if (header.classList.contains("cv-header--docked")) {
+      navLayer.style.top = `${headerRect.bottom + NAV_LAYER_GAP}px`;
+      navLayer.style.height = `${NAV_LAYER_DOCKED_HEIGHT}px`;
+    } else {
+      navLayer.style.top = `${headerRect.top}px`;
+      navLayer.style.height = `${headerRect.height}px`;
+    }
   }
 
   function handleScroll() {
     header.classList.toggle("cv-header--docked", scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD);
+    updateNavLayerPosition();
   }
 
   // The page starts `hidden`; the router (main.js) flips that attribute
@@ -203,6 +235,7 @@ export function createCvPage() {
       cvBackground.detach();
       scrollContainer?.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", updateDockPosition);
+      header.removeEventListener("transitionend", updateNavLayerPosition);
       header.classList.remove("cv-header--docked");
       scrollContainer = null;
     } else {
@@ -210,10 +243,15 @@ export function createCvPage() {
       cvBackground.attach();
       render();
       scrollContainer = document.getElementById("destination-view");
-      updateDockPosition();
       handleScroll();
+      updateDockPosition();
       scrollContainer.addEventListener("scroll", handleScroll);
       window.addEventListener("resize", updateDockPosition);
+      // Docking/undocking animates the header's position over 0.2s (see
+      // cv.css); the nav layer's own position depends on the header's
+      // rect, so it needs one more measurement once that settles rather
+      // than only the (mid-transition) one taken when the scroll fires.
+      header.addEventListener("transitionend", updateNavLayerPosition);
     }
   });
   visibilityObserver.observe(page, { attributes: true, attributeFilter: ["hidden"] });
