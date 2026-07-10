@@ -20,10 +20,6 @@ const DOCK_GAP = 16;
 // to (the header, undocked or docked).
 const NAV_LAYER_GAP = 16;
 const NAV_LAYER_WIDTH = 300;
-// Fixed height reserved for the nav-pill layer once the header is docked,
-// so it has a defined slot between the docked header and the contact
-// badges below it — see updateDockPosition()/updateNavLayerPosition().
-const NAV_LAYER_DOCKED_HEIGHT = 96;
 
 // Builds the CV page: header + About visible on landing, Experience/Education
 // starting as floating nav pills (see cv-nav.js) that open inline when
@@ -113,6 +109,10 @@ export function createCvPage() {
     const closed = SECTION_ORDER.filter((id) => !state.open.has(id));
     if (cvNav.layer) {
       cvNav.setItems(closed.map((id) => ({ id, label: SECTION_LABELS[id] })));
+      // The pill count (hence the nav layer's height) just changed, and the
+      // docked header's own position reserves room for exactly that height
+      // — see updateDockPosition().
+      updateDockPosition();
     }
 
     skillsBody.innerHTML = SKILLS[state.mode.skills];
@@ -187,37 +187,34 @@ export function createCvPage() {
   // dock/undock listener has to live there.
   let scrollContainer = null;
 
-  // The docked header is position: fixed, so its bottom offset has to clear
-  // both the contact badges (also fixed, bottom-right) and — above those —
-  // a reserved slot for the docked nav-pill layer, by measuring the badges'
-  // actual rendered top edge rather than assuming a fixed pixel height for
-  // any of it.
-  function updateDockPosition() {
-    const badges = document.getElementById("contact-badges");
-    if (!badges) return;
-    const rect = badges.getBoundingClientRect();
-    const bottom = window.innerHeight - rect.top + DOCK_GAP + NAV_LAYER_DOCKED_HEIGHT + NAV_LAYER_GAP;
-    header.style.setProperty("--cv-header-dock-bottom", `${bottom}px`);
-    updateNavLayerPosition();
-  }
-
-  // The nav-pill layer is fixed positioned (see cv.css) so it never pushes
-  // main-column content down. Undocked, it sits beside the header at the
-  // top of the page; once the header docks into the bottom-right corner on
-  // scroll, it moves to sit in the slot updateDockPosition() reserved for
-  // it just below the docked header, above the contact badges.
+  // The nav-pill layer is fixed positioned (see cv.css) and its height is
+  // just whatever its (static, non-animated) pill stack naturally needs.
+  // Undocked, it sits beside the header at the top of the page; once the
+  // header docks into the bottom-right corner on scroll, it moves to sit
+  // just below the docked header, above the contact badges.
   function updateNavLayerPosition() {
-    const headerRect = header.getBoundingClientRect();
     const width = Math.min(NAV_LAYER_WIDTH, window.innerWidth * 0.8);
     navLayer.style.right = "20px";
     navLayer.style.width = `${width}px`;
-    if (header.classList.contains("cv-header--docked")) {
-      navLayer.style.top = `${headerRect.bottom + NAV_LAYER_GAP}px`;
-      navLayer.style.height = `${NAV_LAYER_DOCKED_HEIGHT}px`;
-    } else {
-      navLayer.style.top = `${headerRect.top}px`;
-      navLayer.style.height = `${headerRect.height}px`;
-    }
+    const headerRect = header.getBoundingClientRect();
+    navLayer.style.top = header.classList.contains("cv-header--docked")
+      ? `${headerRect.bottom + NAV_LAYER_GAP}px`
+      : `${headerRect.top}px`;
+  }
+
+  // The docked header is position: fixed, so its bottom offset has to clear
+  // both the contact badges (also fixed, bottom-right) and — above those —
+  // the nav-pill layer's own (content-driven, so re-measured live rather
+  // than assumed) height.
+  function updateDockPosition() {
+    const badges = document.getElementById("contact-badges");
+    if (!badges) return;
+    updateNavLayerPosition(); // width + a provisional top, so the pill stack is laid out for measuring
+    const navHeight = navLayer.offsetHeight;
+    const rect = badges.getBoundingClientRect();
+    const bottom = window.innerHeight - rect.top + DOCK_GAP + navHeight + NAV_LAYER_GAP;
+    header.style.setProperty("--cv-header-dock-bottom", `${bottom}px`);
+    updateNavLayerPosition(); // now settle its top against the header's real (post-dock-offset) rect
   }
 
   function handleScroll() {
