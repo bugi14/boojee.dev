@@ -1,8 +1,9 @@
 #cv-page {
+  position: relative;
   width: 100%;
-  max-width: 760px;
+  max-width: 1200px;
   margin: 0 auto;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   line-height: 1.6;
 }
 #cv-page[hidden] {
@@ -16,11 +17,14 @@
   color: var(--color-cv-link-hover);
   text-decoration: underline;
 }
+
 .cv-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 24px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 .cv-photo {
   width: 96px;
@@ -33,9 +37,9 @@
 .cv-header h1 {
   position: static;
   pointer-events: auto;
-  font-family: inherit;
+  font-family: "Lunatic Superstar", sans-serif;
   font-weight: 300;
-  font-size: 2.25rem;
+  font-size: 4.25rem;
   letter-spacing: 0.02em;
   margin: 0 0 4px;
   color: var(--color-cv-h3);
@@ -46,30 +50,48 @@
   transform: none;
 }
 .cv-title {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   color: var(--color-cv-title);
   font-weight: 300;
   letter-spacing: 0.02em;
 }
-.cv-contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
+.cv-pdf-link {
+  display: inline-block;
   font-size: 0.9rem;
-  color: var(--color-cv-contact);
 }
 @media (max-width: 480px) {
   .cv-header {
     flex-wrap: wrap;
   }
+  .cv-header h1 {
+    font-size: 2.75rem;
+  }
 }
 
-/* Floating pill layer for collapsed sections (Skills/Experience/Education,
-   and About once it's been collapsed). Fixed band height so drifting pills
+.cv-body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.cv-sidebar {
+  position: sticky;
+  top: 24px;
+}
+.cv-main {
+  /* Narrower than the available column on wide screens, without shrinking
+     below a usable minimum on small ones. */
+  width: min(100%, clamp(420px, 60vw, 820px));
+}
+
+/* Floating pill layer for collapsed sections (Experience/Education, and
+   About once it's been collapsed). Fixed band height so drifting pills
    never overlap the open section content below. */
 .cv-nav-layer {
   position: relative;
-  height: clamp(120px, 22vh, 200px);
+  height: clamp(140px, 24vh, 220px);
   margin-bottom: 8px;
 }
 .cv-nav-particle {
@@ -77,23 +99,30 @@
   left: 0;
   top: 0;
   background: none;
-  border: 1px solid var(--color-cv-border);
-  border-radius: 999px;
+  border: none;
   margin: 0;
-  padding: 8px 18px;
+  padding: 4px 8px;
   font: inherit;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  font-family: "Lunatic Superstar", sans-serif;
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: 0.03em;
   color: var(--color-cv-section);
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, text-shadow 0.2s ease;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
   will-change: transform;
 }
 .cv-nav-particle:hover,
 .cv-nav-particle:focus-visible {
   color: var(--color-cv-link-hover);
-  border-color: var(--color-cv-link-hover);
-  text-shadow: 0 0 12px rgba(var(--color-nav-glow-rgb), 0.6);
+  text-shadow:
+    0 0 12px rgba(var(--color-nav-glow-rgb), 0.9),
+    0 0 24px rgba(var(--color-nav-glow-rgb), 0.5);
+}
+@media (max-width: 700px) {
+  .cv-nav-particle {
+    font-size: 2rem;
+  }
 }
 
 .cv-content {
@@ -104,31 +133,39 @@
 .cv-section-head {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   border-bottom: 1px solid var(--color-cv-border);
   padding-bottom: 6px;
   margin-bottom: 16px;
 }
 .cv-section-head h2 {
-  font-weight: 400;
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: "Lunatic Superstar", sans-serif;
+  font-weight: 300;
+  font-size: 3rem;
+  letter-spacing: 0.03em;
   color: var(--color-cv-section);
   margin: 0;
+}
+.cv-section--open .cv-section-head h2 {
   cursor: pointer;
 }
-.cv-section-head h2:hover,
-.cv-section-head h2:focus-visible {
+.cv-section--open .cv-section-head h2:hover,
+.cv-section--open .cv-section-head h2:focus-visible {
   color: var(--color-cv-link-hover);
+}
+@media (max-width: 700px) {
+  .cv-section-head h2 {
+    font-size: 2rem;
+  }
 }
 .cv-toggle-mode {
   background: none;
   border: none;
   padding: 0;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: var(--color-cv-link);
   cursor: pointer;
   white-space: nowrap;
@@ -181,7 +218,7 @@
 }
 .cv-skills dt {
   font-weight: 500;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   letter-spacing: 0.03em;
   color: var(--color-cv-skills-dt);
   margin: 0 0 3px;
@@ -189,7 +226,7 @@
 .cv-skills dd {
   margin: 0;
   color: var(--color-cv-skills-dd);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 
 .cv-entry {
@@ -216,12 +253,12 @@
 .cv-entry-head h3 {
   margin: 0;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--color-cv-h3);
 }
 .cv-entry-sub {
   margin: 2px 0 8px;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--color-cv-sub);
 }
 .cv-entry-thesis {
@@ -230,13 +267,26 @@
 }
 .cv-dates {
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--color-cv-sub);
   white-space: nowrap;
 }
 .cv-tech {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--color-cv-sub) !important;
   list-style: none;
   margin-left: -1.1em;
+}
+
+@media (max-width: 700px) {
+  .cv-body {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .cv-sidebar {
+    position: static;
+  }
+  .cv-main {
+    width: 100%;
+  }
 }
