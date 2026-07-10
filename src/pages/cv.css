@@ -348,6 +348,27 @@
   color: var(--color-cv-link-hover);
 }
 
+/* Exits a trigger-driven focus view (see renderFocusView() in cv.js) back
+   to About — the only way out, since focus cards aren't individually
+   collapsible the way normal open sections are. */
+.cv-back {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 16px;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-cv-link);
+  cursor: pointer;
+}
+.cv-back:hover,
+.cv-back:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-decoration: underline;
+}
+
 .cv-skills {
   display: flex;
   flex-direction: column;
@@ -384,10 +405,6 @@
 }
 .cv-entry:last-child {
   margin-bottom: 0;
-}
-.cv-entry--highlight {
-  background-color: rgba(var(--color-nav-glow-rgb), 0.12);
-  box-shadow: 0 0 0 1px rgba(var(--color-nav-glow-rgb), 0.4);
 }
 .cv-entry-head {
   display: flex;

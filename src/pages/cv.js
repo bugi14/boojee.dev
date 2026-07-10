@@ -78,19 +78,14 @@ export function createCvPage() {
 
   // Which sections are currently expanded inline (vs. floating pills), which
   // variant (short/detailed) each section is showing (including the pinned
-  // Skills column), and which trigger (if any) is currently driving a
-  // highlight.
+  // Skills column), and — when a trigger phrase in About has been clicked —
+  // the list of focus targets currently replacing the normal section view
+  // (see TRIGGERS in cv-data.js and renderFocusView() below).
   const state = {
     open: new Set(["about"]),
     mode: { about: "short", skills: "short", experience: "short", education: "short" },
-    highlight: null, // { sections: string[], flag: string }
+    focus: null, // Trigger.targets, or null
   };
-
-  function entryHighlighted(sectionId, entry) {
-    if (!state.highlight) return false;
-    if (!state.highlight.sections.includes(sectionId)) return false;
-    return entry.python && state.highlight.flag === "python";
-  }
 
   function renderSectionBody(id) {
     const mode = state.mode[id];
@@ -98,10 +93,9 @@ export function createCvPage() {
 
     const data = id === "experience" ? EXPERIENCE : EDUCATION;
     return data.entries
-      .map((entry) => {
-        const highlighted = entryHighlighted(id, entry);
-        return `
-          <article class="cv-entry${highlighted ? " cv-entry--highlight" : ""}">
+      .map(
+        (entry) => `
+          <article class="cv-entry">
             <div class="cv-entry-head">
               <h3>${entry.title}</h3>
               <span class="cv-dates">${entry.dates}</span>
@@ -109,9 +103,54 @@ export function createCvPage() {
             ${entry.sub ? `<p class="cv-entry-sub">${entry.sub}</p>` : ""}
             ${entry[mode]}
           </article>
+        `,
+      )
+      .join("");
+  }
+
+  function findEntry(target) {
+    const data = target.section === "experience" ? EXPERIENCE : EDUCATION;
+    return data.entries.find((entry) => entry.id === target.entryId);
+  }
+
+  function renderFocusTargetBody(entry, target) {
+    if (!target.blocks) return entry[target.mode || "short"];
+    const blocksHtml = target.blocks.map((key) => entry.blocks[key]).join("");
+    return target.wrap === false ? blocksHtml : `<ul>${blocksHtml}</ul>`;
+  }
+
+  // A trigger click replaces the normal section view with one independent
+  // card per target — e.g. "research papers" surfaces the two relevant
+  // Freelance bullets *and* both Education entries as three separate cards,
+  // rather than opening the full Experience/Education sections. The single
+  // way out is the Back button, which returns to About.
+  function renderFocusView(targets) {
+    const cards = targets
+      .map((target) => {
+        const entry = findEntry(target);
+        if (!entry) return "";
+        return `
+          <section class="cv-section cv-section--focus">
+            <div class="cv-section-head">
+              <h2>${SECTION_LABELS[target.section]}</h2>
+            </div>
+            <article class="cv-entry">
+              <div class="cv-entry-head">
+                <h3>${entry.title}</h3>
+                <span class="cv-dates">${entry.dates}</span>
+              </div>
+              ${entry.sub ? `<p class="cv-entry-sub">${entry.sub}</p>` : ""}
+              ${renderFocusTargetBody(entry, target)}
+            </article>
+          </section>
         `;
       })
       .join("");
+
+    return `
+      <button type="button" class="cv-back" data-action="back-to-about">← Back to About</button>
+      ${cards}
+    `;
   }
 
   function render() {
@@ -126,6 +165,11 @@ export function createCvPage() {
 
     skillsBody.innerHTML = SKILLS[state.mode.skills];
     skillsToggle.textContent = state.mode.skills === "short" ? "More" : "Less";
+
+    if (state.focus) {
+      content.innerHTML = renderFocusView(state.focus);
+      return;
+    }
 
     content.innerHTML = SECTION_ORDER.filter((id) => state.open.has(id))
       .map((id) => {
@@ -146,9 +190,9 @@ export function createCvPage() {
       .join("");
   }
 
-  function openOnly(ids, highlight) {
+  function openOnly(ids) {
     state.open = new Set(ids);
-    state.highlight = highlight || null;
+    state.focus = null;
     render();
   }
 
@@ -157,10 +201,15 @@ export function createCvPage() {
   }
 
   function handleClick(e) {
+    const backEl = e.target.closest('[data-action="back-to-about"]');
+    if (backEl) {
+      openOnly(["about"]);
+      return;
+    }
+
     const collapseEl = e.target.closest('[data-action="collapse"]');
     if (collapseEl) {
       state.open.delete(collapseEl.dataset.section);
-      state.highlight = null;
       if (state.open.size === 0) state.open.add("about");
       render();
       return;
@@ -177,7 +226,10 @@ export function createCvPage() {
     const triggerEl = e.target.closest(".cv-trigger");
     if (triggerEl) {
       const trigger = TRIGGERS[triggerEl.dataset.trigger];
-      if (trigger) openOnly(trigger.sections, { sections: trigger.sections, flag: trigger.highlight });
+      if (trigger) {
+        state.focus = trigger.targets;
+        render();
+      }
     }
   }
 
