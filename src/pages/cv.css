@@ -37,10 +37,13 @@
 
 .cv-header {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
   margin-bottom: 24px;
+  box-sizing: border-box;
+  transition: opacity 0.2s ease;
 }
 .cv-photo {
   width: 96px;
@@ -49,6 +52,7 @@
   object-fit: cover;
   flex-shrink: 0;
   border: 1px solid var(--color-cv-photo);
+  transition: width 0.2s ease, height 0.2s ease;
 }
 .cv-header h1 {
   position: static;
@@ -64,16 +68,100 @@
      that the global h1 rule applies from home.css. */
   animation: none;
   transform: none;
+  transition: font-size 0.2s ease;
 }
 .cv-title {
   margin: 0 0 8px;
   color: var(--color-cv-title);
   font-weight: 300;
   letter-spacing: 0.02em;
+  transition: font-size 0.2s ease;
+}
+.cv-title-part {
+  display: inline;
 }
 .cv-pdf-link {
   display: inline-block;
   font-size: 0.9rem;
+  transition: font-size 0.2s ease;
+}
+
+/* Docked state: once the user has scrolled the CV past DOCK_SCROLL_THRESHOLD
+   (cv.js), the header leaves the top of the page entirely and re-appears as
+   a compact card fixed to the bottom-right corner, right above the contact
+   badges (--cv-header-dock-bottom is measured off their live position — see
+   updateDockPosition() in cv.js). */
+.cv-header--docked {
+  position: fixed;
+  right: 20px;
+  bottom: var(--cv-header-dock-bottom, 300px);
+  z-index: 21;
+  flex-direction: column;
+  align-items: flex-end;
+  width: auto;
+  max-width: 220px;
+  gap: 8px;
+  margin-bottom: 0;
+  padding: 14px 18px;
+}
+.cv-header--docked .cv-photo {
+  width: 56px;
+  height: 56px;
+}
+.cv-header--docked .cv-header-text {
+  text-align: right;
+}
+.cv-header--docked h1 {
+  font-size: 1.4rem;
+  text-align: right;
+}
+.cv-header--docked .cv-title {
+  font-size: 0.8rem;
+}
+.cv-header--docked .cv-title-part {
+  display: block;
+}
+.cv-header--docked .cv-title-sep {
+  display: none;
+}
+.cv-header--docked .cv-pdf-link {
+  font-size: 0.75rem;
+}
+@media (max-width: 700px) {
+  /* Not enough room in a narrow viewport for a floating corner card without
+     it colliding with the contact badges — keep the header in normal flow
+     regardless of scroll position below this width. */
+  .cv-header--docked {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    max-width: none;
+    padding: 22px 26px;
+  }
+  .cv-header--docked .cv-photo {
+    width: 96px;
+    height: 96px;
+  }
+  .cv-header--docked .cv-header-text {
+    text-align: left;
+  }
+  .cv-header--docked h1 {
+    font-size: 2rem;
+    text-align: left;
+  }
+  .cv-header--docked .cv-title {
+    font-size: 1rem;
+  }
+  .cv-header--docked .cv-title-part {
+    display: inline;
+  }
+  .cv-header--docked .cv-title-sep {
+    display: inline;
+  }
+  .cv-header--docked .cv-pdf-link {
+    font-size: 0.9rem;
+  }
 }
 
 .cv-body {

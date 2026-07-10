@@ -9,6 +9,13 @@ import { SUBTITLE, ABOUT, SKILLS, EXPERIENCE, EDUCATION, TRIGGERS } from "./cv-d
 const SECTION_ORDER = ["about", "experience", "education"];
 const SECTION_LABELS = { about: "About", experience: "Experience", education: "Education" };
 const CV_PDF_URL = "/assets/documents/darren-buttigieg-cv.pdf";
+// Once the user scrolls the CV past this point, the header docks into the
+// bottom-right corner (see DOCK_GAP below) instead of sitting full-width
+// at the top.
+const DOCK_SCROLL_THRESHOLD = 24;
+// Vertical clearance kept between the docked header and the contact badges
+// (#contact-badges, fixed bottom-right — see badges.css) it sits above.
+const DOCK_GAP = 16;
 
 // Builds the CV page: header + About visible on landing, Experience/Education
 // starting as floating nav pills (see cv-nav.js) that open inline when
@@ -21,16 +28,18 @@ export function createCvPage() {
   page.id = "cv-page";
   page.hidden = true;
   page.innerHTML = `
+    <header class="cv-header">
+      <img class="cv-photo" src="/assets/images/darren.jpg" alt="Darren Buttigieg" width="96" height="96" />
+      <div class="cv-header-text">
+        <h1>Darren Buttigieg</h1>
+        <p class="cv-title">${SUBTITLE.split(" | ")
+          .map((part) => `<span class="cv-title-part">${part}</span>`)
+          .join('<span class="cv-title-sep"> | </span>')}</p>
+        <a class="cv-pdf-link" href="${CV_PDF_URL}" target="_blank" rel="noreferrer">View printable version</a>
+      </div>
+    </header>
     <div class="cv-body">
       <aside class="cv-sidebar">
-        <header class="cv-header">
-          <img class="cv-photo" src="/assets/images/darren.jpg" alt="Darren Buttigieg" width="96" height="96" />
-          <div>
-            <h1>Darren Buttigieg</h1>
-            <p class="cv-title">${SUBTITLE}</p>
-            <a class="cv-pdf-link" href="${CV_PDF_URL}" target="_blank" rel="noreferrer">View printable version</a>
-          </div>
-        </header>
         <section class="cv-section cv-section--pinned" data-section="skills">
           <div class="cv-section-head">
             <h2>Skills</h2>
@@ -48,6 +57,7 @@ export function createCvPage() {
     </div>
   `;
 
+  const header = page.querySelector(".cv-header");
   const navLayer = page.querySelector(".cv-nav-layer");
   const content = page.querySelector(".cv-content");
   const skillsBody = page.querySelector('[data-section="skills"] .cv-section-body');
@@ -164,6 +174,25 @@ export function createCvPage() {
     }
   });
 
+  // #destination-view (not window) is what actually scrolls — it's a
+  // fixed, inset:0, overflow-y:auto wrapper (see destination.css) — so the
+  // dock/undock listener has to live there.
+  let scrollContainer = null;
+
+  // The docked header is position: fixed, so its bottom offset has to clear
+  // the contact badges (also fixed, bottom-right) by measuring their actual
+  // rendered top edge rather than assuming a fixed pixel height for them.
+  function updateDockPosition() {
+    const badges = document.getElementById("contact-badges");
+    if (!badges) return;
+    const rect = badges.getBoundingClientRect();
+    header.style.setProperty("--cv-header-dock-bottom", `${window.innerHeight - rect.top + DOCK_GAP}px`);
+  }
+
+  function handleScroll() {
+    header.classList.toggle("cv-header--docked", scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD);
+  }
+
   // The page starts `hidden`; the router (main.js) flips that attribute
   // without any other lifecycle hook, so this observer is what starts/stops
   // the floating-pill animation loop and the particle background as the CV
@@ -172,10 +201,19 @@ export function createCvPage() {
     if (page.hidden) {
       cvNav.detach();
       cvBackground.detach();
+      scrollContainer?.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", updateDockPosition);
+      header.classList.remove("cv-header--docked");
+      scrollContainer = null;
     } else {
       cvNav.attach(navLayer, handleNavSelect);
       cvBackground.attach();
       render();
+      scrollContainer = document.getElementById("destination-view");
+      updateDockPosition();
+      handleScroll();
+      scrollContainer.addEventListener("scroll", handleScroll);
+      window.addEventListener("resize", updateDockPosition);
     }
   });
   visibilityObserver.observe(page, { attributes: true, attributeFilter: ["hidden"] });
