@@ -49,10 +49,14 @@
    .cv-header--docked) — its height is set by cv.js right as the header
    docks, matching what the header itself measured just before leaving
    flow, so the page's scrollable height doesn't suddenly shrink out from
-   under the user's current scroll position. */
+   under the user's current scroll position. Deliberately NOT transitioned:
+   the header's own position switch (static -> fixed) is a discrete
+   property change with no animation, so this has to snap in the same
+   frame — easing it in over time would leave a window where the header
+   has already left flow but the spacer hasn't caught up yet, shrinking
+   the page out from under the scroll position anyway. */
 .cv-header-spacer {
   height: 0;
-  transition: height 0.2s ease;
 }
 .cv-photo {
   width: 96px;

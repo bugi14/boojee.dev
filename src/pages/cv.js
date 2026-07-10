@@ -11,8 +11,14 @@ const SECTION_LABELS = { about: "About", experience: "Experience", education: "E
 const CV_PDF_URL = "/assets/documents/darren-buttigieg-cv.pdf";
 // Once the user scrolls the CV past this point, the header docks into the
 // bottom-right corner (see DOCK_GAP below) instead of sitting full-width
-// at the top.
+// at the top. Undocking uses a separate, lower threshold (hysteresis)
+// rather than the same value, so that if the dock/undock transition itself
+// causes a momentary few-pixel change in scrollTop, that change can't land
+// exactly back on the other side of a single shared threshold and flip
+// straight back — which otherwise reads as the header (and the page)
+// bouncing in place instead of settling.
 const DOCK_SCROLL_THRESHOLD = 24;
+const UNDOCK_SCROLL_THRESHOLD = 4;
 // Vertical clearance kept between the docked header and the contact badges
 // (#contact-badges, fixed bottom-right — see badges.css) it sits above.
 const DOCK_GAP = 16;
@@ -240,7 +246,10 @@ export function createCvPage() {
   }
 
   function handleScroll() {
-    const shouldDock = scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD;
+    const currentlyDocked = header.classList.contains("cv-header--docked");
+    const shouldDock = currentlyDocked
+      ? scrollContainer.scrollTop > UNDOCK_SCROLL_THRESHOLD
+      : scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD;
 
     // Capture the header's natural height (incl. margin) right before it
     // potentially goes fixed. Without a spacer reserving this same amount
@@ -248,10 +257,10 @@ export function createCvPage() {
     // shrinking scrollHeight out from under the user's current scrollTop,
     // which the browser then clamps down to fit. That clamp fires another
     // scroll event with a now-smaller scrollTop, which undocks the header
-    // again (since it's back under DOCK_SCROLL_THRESHOLD), restoring the
-    // height and letting the user scroll back down into the same wall —
-    // i.e. exactly the "can't scroll past this point" bug this avoids.
-    if (!header.classList.contains("cv-header--docked")) {
+    // again, restoring the height and letting the user scroll back down
+    // into the same wall — i.e. exactly the "can't scroll past this point"
+    // bug this (and the hysteresis above) avoids.
+    if (!currentlyDocked) {
       const style = getComputedStyle(header);
       undockedHeaderHeight = header.offsetHeight + (parseFloat(style.marginBottom) || 0);
     }
