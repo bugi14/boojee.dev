@@ -45,6 +45,7 @@
   --color-cv-link:       #D6549C;
   --color-cv-link-hover: #F7E9C6;
   --color-cv-photo:      rgba(108, 74, 182, 0.35);
+  --color-cv-panel-bg-rgb: 23, 15, 38;
   /* theme toggle */
   --toggle-track-bg:     rgba(255, 255, 255, 0.1);
   --toggle-track-border: rgba(255, 255, 255, 0.15);
@@ -90,6 +91,7 @@
   --color-cv-link:       #5BA8C4;
   --color-cv-link-hover: #1C2541;
   --color-cv-photo:      rgba(168, 216, 234, 0.5);
+  --color-cv-panel-bg-rgb: 250, 247, 242;
   /* theme toggle */
   --toggle-track-bg:     rgba(0, 0, 0, 0.08);
   --toggle-track-border: rgba(0, 0, 0, 0.13);

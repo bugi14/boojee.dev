@@ -23,7 +23,15 @@ export const cvBackground = {
         preset: "links",
         fullScreen: { enable: true, zIndex: 0 },
         background: { color: "transparent" },
-        interactivity: { detectsOn: "window" },
+        interactivity: {
+          detectsOn: "window",
+          events: {
+            onHover: { enable: true, mode: "grab" },
+          },
+          modes: {
+            grab: { distance: 220, links: { opacity: 0.7 } },
+          },
+        },
         particles: {
           color: { value: color },
           links: { color },

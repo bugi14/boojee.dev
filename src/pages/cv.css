@@ -18,12 +18,28 @@
   text-decoration: underline;
 }
 
-.cv-header {
+/* Shared "panel" treatment for the header and every section: a semi-opaque,
+   faintly textured fill (so the interactive particle background stays
+   visible but doesn't compete with the text) inside a fully opaque, organic
+   (non-rectangular) border. */
+.cv-header,
+.cv-section {
   position: relative;
   z-index: 1;
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 6px);
+  background-color: rgba(var(--color-cv-panel-bg-rgb), 0.86);
+  border: 2px solid var(--color-cv-section);
+  border-radius: 38px 22px 34px 26px / 24px 34px 22px 36px;
+  padding: 22px 26px;
+}
+
+.cv-header {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   margin-bottom: 24px;
 }
 .cv-photo {
@@ -39,7 +55,7 @@
   pointer-events: auto;
   font-family: "Lunatic Superstar", sans-serif;
   font-weight: 300;
-  font-size: 4.25rem;
+  font-size: 2.5rem;
   letter-spacing: 0.02em;
   margin: 0 0 4px;
   color: var(--color-cv-h3);
@@ -59,14 +75,6 @@
   display: inline-block;
   font-size: 0.9rem;
 }
-@media (max-width: 480px) {
-  .cv-header {
-    flex-wrap: wrap;
-  }
-  .cv-header h1 {
-    font-size: 2.75rem;
-  }
-}
 
 .cv-body {
   position: relative;
@@ -79,6 +87,8 @@
 .cv-sidebar {
   position: sticky;
   top: 24px;
+  display: flex;
+  flex-direction: column;
 }
 .cv-main {
   /* Narrower than the available column on wide screens, without shrinking
@@ -104,7 +114,7 @@
   padding: 4px 8px;
   font: inherit;
   font-family: "Lunatic Superstar", sans-serif;
-  font-size: 3rem;
+  font-size: 2.25rem;
   font-weight: 300;
   letter-spacing: 0.03em;
   color: var(--color-cv-section);
@@ -121,7 +131,7 @@
 }
 @media (max-width: 700px) {
   .cv-nav-particle {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 }
 
@@ -143,7 +153,7 @@
 .cv-section-head h2 {
   font-family: "Lunatic Superstar", sans-serif;
   font-weight: 300;
-  font-size: 3rem;
+  font-size: 2.25rem;
   letter-spacing: 0.03em;
   color: var(--color-cv-section);
   margin: 0;
@@ -157,7 +167,7 @@
 }
 @media (max-width: 700px) {
   .cv-section-head h2 {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 }
 .cv-toggle-mode {
@@ -228,6 +238,14 @@
   color: var(--color-cv-skills-dd);
   font-size: 0.92rem;
 }
+.cv-skills-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cv-skills-list li {
+  margin-bottom: 2px;
+}
 
 .cv-entry {
   margin-bottom: 20px;
@@ -279,6 +297,9 @@
 }
 
 @media (max-width: 700px) {
+  .cv-header h1 {
+    font-size: 2rem;
+  }
   .cv-body {
     grid-template-columns: 1fr;
     gap: 32px;

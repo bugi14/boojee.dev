@@ -14,28 +14,28 @@ const CV_PDF_URL = "/assets/documents/darren-buttigieg-cv.pdf";
 // starting as floating nav pills (see cv-nav.js) that open inline when
 // clicked, and Skills pinned as a permanent left-hand column. Content lives
 // in cv-data.js as short (CV) / detailed (LinkedIn) variants per section,
-// toggled by a "Read more/less" button. A "links" tsParticles background
+// toggled by a "More/Less" button. A "links" tsParticles background
 // (cv-background.js) runs behind everything while the page is visible.
 export function createCvPage() {
   const page = document.createElement("div");
   page.id = "cv-page";
   page.hidden = true;
   page.innerHTML = `
-    <header class="cv-header">
-      <img class="cv-photo" src="/assets/images/darren.jpg" alt="Darren Buttigieg" width="96" height="96" />
-      <div>
-        <h1>Darren Buttigieg</h1>
-        <p class="cv-title">${SUBTITLE}</p>
-        <a class="cv-pdf-link" href="${CV_PDF_URL}" target="_blank" rel="noreferrer">View printable version</a>
-      </div>
-    </header>
     <div class="cv-body">
       <aside class="cv-sidebar">
+        <header class="cv-header">
+          <img class="cv-photo" src="/assets/images/darren.jpg" alt="Darren Buttigieg" width="96" height="96" />
+          <div>
+            <h1>Darren Buttigieg</h1>
+            <p class="cv-title">${SUBTITLE}</p>
+            <a class="cv-pdf-link" href="${CV_PDF_URL}" target="_blank" rel="noreferrer">View printable version</a>
+          </div>
+        </header>
         <section class="cv-section cv-section--pinned" data-section="skills">
           <div class="cv-section-head">
             <h2>Skills</h2>
             <button type="button" class="cv-toggle-mode" data-action="toggle-mode" data-section="skills">
-              Read more
+              More
             </button>
           </div>
           <div class="cv-section-body"></div>
@@ -98,7 +98,7 @@ export function createCvPage() {
     }
 
     skillsBody.innerHTML = SKILLS[state.mode.skills];
-    skillsToggle.textContent = state.mode.skills === "short" ? "Read more" : "Read less";
+    skillsToggle.textContent = state.mode.skills === "short" ? "More" : "Less";
 
     content.innerHTML = SECTION_ORDER.filter((id) => state.open.has(id))
       .map((id) => {
@@ -109,7 +109,7 @@ export function createCvPage() {
               <h2 data-action="collapse" data-section="${id}" tabindex="0" role="button"
                   aria-label="Collapse ${SECTION_LABELS[id]}">${SECTION_LABELS[id]}</h2>
               <button type="button" class="cv-toggle-mode" data-action="toggle-mode" data-section="${id}">
-                ${mode === "short" ? "Read more" : "Read less"}
+                ${mode === "short" ? "More" : "Less"}
               </button>
             </div>
             <div class="cv-section-body">${renderSectionBody(id)}</div>

@@ -62,31 +62,38 @@ export const ABOUT = {
   `,
 };
 
+// Each category renders as a heading plus one skill per line (rather than a
+// comma-separated run-on), so [term, [skills...]] pairs are the natural shape.
+function renderSkillGroups(groups) {
+  return `
+    <dl class="cv-skills">
+      ${groups
+        .map(
+          ([term, skills]) => `
+            <dt>${term}</dt>
+            <dd><ul class="cv-skills-list">${skills.map((skill) => `<li>${skill}</li>`).join("")}</ul></dd>
+          `,
+        )
+        .join("")}
+    </dl>
+  `;
+}
+
+const LANGUAGES = ["Maltese (native)", "English (native)", "Spanish (very good)", "Italian (very good)", "French (basic)"];
+
 export const SKILLS = {
-  short: `
-    <dl class="cv-skills">
-      <dt>Core Skills</dt>
-      <dd>Python 3, Backend Systems / REST APIs, Data Engineering / ETL, Scientific Computing, Docker, GitHub</dd>
-      <dt>Languages</dt>
-      <dd>Maltese (native), English (native), Spanish (very good), Italian (very good), French (basic)</dd>
-    </dl>
-  `,
-  detailed: `
-    <dl class="cv-skills">
-      <dt>Top Skills</dt>
-      <dd>Python (Programming Language), Software Development, Data Engineering, Data Pipelines, Scientific Computing</dd>
-      <dt>Programming Languages</dt>
-      <dd>Python, JavaScript, C++, MATLAB, Fortran, Wolfram Mathematica</dd>
-      <dt>Backend &amp; Data</dt>
-      <dd>REST APIs, Flask, Asyncio, SQLAlchemy, ETL pipelines, data processing, NumPy, Pandas, typed Python</dd>
-      <dt>DevOps &amp; Infrastructure</dt>
-      <dd>Docker, Kubernetes, CI/CD (GitHub Actions), Linux, Redis, RabbitMQ, observability</dd>
-      <dt>Monitoring &amp; Quality</dt>
-      <dd>Grafana, Prometheus, Pytest, TDD, Ruff, Poetry, testing, refactoring</dd>
-      <dt>Languages</dt>
-      <dd>Maltese (native), English (native), Spanish (very good), Italian (very good), French (basic)</dd>
-    </dl>
-  `,
+  short: renderSkillGroups([
+    ["Core Skills", ["Python 3", "Backend Systems / REST APIs", "Data Engineering / ETL", "Scientific Computing", "Docker", "GitHub"]],
+    ["Languages", LANGUAGES],
+  ]),
+  detailed: renderSkillGroups([
+    ["Top Skills", ["Python (Programming Language)", "Software Development", "Data Engineering", "Data Pipelines", "Scientific Computing"]],
+    ["Programming Languages", ["Python", "JavaScript", "C++", "MATLAB", "Fortran", "Wolfram Mathematica"]],
+    ["Backend &amp; Data", ["REST APIs", "Flask", "Asyncio", "SQLAlchemy", "ETL pipelines", "data processing", "NumPy", "Pandas", "typed Python"]],
+    ["DevOps &amp; Infrastructure", ["Docker", "Kubernetes", "CI/CD (GitHub Actions)", "Linux", "Redis", "RabbitMQ", "observability"]],
+    ["Monitoring &amp; Quality", ["Grafana", "Prometheus", "Pytest", "TDD", "Ruff", "Poetry", "testing", "refactoring"]],
+    ["Languages", LANGUAGES],
+  ]),
 };
 
 export const EXPERIENCE = {
