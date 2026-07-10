@@ -45,6 +45,15 @@
   box-sizing: border-box;
   transition: opacity 0.2s ease;
 }
+/* Reserves the header's own flow space once it goes position: fixed (see
+   .cv-header--docked) — its height is set by cv.js right as the header
+   docks, matching what the header itself measured just before leaving
+   flow, so the page's scrollable height doesn't suddenly shrink out from
+   under the user's current scroll position. */
+.cv-header-spacer {
+  height: 0;
+  transition: height 0.2s ease;
+}
 .cv-photo {
   width: 96px;
   height: 96px;

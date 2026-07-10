@@ -42,6 +42,7 @@ export function createCvPage() {
         <a class="cv-pdf-link" href="${CV_PDF_URL}" target="_blank" rel="noreferrer">View printable version</a>
       </div>
     </header>
+    <div class="cv-header-spacer"></div>
     <div class="cv-body">
       <aside class="cv-sidebar">
         <section class="cv-section cv-section--pinned" data-section="skills">
@@ -62,6 +63,8 @@ export function createCvPage() {
   `;
 
   const header = page.querySelector(".cv-header");
+  const headerText = page.querySelector(".cv-header-text");
+  const headerSpacer = page.querySelector(".cv-header-spacer");
   const navLayer = page.querySelector(".cv-nav-layer");
   const content = page.querySelector(".cv-content");
   const skillsBody = page.querySelector('[data-section="skills"] .cv-section-body');
@@ -186,20 +189,39 @@ export function createCvPage() {
   // fixed, inset:0, overflow-y:auto wrapper (see destination.css) — so the
   // dock/undock listener has to live there.
   let scrollContainer = null;
+  // The header's own (undocked) rendered height, including its margin —
+  // kept in sync with reality by remeasureUndockedHeaderHeight() below —
+  // used to size .cv-header-spacer once the header goes position: fixed.
+  let undockedHeaderHeight = 0;
 
   // The nav-pill layer is fixed positioned (see cv.css) and its height is
   // just whatever its (static, non-animated) pill stack naturally needs.
-  // Undocked, it sits beside the header at the top of the page; once the
-  // header docks into the bottom-right corner on scroll, it moves to sit
-  // just below the docked header, above the contact badges.
+  // Undocked, it's nested inside the header's own border, in the empty
+  // space to the right of the name/subtitle text; once the header docks
+  // into the bottom-right corner on scroll, it moves to sit just below
+  // the docked header, above the contact badges.
   function updateNavLayerPosition() {
-    const width = Math.min(NAV_LAYER_WIDTH, window.innerWidth * 0.8);
-    navLayer.style.right = "20px";
-    navLayer.style.width = `${width}px`;
     const headerRect = header.getBoundingClientRect();
-    navLayer.style.top = header.classList.contains("cv-header--docked")
-      ? `${headerRect.bottom + NAV_LAYER_GAP}px`
-      : `${headerRect.top}px`;
+    const docked = header.classList.contains("cv-header--docked");
+
+    if (docked) {
+      navLayer.style.right = "20px";
+      navLayer.style.width = `${Math.min(NAV_LAYER_WIDTH, window.innerWidth * 0.8)}px`;
+      navLayer.style.top = `${headerRect.bottom + NAV_LAYER_GAP}px`;
+      return;
+    }
+
+    const headerStyle = getComputedStyle(header);
+    const textRect = headerText.getBoundingClientRect();
+    const paddingRight = parseFloat(headerStyle.paddingRight) || 0;
+    const paddingTop = parseFloat(headerStyle.paddingTop) || 0;
+    // Available width is whatever's left between the name/subtitle block
+    // and the header's own right padding — so the pills never overlap it
+    // and never spill past the header's own border.
+    const availableWidth = headerRect.right - paddingRight - textRect.right - NAV_LAYER_GAP;
+    navLayer.style.width = `${Math.max(Math.min(NAV_LAYER_WIDTH, availableWidth), 80)}px`;
+    navLayer.style.right = `${window.innerWidth - headerRect.right + paddingRight}px`;
+    navLayer.style.top = `${headerRect.top + paddingTop}px`;
   }
 
   // The docked header is position: fixed, so its bottom offset has to clear
@@ -218,7 +240,30 @@ export function createCvPage() {
   }
 
   function handleScroll() {
-    header.classList.toggle("cv-header--docked", scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD);
+    const shouldDock = scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD;
+
+    // Capture the header's natural height (incl. margin) right before it
+    // potentially goes fixed. Without a spacer reserving this same amount
+    // of flow space, docking removes it from the page immediately —
+    // shrinking scrollHeight out from under the user's current scrollTop,
+    // which the browser then clamps down to fit. That clamp fires another
+    // scroll event with a now-smaller scrollTop, which undocks the header
+    // again (since it's back under DOCK_SCROLL_THRESHOLD), restoring the
+    // height and letting the user scroll back down into the same wall —
+    // i.e. exactly the "can't scroll past this point" bug this avoids.
+    if (!header.classList.contains("cv-header--docked")) {
+      const style = getComputedStyle(header);
+      undockedHeaderHeight = header.offsetHeight + (parseFloat(style.marginBottom) || 0);
+    }
+
+    header.classList.toggle("cv-header--docked", shouldDock);
+    // Below the 700px breakpoint the docked-state CSS keeps the header in
+    // normal flow (position: static — see cv.css) instead of floating it,
+    // since there's no room for a corner card there; the spacer must stay
+    // collapsed in that case too, or it'd reserve space for a fixed header
+    // that was never actually removed from flow.
+    const isFixed = getComputedStyle(header).position === "fixed";
+    headerSpacer.style.height = isFixed ? `${undockedHeaderHeight}px` : "0px";
     updateNavLayerPosition();
   }
 
@@ -234,6 +279,7 @@ export function createCvPage() {
       window.removeEventListener("resize", updateDockPosition);
       header.removeEventListener("transitionend", updateNavLayerPosition);
       header.classList.remove("cv-header--docked");
+      headerSpacer.style.height = "0px";
       scrollContainer = null;
     } else {
       cvNav.attach(navLayer, handleNavSelect);
