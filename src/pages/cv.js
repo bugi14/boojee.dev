@@ -78,17 +78,76 @@ export function createCvPage() {
 
   // Which sections are currently expanded inline (vs. floating pills), which
   // variant (short/detailed) each section is showing (including the pinned
-  // Skills column), and — when a trigger phrase in About has been clicked —
-  // which entries/blocks are currently highlighted (see TRIGGERS in
-  // cv-data.js and applyHighlights() below).
+  // Skills column), which entries/blocks are currently highlighted (see
+  // TRIGGERS in cv-data.js and applyHighlights() below) when a trigger
+  // phrase in About has been clicked, and which highlighted entries the
+  // user has expanded past their default windowed view back to their full
+  // content (see renderWindow()/"Show all" below).
   const state = {
     open: new Set(["about"]),
     mode: { about: "short", skills: "short", experience: "short", education: "short" },
     highlight: null, // { entries: string[], blocks: { entryId: string[] } }
+    expandedEntries: new Set(),
   };
 
   function findEntry(entryId) {
     return EXPERIENCE.entries.find((entry) => entry.id === entryId) || EDUCATION.entries.find((entry) => entry.id === entryId);
+  }
+
+  function entrySection(entryId) {
+    return EXPERIENCE.entries.some((entry) => entry.id === entryId) ? "experience" : "education";
+  }
+
+  // A highlightBlocks entry is either a flat array of block keys (same
+  // wording/markers in both Read-more states) or `{ short, detailed }`
+  // when the two states need different keys — resolved against whichever
+  // state that entry's own section is actually showing.
+  function resolveBlockKeys(entryId, blocksSpec) {
+    if (Array.isArray(blocksSpec)) return blocksSpec;
+    return blocksSpec[state.mode[entrySection(entryId)]] || blocksSpec.short || [];
+  }
+
+  // Prunes an entry's rendered HTML down to just its highlighted block(s)
+  // plus one immediate sibling before/after (faded, as a "there's more
+  // here" cue) at every nesting level between the highlight and the
+  // content root — e.g. for a bullet inside a <ul> inside a <div> block
+  // among the entry's other top-level paragraphs/blocks, both the <ul>'s
+  // sibling bullets *and* the <div>'s sibling blocks get this treatment.
+  // Recurses only into the ancestor chain actually containing a highlight;
+  // unrelated subtrees are dropped outright rather than faded, since
+  // "Other Client Work" three sections away isn't really "surrounding"
+  // content the way the bullet right next to the highlight is.
+  function pruneToWindow(el) {
+    const children = [...el.children];
+    if (!children.length) return;
+    const relevant = children.map((child) => child.classList.contains("cv-block--highlight") || !!child.querySelector(".cv-block--highlight"));
+    if (!relevant.some(Boolean)) return;
+    const relevantIndexes = relevant.map((isRelevant, i) => (isRelevant ? i : -1)).filter((i) => i !== -1);
+    const minIndex = Math.min(...relevantIndexes);
+    const maxIndex = Math.max(...relevantIndexes);
+    children.forEach((child, i) => {
+      if (i >= minIndex && i <= maxIndex) {
+        if (!child.classList.contains("cv-block--highlight")) pruneToWindow(child);
+        return;
+      }
+      const distance = i < minIndex ? minIndex - i : i - maxIndex;
+      if (distance === 1) child.classList.add("cv-block--fade");
+      else child.remove();
+    });
+  }
+
+  // Renders `html` with only `blockKeys` (and their immediate context)
+  // kept — used for both the main content's default "windowed" view of a
+  // block-highlighted entry and the hover preview popup, so the two always
+  // agree on what "just the relevant part" means.
+  function renderWindow(html, blockKeys) {
+    const scratch = document.createElement("div");
+    scratch.innerHTML = html;
+    const targets = blockKeys.flatMap((key) => [...scratch.querySelectorAll(`[data-block="${key}"]`)]);
+    if (!targets.length) return html;
+    targets.forEach((el) => el.classList.add("cv-block--highlight"));
+    pruneToWindow(scratch);
+    return scratch.innerHTML;
   }
 
   function renderSectionBody(id) {
@@ -99,6 +158,15 @@ export function createCvPage() {
     return data.entries
       .map((entry) => {
         const highlighted = state.highlight?.entries.includes(entry.id);
+        const blocksSpec = state.highlight?.blocks?.[entry.id];
+        const blockKeys = blocksSpec ? resolveBlockKeys(entry.id, blocksSpec) : null;
+        const windowed = !!blockKeys?.length && !state.expandedEntries.has(entry.id);
+        const body = windowed ? renderWindow(entry[mode], blockKeys) : entry[mode];
+        const windowToggle = blockKeys?.length
+          ? `<button type="button" class="cv-window-toggle" data-action="toggle-window" data-entry-id="${entry.id}">
+              ${windowed ? "Show all" : "Show less"}
+            </button>`
+          : "";
         return `
           <article class="cv-entry${highlighted ? " cv-entry--highlight" : ""}" data-entry-id="${entry.id}">
             <div class="cv-entry-head">
@@ -106,32 +174,23 @@ export function createCvPage() {
               <span class="cv-dates">${entry.dates}</span>
             </div>
             ${entry.sub ? `<p class="cv-entry-sub">${entry.sub}</p>` : ""}
-            ${entry[mode]}
+            ${body}
+            ${windowToggle}
           </article>
         `;
       })
       .join("");
   }
 
-  // A highlightBlocks entry is either a flat array of block keys (same
-  // wording/markers in both Read-more states) or `{ short, detailed }`
-  // when the two states need different keys — resolved against whichever
-  // state that entry's own section is actually showing.
-  function resolveBlockKeys(entryId, blocksSpec) {
-    if (Array.isArray(blocksSpec)) return blocksSpec;
-    const section = EXPERIENCE.entries.some((entry) => entry.id === entryId) ? "experience" : "education";
-    return blocksSpec[state.mode[section]] || blocksSpec.short || [];
-  }
-
   // Whole-entry highlights are just a CSS class baked into renderSectionBody
-  // above; block-level highlights (a specific bullet/paragraph within an
-  // entry) can't be, since which HTML they live inside depends on render
-  // mode — so this walks the already-rendered DOM instead, looking for the
-  // `data-block` markers baked into cv-data.js.
+  // above; block-level highlights on an *expanded* (non-windowed) entry
+  // can't be — the windowed path already bakes the highlight class in via
+  // renderWindow() — so this walks the already-rendered DOM to find the
+  // `data-block` markers baked into cv-data.js's HTML for that case.
   function applyBlockHighlights() {
-    content.querySelectorAll(".cv-block--highlight").forEach((el) => el.classList.remove("cv-block--highlight"));
     if (!state.highlight?.blocks) return;
     for (const [entryId, blocksSpec] of Object.entries(state.highlight.blocks)) {
+      if (!state.expandedEntries.has(entryId)) continue; // already highlighted by renderWindow()
       const entryEl = content.querySelector(`[data-entry-id="${entryId}"]`);
       if (!entryEl) continue;
       for (const key of resolveBlockKeys(entryId, blocksSpec)) {
@@ -186,6 +245,7 @@ export function createCvPage() {
   function openOnly(ids) {
     state.open = new Set(ids);
     state.highlight = null;
+    state.expandedEntries.clear();
     render();
   }
 
@@ -204,6 +264,7 @@ export function createCvPage() {
     if (!trigger) return;
     state.open = new Set(trigger.sections);
     state.highlight = { entries: trigger.highlightEntries || [], blocks: trigger.highlightBlocks || {} };
+    state.expandedEntries.clear();
     render();
     hidePreview();
     const target = content.querySelector(".cv-block--highlight, .cv-entry--highlight");
@@ -221,6 +282,7 @@ export function createCvPage() {
     if (collapseEl) {
       state.open.delete(collapseEl.dataset.section);
       state.highlight = null;
+      state.expandedEntries.clear();
       if (state.open.size === 0) state.open.add("about");
       render();
       return;
@@ -230,6 +292,15 @@ export function createCvPage() {
     if (toggleEl) {
       const id = toggleEl.dataset.section;
       state.mode[id] = state.mode[id] === "short" ? "detailed" : "short";
+      render();
+      return;
+    }
+
+    const windowToggleEl = e.target.closest('[data-action="toggle-window"]');
+    if (windowToggleEl) {
+      const id = windowToggleEl.dataset.entryId;
+      if (state.expandedEntries.has(id)) state.expandedEntries.delete(id);
+      else state.expandedEntries.add(id);
       render();
       return;
     }
@@ -252,49 +323,37 @@ export function createCvPage() {
 
   // ── Hover preview popup ──────────────────────────────────────────────
   // Hovering a trigger (without clicking it) shows a small floating popup
-  // with just the relevant bullet, scrollable so the rest of the entry can
-  // be read without clicking through, and clickable to jump straight to
-  // activateTrigger()'s full-section view. It stays open while the pointer
-  // is over either the trigger or the popup itself (there's a gap between
-  // them the mouse has to cross), and only actually closes a beat after
-  // leaving both — see scheduleHidePreview()/cancelHidePreview().
+  // with one mini-card per highlighted entry (not just the first one —
+  // e.g. "8+ years of Python experience" highlights four entries, and the
+  // popup should reflect all four), each windowed down to just its
+  // relevant bullet(s) the same way the main content is (see renderWindow()
+  // above). Clicking it jumps straight to activateTrigger()'s full-section
+  // view. It stays open while the pointer is over either the trigger or
+  // the popup itself (there's a gap between them the mouse has to cross),
+  // and only actually closes a beat after leaving both — see
+  // scheduleHidePreview()/cancelHidePreview().
   const preview = document.createElement("div");
   preview.className = "cv-preview";
   preview.hidden = true;
   preview.tabIndex = -1;
   preview.innerHTML = `
-    <div class="cv-preview-head">
-      <h3></h3>
-      <span class="cv-dates"></span>
-    </div>
-    <div class="cv-preview-scroll"><div class="cv-preview-content"></div></div>
+    <div class="cv-preview-scroll"><div class="cv-preview-entries"></div></div>
     <p class="cv-preview-hint">View full section →</p>
   `;
   page.appendChild(preview);
-  const previewTitle = preview.querySelector("h3");
-  const previewDates = preview.querySelector(".cv-dates");
   const previewScroll = preview.querySelector(".cv-preview-scroll");
-  const previewContent = preview.querySelector(".cv-preview-content");
+  const previewEntries = preview.querySelector(".cv-preview-entries");
 
   let activePreviewTriggerId = null;
   let hidePreviewTimer = null;
 
-  // Picks a single representative target to preview: the first entry that
-  // has specific highlightBlocks (so the preview can highlight a precise
-  // bullet), falling back to the first whole-entry highlight. Always reads
-  // off the entry's `detailed` copy — regardless of what Read-more state
-  // the real section is currently in — so there's one consistent preview
-  // regardless of page state, using resolveBlockKeys()'s "detailed" side.
-  function pickPreviewTarget(trigger) {
-    const blockEntryIds = Object.keys(trigger.highlightBlocks || {});
-    if (blockEntryIds.length) {
-      const entryId = blockEntryIds[0];
-      const spec = trigger.highlightBlocks[entryId];
-      const blocks = Array.isArray(spec) ? spec : spec.detailed || spec.short || [];
-      return { entryId, blocks };
-    }
-    if (trigger.highlightEntries?.length) return { entryId: trigger.highlightEntries[0] };
-    return null;
+  // Every entry a trigger highlights, whole-entry or block-level, in CV
+  // display order (Experience entries, then Education) — the popup shows
+  // one mini-card per entry here, in the same order they'd appear in the
+  // real sections once opened.
+  function collectHighlightedEntryIds(trigger) {
+    const ids = new Set([...(trigger.highlightEntries || []), ...Object.keys(trigger.highlightBlocks || {})]);
+    return [...EXPERIENCE.entries, ...EDUCATION.entries].map((entry) => entry.id).filter((id) => ids.has(id));
   }
 
   function cancelHidePreview() {
@@ -318,21 +377,31 @@ export function createCvPage() {
 
   function showPreview(triggerEl, triggerId) {
     const trigger = TRIGGERS[triggerId];
-    const target = trigger && pickPreviewTarget(trigger);
-    const entry = target && findEntry(target.entryId);
-    if (!entry) return;
+    if (!trigger) return;
+    const entryIds = collectHighlightedEntryIds(trigger);
+    if (!entryIds.length) return;
     cancelHidePreview();
     activePreviewTriggerId = triggerId;
 
-    previewTitle.innerHTML = entry.title;
-    previewDates.textContent = entry.dates;
-    previewContent.innerHTML = entry.detailed;
-    if (target.blocks) {
-      target.blocks
-        .map((key) => previewContent.querySelector(`[data-block="${key}"]`))
-        .filter(Boolean)
-        .forEach((el) => el.classList.add("cv-block--highlight"));
-    }
+    previewEntries.innerHTML = entryIds
+      .map((entryId) => {
+        const entry = findEntry(entryId);
+        if (!entry) return "";
+        const mode = state.mode[entrySection(entryId)];
+        const blocksSpec = trigger.highlightBlocks?.[entryId];
+        const blockKeys = blocksSpec ? resolveBlockKeys(entryId, blocksSpec) : null;
+        const body = blockKeys?.length ? renderWindow(entry[mode], blockKeys) : entry[mode];
+        return `
+          <div class="cv-preview-entry">
+            <div class="cv-preview-head">
+              <h3>${entry.title}</h3>
+              <span class="cv-dates">${entry.dates}</span>
+            </div>
+            ${body}
+          </div>
+        `;
+      })
+      .join("");
     previewScroll.scrollTop = 0;
 
     preview.hidden = false;

@@ -391,14 +391,39 @@ div.cv-block--highlight {
   padding: 10px 12px;
   margin: 4px -12px;
 }
+/* The immediate sibling(s) kept around a highlighted block (see
+   pruneToWindow() in cv.js) as a "there's more here" cue — everything
+   further away than that is dropped from the windowed view entirely. */
+.cv-block--fade {
+  opacity: 0.35;
+}
 
-/* Hover preview popup for a trigger phrase — shows just the relevant
-   bullet without requiring a click. Shares the header/section panel
-   treatment (background-image/background-color/border/border-radius) via
-   `.cv-preview` being added to the shared selector at the top of this
-   file; only positioning/sizing/interaction is added here. It's clickable
-   (see the click handler in cv.js) — cursor + hover border are the subtle
-   "you can click this" signal, backed up by the explicit hint caption. */
+.cv-window-toggle {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-cv-link);
+  cursor: pointer;
+}
+.cv-window-toggle:hover,
+.cv-window-toggle:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-decoration: underline;
+}
+
+/* Hover preview popup for a trigger phrase — one mini-card per highlighted
+   entry (see showPreview() in cv.js), each windowed down to just its
+   relevant bullet the same way the main content is. Shares the
+   header/section panel treatment (background-image/background-color/
+   border/border-radius) via `.cv-preview` being added to the shared
+   selector at the top of this file; only positioning/sizing/interaction
+   is added here. It's clickable (see the click handler in cv.js) — cursor
+   + hover border are the subtle "you can click this" signal, backed up by
+   the explicit hint caption. */
 .cv-preview {
   position: fixed;
   z-index: 30;
@@ -416,6 +441,11 @@ div.cv-block--highlight {
 .cv-preview[hidden] {
   display: none;
 }
+.cv-preview-entry + .cv-preview-entry {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-cv-border);
+}
 .cv-preview-head {
   display: flex;
   flex-wrap: wrap;
@@ -432,20 +462,20 @@ div.cv-block--highlight {
   font-size: 0.95rem;
   color: var(--color-cv-h3);
 }
-/* Scrollable rather than clipped outright — the user can read the whole
-   entry here without clicking through — but still capped to a fixed
-   height with its top/bottom edges masked to fade toward transparent, as
-   a visual cue that there's more above/below than the current scroll
+/* Scrollable rather than clipped outright, in case several entries'
+   worth of mini-cards add up to more than the fixed max-height — but its
+   top/bottom edges are still masked to fade toward transparent, as a
+   visual cue that there's more above/below than the current scroll
    position shows. */
 .cv-preview-scroll {
-  max-height: 220px;
+  max-height: 320px;
   overflow-y: auto;
   cursor: auto;
   mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
 }
-.cv-preview-content p,
-.cv-preview-content li {
+.cv-preview-entry p,
+.cv-preview-entry li {
   color: var(--color-cv-summary);
 }
 .cv-preview-hint {
