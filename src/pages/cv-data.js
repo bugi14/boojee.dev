@@ -6,51 +6,62 @@
 
 export const SUBTITLE = "Python Developer | Scientific Computing | Backend Systems";
 
-// A "trigger" is a clickable phrase inside the About text. Clicking it drops
-// the page into a focused read-only view — one card per target, each its own
-// independent little section (not merged into the normal Experience/Education
-// lists) — with a single Back button to return to About. See renderFocusView
-// in cv.js.
+// A "trigger" is a clickable phrase inside the About text. Clicking it opens
+// the listed sections in full (same as clicking their nav pill — every
+// entry shown, nothing filtered out) and highlights the relevant entries
+// and/or specific bullets/blocks within them (see the `data-block` markers
+// on EXPERIENCE entries below). Hovering (without clicking) instead shows a
+// small preview popup with just the relevant bullet, scrolled into view
+// inside a fixed-height fading window so it reads as "there's more text
+// above/below" — see cv.js's renderPreview()/showPreview().
 //
-// A target is `{ section, entryId }` for a whole entry (rendered using the
-// entry's own `short` copy, or `mode` if overridden), or additionally
-// `{ blocks: [...] }` to show only specific named fragments of that entry
-// (see the `blocks` object on EXPERIENCE entries below) instead of the whole
-// thing — `wrap: false` for blocks that are already block-level (paragraphs
-// + their own <ul>), omitted (defaulting to true) for blocks that are bare
-// <li> fragments needing a <ul> wrapper to stand alone.
+// - `sections`: which sections open on click.
+// - `highlightEntries`: entry ids to mark as a whole (adds a highlight
+//   style to the whole entry card).
+// - `highlightBlocks`: { entryId: [blockKey, ...] } for finer-grained
+//   highlighting of specific bullets/paragraphs within an entry, using the
+//   `data-block` markers baked into that entry's `detailed` HTML.
+// - `forceDetailedSections`: sections whose Read-more state gets forced to
+//   "detailed" when this trigger fires, since `data-block` markers (and
+//   therefore highlightBlocks) only exist in the detailed copy.
 function triggerButton(id, label) {
   return `<button type="button" class="cv-trigger" data-trigger="${id}">${label}</button>`;
 }
 
 export const TRIGGERS = {
   "python-experience": {
-    targets: [
-      { section: "experience", entryId: "freelance" },
-      { section: "experience", entryId: "onna" },
-      { section: "experience", entryId: "sherpa" },
-      { section: "education", entryId: "msc" },
-    ],
+    sections: ["experience", "education"],
+    highlightEntries: ["freelance", "onna", "sherpa", "msc"],
   },
-  astrophysics: { targets: [{ section: "education", entryId: "msc" }] },
-  mathematics: { targets: [{ section: "education", entryId: "bsc" }] },
+  astrophysics: {
+    sections: ["education"],
+    highlightEntries: ["msc"],
+  },
+  mathematics: {
+    sections: ["education"],
+    highlightEntries: ["bsc"],
+  },
   "research-papers": {
-    targets: [
-      { section: "experience", entryId: "freelance", blocks: ["hodgkinHuxley", "odePde"] },
-      { section: "education", entryId: "msc" },
-      { section: "education", entryId: "bsc" },
-    ],
+    sections: ["experience", "education"],
+    highlightEntries: ["msc", "bsc"],
+    highlightBlocks: { freelance: ["hodgkinHuxley", "odePde"] },
+    forceDetailedSections: ["experience"],
   },
   "mathematical-models": {
-    targets: [
-      { section: "experience", entryId: "freelance", blocks: ["coreProject"], wrap: false },
-      { section: "experience", entryId: "sherpa", blocks: ["mathModels"] },
-      { section: "education", entryId: "msc" },
-      { section: "education", entryId: "bsc" },
-    ],
+    sections: ["experience", "education"],
+    highlightEntries: ["msc", "bsc"],
+    highlightBlocks: { freelance: ["coreProject"], sherpa: ["mathModels"] },
+    forceDetailedSections: ["experience"],
   },
-  onna: { targets: [{ section: "experience", entryId: "onna" }] },
-  climatemapper: { targets: [{ section: "experience", entryId: "freelance", blocks: ["personalProjects"], wrap: false }] },
+  onna: {
+    sections: ["experience"],
+    highlightEntries: ["onna"],
+  },
+  climatemapper: {
+    sections: ["experience"],
+    highlightBlocks: { freelance: ["climateMapper"] },
+    forceDetailedSections: ["experience"],
+  },
 };
 
 export const ABOUT = {
@@ -145,35 +156,37 @@ export const SKILLS = {
 // relevant bullet(s) instead of the whole entry — the full `detailed`
 // strings below are composed from these same fragments, so there's one
 // source of truth for each piece of text.
+// `data-block="key"` markers are baked directly into the markup (rather
+// than kept separate) so a highlight/preview target can be found by a
+// plain querySelector against the already-rendered "detailed" HTML — see
+// applyHighlights()/renderPreview() in cv.js.
 const FREELANCE_BLOCKS = {
   intro: `<p>End-to-end delivery of production Python systems for 50+ clients across research-driven
     and data-intensive projects — architecture, implementation, client alignment, and deployment.</p>`,
   coreProject: `
-    <p><strong>Core Project: Economic Index Platform — Global News Data Pipeline</strong> (Apr 2022 – Present)</p>
-    <p>Independently evolved from prototype a platform constructing economic indices from
-    large-scale global news datasets, implementing Baker-Bloom-Davis-style academic methodology
-    across tens of thousands of articles spanning multiple decades and news sources.</p>
-    <ul>
-      <li>Configuration-driven framework enabling non-developers to define new indices across
-      sources, languages, regions, and time resolutions without modifying code</li>
-      <li>Resilient ingestion pipelines with structured logging, retries, fault recovery, and
-      validation</li>
-      <li>Automation workflows for historical backfills across thousands of news sources</li>
-    </ul>
+    <div class="cv-block" data-block="coreProject">
+      <p><strong>Core Project: Economic Index Platform — Global News Data Pipeline</strong> (Apr 2022 – Present)</p>
+      <p>Independently evolved from prototype a platform constructing economic indices from
+      large-scale global news datasets, implementing Baker-Bloom-Davis-style academic methodology
+      across tens of thousands of articles spanning multiple decades and news sources.</p>
+      <ul>
+        <li>Configuration-driven framework enabling non-developers to define new indices across
+        sources, languages, regions, and time resolutions without modifying code</li>
+        <li>Resilient ingestion pipelines with structured logging, retries, fault recovery, and
+        validation</li>
+        <li>Automation workflows for historical backfills across thousands of news sources</li>
+      </ul>
+    </div>
   `,
-  personalProjects: `
-    <p><strong>Personal Projects</strong></p>
-    <ul>
-      <li>Built <a href="https://climatemapper.boojee.dev/" target="_blank" rel="noreferrer">ClimateMapper</a>,
-      a geospatial visualisation tool for exploring climate variables derived from ERA5 reanalysis data</li>
-      <li>Built CouchSearch, a geospatial discovery tool mapping hosts by region with a layered
-      visual encoding system</li>
-    </ul>
-  `,
-  hodgkinHuxley: `<li>Multi-compartment Hodgkin-Huxley neuron model from literature, including ion
-    channel dynamics and multiple solver modes</li>`,
-  odePde: `<li>ODE/PDE solvers for SIR/SIRV epidemiological models, predator-prey dynamics, and
-    arterial blood flow (FEniCS)</li>`,
+  climateMapper: `<li data-block="climateMapper">Built
+    <a href="https://climatemapper.boojee.dev/" target="_blank" rel="noreferrer">ClimateMapper</a>,
+    a geospatial visualisation tool for exploring climate variables derived from ERA5 reanalysis data</li>`,
+  couchSearch: `<li data-block="couchSearch">Built CouchSearch, a geospatial discovery tool mapping
+    hosts by region with a layered visual encoding system</li>`,
+  hodgkinHuxley: `<li data-block="hodgkinHuxley">Multi-compartment Hodgkin-Huxley neuron model from
+    literature, including ion channel dynamics and multiple solver modes</li>`,
+  odePde: `<li data-block="odePde">ODE/PDE solvers for SIR/SIRV epidemiological models, predator-prey
+    dynamics, and arterial blood flow (FEniCS)</li>`,
   otherClientWorkRest: `
     <li>Numerical linear algebra from first principles — Cholesky, LU decomposition, Gauss-Newton,
     Broyden</li>
@@ -184,10 +197,20 @@ const FREELANCE_BLOCKS = {
     <li>Accepted into the Toptal Talent Network (Nov 2022) following rigorous technical screening</li>
   `,
 };
+FREELANCE_BLOCKS.personalProjects = `
+  <div class="cv-block" data-block="personalProjects">
+    <p><strong>Personal Projects</strong></p>
+    <ul>
+      ${FREELANCE_BLOCKS.climateMapper}
+      ${FREELANCE_BLOCKS.couchSearch}
+    </ul>
+  </div>
+`;
 
 const SHERPA_BLOCKS = {
-  mathModels: `<li>Implemented mathematical models in production code, processing 100+ data points
-    per assessment with careful attention to numerical stability and model validity</li>`,
+  mathModels: `<li data-block="mathModels">Implemented mathematical models in production code,
+    processing 100+ data points per assessment with careful attention to numerical stability and
+    model validity</li>`,
 };
 
 export const EXPERIENCE = {

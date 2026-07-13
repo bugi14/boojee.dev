@@ -23,7 +23,8 @@
    visible but doesn't compete with the text) inside a fully opaque, organic
    (non-rectangular) border. */
 .cv-header,
-.cv-section {
+.cv-section,
+.cv-preview {
   position: relative;
   z-index: 1;
   background-image:
@@ -348,25 +349,76 @@
   color: var(--color-cv-link-hover);
 }
 
-/* Exits a trigger-driven focus view (see renderFocusView() in cv.js) back
-   to About — the only way out, since focus cards aren't individually
-   collapsible the way normal open sections are. */
-.cv-back {
-  display: inline-flex;
-  align-items: center;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-bottom: 16px;
-  font: inherit;
-  font-size: 1rem;
-  color: var(--color-cv-link);
-  cursor: pointer;
+/* Whole-entry highlight (clicking a trigger like "Onna") and block-level
+   highlight (a specific bullet/paragraph, via the data-block markers in
+   cv-data.js — see applyBlockHighlights() in cv.js). The block variant
+   nests inside entries, including highlighted ones, so it gets its own
+   (stronger) treatment rather than just inheriting the entry's. */
+.cv-entry--highlight {
+  background-color: rgba(var(--color-nav-glow-rgb), 0.12);
+  box-shadow: 0 0 0 1px rgba(var(--color-nav-glow-rgb), 0.4);
 }
-.cv-back:hover,
-.cv-back:focus-visible {
-  color: var(--color-cv-link-hover);
-  text-decoration: underline;
+.cv-block--highlight {
+  background-color: rgba(var(--color-nav-glow-rgb), 0.22);
+  box-shadow: 0 0 0 1px rgba(var(--color-nav-glow-rgb), 0.55);
+  border-radius: 6px;
+}
+li.cv-block--highlight {
+  padding: 2px 8px;
+  margin-inline: -8px;
+}
+div.cv-block--highlight {
+  padding: 10px 12px;
+  margin: 4px -12px;
+}
+
+/* Hover preview popup for a trigger phrase — shows just the relevant
+   bullet(s) without requiring a click. Shares the header/section panel
+   treatment (background-image/background-color/border/border-radius) via
+   `.cv-preview` being added to the shared selector at the top of this
+   file; only positioning/sizing is added here. */
+.cv-preview {
+  position: fixed;
+  z-index: 30;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 16px 20px;
+  pointer-events: none;
+  font-size: 0.9rem;
+}
+.cv-preview[hidden] {
+  display: none;
+}
+.cv-preview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  border-bottom: 1px solid var(--color-cv-border);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.cv-preview-head h3 {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-cv-h3);
+}
+/* Fixed-height fading window: the fixed height plus scrollTop (set in
+   showPreview()) crops the content to roughly the target bullet, and the
+   mask fades its very top/bottom edges toward transparent — reading as
+   "there's more text above/below" without needing to compute or render
+   any actual surrounding context. */
+.cv-preview-scroll {
+  max-height: 150px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+}
+.cv-preview-content p,
+.cv-preview-content li {
+  color: var(--color-cv-summary);
 }
 
 .cv-skills {
