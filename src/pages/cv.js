@@ -108,15 +108,20 @@ export function createCvPage() {
   }
 
   // Prunes an entry's rendered HTML down to just its highlighted block(s)
-  // plus one immediate sibling before/after (faded, as a "there's more
-  // here" cue) at every nesting level between the highlight and the
-  // content root — e.g. for a bullet inside a <ul> inside a <div> block
-  // among the entry's other top-level paragraphs/blocks, both the <ul>'s
-  // sibling bullets *and* the <div>'s sibling blocks get this treatment.
-  // Recurses only into the ancestor chain actually containing a highlight;
-  // unrelated subtrees are dropped outright rather than faded, since
-  // "Other Client Work" three sections away isn't really "surrounding"
-  // content the way the bullet right next to the highlight is.
+  // plus one immediate sibling before/after at every nesting level between
+  // the highlight and the content root — e.g. for a bullet inside a <ul>
+  // inside a <div> block among the entry's other top-level paragraphs/
+  // blocks, both the <ul>'s sibling bullets *and* the <div>'s sibling
+  // blocks get this treatment. Those two neighbors get a directional fade
+  // (cv-block--fade-before/-after in cv.css clamp them to ~2 lines and
+  // mask them toward transparent on the far side) — just enough to read
+  // as "there's more text here" without it actually being readable or
+  // scrollable into view, since — unlike the "Show all" toggle — that
+  // context isn't the point. Recurses only into the ancestor chain
+  // actually containing a highlight; unrelated subtrees are dropped
+  // outright rather than faded, since "Other Client Work" three sections
+  // away isn't really "surrounding" content the way the bullet right next
+  // to the highlight is.
   function pruneToWindow(el) {
     const children = [...el.children];
     if (!children.length) return;
@@ -131,7 +136,7 @@ export function createCvPage() {
         return;
       }
       const distance = i < minIndex ? minIndex - i : i - maxIndex;
-      if (distance === 1) child.classList.add("cv-block--fade");
+      if (distance === 1) child.classList.add(i < minIndex ? "cv-block--fade-before" : "cv-block--fade-after");
       else child.remove();
     });
   }
@@ -390,9 +395,17 @@ export function createCvPage() {
         const mode = state.mode[entrySection(entryId)];
         const blocksSpec = trigger.highlightBlocks?.[entryId];
         const blockKeys = blocksSpec ? resolveBlockKeys(entryId, blocksSpec) : null;
-        const body = blockKeys?.length ? renderWindow(entry[mode], blockKeys) : entry[mode];
+        const windowed = !!blockKeys?.length;
+        const body = windowed ? renderWindow(entry[mode], blockKeys) : entry[mode];
+        // A block-level highlight already gets its own (stronger) treatment
+        // via renderWindow(); a whole-entry highlight (no specific blocks —
+        // e.g. Onna, or MSc/BSc from "research papers") otherwise rendered
+        // completely plain here, so it needs the same cv-entry--highlight
+        // class the main content gives it, for visual conformity between
+        // the two highlight kinds.
+        const highlightClass = !windowed && trigger.highlightEntries?.includes(entryId) ? " cv-entry--highlight" : "";
         return `
-          <div class="cv-preview-entry">
+          <div class="cv-preview-entry${highlightClass}">
             <div class="cv-preview-head">
               <h3>${entry.title}</h3>
               <span class="cv-dates">${entry.dates}</span>

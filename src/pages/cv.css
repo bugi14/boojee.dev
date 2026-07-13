@@ -393,9 +393,26 @@ div.cv-block--highlight {
 }
 /* The immediate sibling(s) kept around a highlighted block (see
    pruneToWindow() in cv.js) as a "there's more here" cue — everything
-   further away than that is dropped from the windowed view entirely. */
-.cv-block--fade {
-  opacity: 0.35;
+   further away than that is dropped from the windowed view entirely.
+   Clamped to ~2 lines and masked toward transparent on the side facing
+   away from the highlight, so it reads as a fading hint that there's more
+   text rather than actually-readable (or scrollable-into-view) content —
+   it isn't the point here the way the "Show all" toggle's full content is. */
+.cv-block--fade-before,
+.cv-block--fade-after {
+  max-height: 2.6em;
+  overflow: hidden;
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+}
+.cv-block--fade-before {
+  mask-image: linear-gradient(to top, black 0, transparent 85%);
+  -webkit-mask-image: linear-gradient(to top, black 0, transparent 85%);
+}
+.cv-block--fade-after {
+  mask-image: linear-gradient(to bottom, black 0, transparent 85%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0, transparent 85%);
 }
 
 .cv-window-toggle {
@@ -429,7 +446,7 @@ div.cv-block--highlight {
   z-index: 30;
   width: 320px;
   max-width: calc(100vw - 16px);
-  padding: 16px 20px;
+  padding: 26px 20px 16px 26px;
   pointer-events: auto;
   cursor: pointer;
   font-size: 0.9rem;
@@ -445,6 +462,30 @@ div.cv-block--highlight {
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid var(--color-cv-border);
+}
+/* cv-block--highlight's negative inline margins (see above) are meant to
+   let a highlight bleed slightly past the surrounding text's edge inside
+   the generously-padded main content column — inside the popup's much
+   tighter padding, that same offset instead pushed content, e.g. list
+   markers, past the popup's own left edge and out of view. Neutralised
+   here rather than everywhere, since the bleed effect is still fine (and
+   was already relied on) in the main content. */
+.cv-preview-entry li.cv-block--highlight,
+.cv-preview-entry div.cv-block--highlight {
+  margin-inline: 0;
+}
+/* Whole-entry highlights (no specific blocks — see showPreview() in
+   cv.js) get the same background/box-shadow treatment cv-entry--highlight
+   already provides; only the padding/spacing needed to make that look
+   intentional inside a mini-card is added here. */
+.cv-preview-entry.cv-entry--highlight {
+  /* No matching negative margin (unlike the main content's .cv-entry,
+     which offsets its own padding this way) — inside the popup's
+     overflow-clipped scroll container, a negative left margin here would
+     push the box's edge out of view the same way cv-tech's did above. */
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
 }
 .cv-preview-head {
   display: flex;
@@ -555,6 +596,15 @@ div.cv-block--highlight {
   font-size: 0.88rem;
   color: var(--color-cv-sub) !important;
   list-style: none;
+}
+/* Only cancel the <ul>'s default marker indent when cv-tech is actually a
+   <li> inside one (most cases) — applying the same negative margin to the
+   plain <p class="cv-tech"> that Education's short copy uses (it's not in
+   a list, so there's no indent to cancel) instead pushed it left of its
+   container. Harmless in the generously-padded main content column, but
+   inside the popup's tighter, overflow-clipped box it silently cut the
+   first few characters off. */
+li.cv-tech {
   margin-left: -1.1em;
 }
 
