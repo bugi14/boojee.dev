@@ -1,8 +1,9 @@
 #cv-page {
+  position: relative;
   width: 100%;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   line-height: 1.6;
 }
 #cv-page[hidden] {
@@ -16,11 +17,47 @@
   color: var(--color-cv-link-hover);
   text-decoration: underline;
 }
+
+/* Shared "panel" treatment for the header and every section: a semi-opaque,
+   faintly textured fill (so the interactive particle background stays
+   visible but doesn't compete with the text) inside a fully opaque, organic
+   (non-rectangular) border. */
+.cv-header,
+.cv-section,
+.cv-preview {
+  position: relative;
+  z-index: 1;
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 6px);
+  background-color: rgba(var(--color-cv-panel-bg-rgb), 0.86);
+  border: 2px solid var(--color-cv-section);
+  border-radius: 38px 22px 34px 26px / 24px 34px 22px 36px;
+  padding: 22px 26px;
+}
+
 .cv-header {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 24px;
-  margin-bottom: 32px;
+  width: 100%;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+  transition: opacity 0.2s ease;
+}
+/* Reserves the header's own flow space once it goes position: fixed (see
+   .cv-header--docked) — its height is set by cv.js right as the header
+   docks, matching what the header itself measured just before leaving
+   flow, so the page's scrollable height doesn't suddenly shrink out from
+   under the user's current scroll position. Deliberately NOT transitioned:
+   the header's own position switch (static -> fixed) is a discrete
+   property change with no animation, so this has to snap in the same
+   frame — easing it in over time would leave a window where the header
+   has already left flow but the spacer hasn't caught up yet, shrinking
+   the page out from under the scroll position anyway. */
+.cv-header-spacer {
+  height: 0;
 }
 .cv-photo {
   width: 96px;
@@ -29,13 +66,14 @@
   object-fit: cover;
   flex-shrink: 0;
   border: 1px solid var(--color-cv-photo);
+  transition: width 0.2s ease, height 0.2s ease;
 }
 .cv-header h1 {
   position: static;
   pointer-events: auto;
-  font-family: inherit;
+  font-family: "Lunatic Superstar", sans-serif;
   font-weight: 300;
-  font-size: 2.25rem;
+  font-size: 2.5rem;
   letter-spacing: 0.02em;
   margin: 0 0 4px;
   color: var(--color-cv-h3);
@@ -44,54 +82,484 @@
      that the global h1 rule applies from home.css. */
   animation: none;
   transform: none;
+  transition: font-size 0.2s ease;
 }
 .cv-title {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   color: var(--color-cv-title);
   font-weight: 300;
   letter-spacing: 0.02em;
+  transition: font-size 0.2s ease;
 }
-.cv-contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
+.cv-title-part {
+  display: inline;
+}
+.cv-pdf-link {
+  display: inline-block;
   font-size: 0.9rem;
-  color: var(--color-cv-contact);
+  transition: font-size 0.2s ease;
 }
-@media (max-width: 480px) {
-  .cv-header {
-    flex-wrap: wrap;
+
+/* Docked state: once the user has scrolled the CV past DOCK_SCROLL_THRESHOLD
+   (cv.js), the header leaves the top of the page entirely and re-appears as
+   a compact card fixed to the bottom-right corner, right above the contact
+   badges (--cv-header-dock-bottom is measured off their live position — see
+   updateDockPosition() in cv.js). */
+.cv-header--docked {
+  position: fixed;
+  right: 20px;
+  bottom: var(--cv-header-dock-bottom, 300px);
+  z-index: 21;
+  flex-direction: column;
+  align-items: flex-end;
+  width: auto;
+  max-width: 220px;
+  gap: 8px;
+  margin-bottom: 0;
+  padding: 14px 18px;
+}
+.cv-header--docked .cv-photo {
+  width: 56px;
+  height: 56px;
+}
+.cv-header--docked .cv-header-text {
+  text-align: right;
+}
+.cv-header--docked h1 {
+  font-size: 1.4rem;
+  text-align: right;
+}
+.cv-header--docked .cv-title {
+  font-size: 0.8rem;
+}
+.cv-header--docked .cv-title-part {
+  display: block;
+}
+.cv-header--docked .cv-title-sep {
+  display: none;
+}
+.cv-header--docked .cv-pdf-link {
+  font-size: 0.75rem;
+}
+@media (max-width: 700px) {
+  /* Not enough room in a narrow viewport for a floating corner card without
+     it colliding with the contact badges — keep the header in normal flow
+     regardless of scroll position below this width. */
+  .cv-header--docked {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    max-width: none;
+    padding: 22px 26px;
+  }
+  .cv-header--docked .cv-photo {
+    width: 96px;
+    height: 96px;
+  }
+  .cv-header--docked .cv-header-text {
+    text-align: left;
+  }
+  .cv-header--docked h1 {
+    font-size: 2rem;
+    text-align: left;
+  }
+  .cv-header--docked .cv-title {
+    font-size: 1rem;
+  }
+  .cv-header--docked .cv-title-part {
+    display: inline;
+  }
+  .cv-header--docked .cv-title-sep {
+    display: inline;
+  }
+  .cv-header--docked .cv-pdf-link {
+    font-size: 0.9rem;
   }
 }
+
 .cv-body {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: minmax(180px, 240px) 1fr;
+  grid-template-columns: minmax(200px, 240px) 1fr;
   gap: 48px;
   align-items: start;
 }
-.cv-summary {
+.cv-sidebar {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  /* Caps the pinned Skills panel to the viewport so it gets its own
+     scrollbar (see .cv-section--pinned below) instead of growing the
+     whole sticky column past the fold. */
+  max-height: calc(100vh - 48px);
+}
+.cv-section--pinned {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.cv-section--pinned .cv-section-head {
+  flex-shrink: 0;
+}
+.cv-section--pinned .cv-section-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.cv-main {
+  /* Narrower than the available column on wide screens, without shrinking
+     below a usable minimum on small ones. */
+  width: min(100%, clamp(420px, 60vw, 820px));
+}
+
+/* Floating pill layer for collapsed sections (Experience/Education, and
+   About once it's been collapsed). Fixed positioned — rather than sitting
+   in the main column's flow — so it never pushes section content down;
+   cv.js's updateNavLayerPosition() sizes/positions it beside the header
+   (or, once the header docks on scroll, just below it) via inline styles,
+   and this layer's own pointer-events: none lets clicks fall through to
+   whatever's underneath it everywhere except the pills themselves. */
+.cv-nav-layer {
+  position: fixed;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
+  /* No transition here (unlike the header) — it's kept in sync with the
+     header's own animated position via updateNavLayerPosition() (cv.js),
+     called on scroll and again on the header's transitionend; adding a
+     second, independently-timed transition on top of that just makes it
+     lag behind and briefly overlap the header mid-animation. */
+}
+.cv-nav-particle {
+  background: none;
+  border: none;
   margin: 0;
+  padding: 4px 8px;
+  font: inherit;
+  font-family: "Lunatic Superstar", sans-serif;
+  font-size: 2.25rem;
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  color: var(--color-cv-section);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+.cv-nav-particle:hover,
+.cv-nav-particle:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-shadow:
+    0 0 12px rgba(var(--color-nav-glow-rgb), 0.9),
+    0 0 24px rgba(var(--color-nav-glow-rgb), 0.5);
+}
+@media (max-width: 700px) {
+  .cv-nav-particle {
+    font-size: 1.6rem;
+  }
+}
+
+.cv-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.cv-section-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  border-bottom: 1px solid var(--color-cv-border);
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+}
+.cv-section-head h2 {
+  font-family: "Lunatic Superstar", sans-serif;
+  font-weight: 300;
+  font-size: 2.25rem;
+  letter-spacing: 0.03em;
+  color: var(--color-cv-section);
+  margin: 0;
+}
+.cv-section--open .cv-section-head h2 {
+  cursor: pointer;
+}
+.cv-section--open .cv-section-head h2:hover,
+.cv-section--open .cv-section-head h2:focus-visible {
+  color: var(--color-cv-link-hover);
+}
+@media (max-width: 700px) {
+  .cv-section-head h2 {
+    font-size: 1.6rem;
+  }
+}
+.cv-toggle-mode {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-cv-link);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cv-toggle-mode:hover,
+.cv-toggle-mode:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-decoration: underline;
+}
+
+.cv-section-body p {
+  margin: 0 0 12px;
   color: var(--color-cv-summary);
 }
-.cv-section {
-  margin-bottom: 32px;
-}
-.cv-sidebar .cv-section:last-child,
-.cv-main .cv-section:last-child {
+.cv-section-body p:last-child {
   margin-bottom: 0;
 }
-.cv-section h2 {
-  font-weight: 400;
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-cv-section);
-  margin: 0 0 16px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--color-cv-border);
+.cv-section-body ul {
+  margin: 0 0 12px;
+  padding-left: 1.1em;
 }
+.cv-section-body ul:last-child {
+  margin-bottom: 0;
+}
+.cv-section-body li {
+  margin-bottom: 4px;
+  color: var(--color-cv-summary);
+}
+
+.cv-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.cv-trigger:hover,
+.cv-trigger:focus-visible {
+  color: var(--color-cv-link-hover);
+}
+
+/* Shortcut back to About after a trigger-driven open (see activateTrigger()
+   in cv.js) — only rendered while a highlight is active. */
+.cv-back {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 16px;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-cv-link);
+  cursor: pointer;
+}
+.cv-back:hover,
+.cv-back:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-decoration: underline;
+}
+
+/* Whole-entry highlight (clicking a trigger like "Onna") and block-level
+   highlight (a specific bullet/paragraph, via the data-block markers in
+   cv-data.js — see applyBlockHighlights() in cv.js). The block variant
+   nests inside entries, including highlighted ones, so it gets its own
+   (stronger) treatment rather than just inheriting the entry's. */
+.cv-entry--highlight {
+  background-color: rgba(var(--color-nav-glow-rgb), 0.12);
+  box-shadow: 0 0 0 1px rgba(var(--color-nav-glow-rgb), 0.4);
+}
+.cv-block--highlight {
+  background-color: rgba(var(--color-nav-glow-rgb), 0.22);
+  box-shadow: 0 0 0 1px rgba(var(--color-nav-glow-rgb), 0.55);
+  border-radius: 6px;
+}
+li.cv-block--highlight {
+  padding: 2px 8px;
+  margin-inline: -8px;
+}
+div.cv-block--highlight {
+  padding: 10px 12px;
+  margin: 4px -12px;
+}
+/* The immediate sibling(s) kept around a highlighted block (see
+   pruneToWindow() in cv.js) as a "there's more here" cue — everything
+   further away than that is dropped from the windowed view entirely.
+   Clamped to ~2 lines and masked toward transparent on the side facing
+   away from the highlight, so it reads as a fading hint that there's more
+   text rather than actually-readable (or scrollable-into-view) content —
+   it isn't the point here the way the "Show all" toggle's full content is. */
+.cv-block--fade-before,
+.cv-block--fade-after {
+  max-height: 2.6em;
+  overflow: hidden;
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+}
+.cv-block--fade-before {
+  mask-image: linear-gradient(to top, black 0, transparent 85%);
+  -webkit-mask-image: linear-gradient(to top, black 0, transparent 85%);
+}
+.cv-block--fade-after {
+  mask-image: linear-gradient(to bottom, black 0, transparent 85%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0, transparent 85%);
+}
+
+.cv-window-toggle {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-cv-link);
+  cursor: pointer;
+}
+.cv-window-toggle:hover,
+.cv-window-toggle:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-decoration: underline;
+}
+
+/* Hover preview popup for a trigger phrase — one mini-card per highlighted
+   entry (see showPreview() in cv.js), each windowed down to just its
+   relevant bullet the same way the main content is. Shares the
+   header/section panel treatment (background-image/background-color/
+   border/border-radius) via `.cv-preview` being added to the shared
+   selector at the top of this file; only positioning/sizing/interaction
+   is added here. It's clickable (see the click handler in cv.js) — cursor
+   + hover border are the subtle "you can click this" signal, backed up by
+   the explicit hint caption. */
+.cv-preview {
+  position: fixed;
+  z-index: 30;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 26px 20px 16px 26px;
+  pointer-events: auto;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease;
+}
+.cv-preview:hover {
+  border-color: var(--color-cv-link-hover);
+}
+.cv-preview[hidden] {
+  display: none;
+}
+.cv-preview-entry + .cv-preview-entry {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-cv-border);
+}
+/* cv-block--highlight's negative inline margins (see above) are meant to
+   let a highlight bleed slightly past the surrounding text's edge inside
+   the generously-padded main content column — inside the popup's much
+   tighter padding, that same offset instead pushed content, e.g. list
+   markers, past the popup's own left edge and out of view. Neutralised
+   here rather than everywhere, since the bleed effect is still fine (and
+   was already relied on) in the main content. */
+.cv-preview-entry li.cv-block--highlight,
+.cv-preview-entry div.cv-block--highlight {
+  margin-inline: 0;
+}
+/* Whole-entry highlights (no specific blocks — see showPreview() in
+   cv.js) get the same background/box-shadow treatment cv-entry--highlight
+   already provides; only the padding/spacing needed to make that look
+   intentional inside a mini-card is added here. */
+.cv-preview-entry.cv-entry--highlight {
+  /* No matching negative margin (unlike the main content's .cv-entry,
+     which offsets its own padding this way) — inside the popup's
+     overflow-clipped scroll container, a negative left margin here would
+     push the box's edge out of view the same way cv-tech's did above. */
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+}
+.cv-preview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  border-bottom: 1px solid var(--color-cv-border);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+.cv-preview-head h3 {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-cv-h3);
+}
+/* Scrollable rather than clipped outright, in case several entries'
+   worth of mini-cards add up to more than the fixed max-height — but its
+   top/bottom edges are still masked to fade toward transparent, as a
+   visual cue that there's more above/below than the current scroll
+   position shows. */
+.cv-preview-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  cursor: auto;
+  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+}
+.cv-preview-entry p,
+.cv-preview-entry li {
+  color: var(--color-cv-summary);
+}
+.cv-preview-hint {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--color-cv-sub);
+  text-align: right;
+}
+
+.cv-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+.cv-skills dt {
+  font-weight: 500;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  color: var(--color-cv-skills-dt);
+  margin: 0 0 3px;
+}
+.cv-skills dd {
+  margin: 0;
+  color: var(--color-cv-skills-dd);
+  font-size: 0.92rem;
+}
+.cv-skills-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cv-skills-list li {
+  margin-bottom: 2px;
+}
+
 .cv-entry {
   margin-bottom: 20px;
+  padding: 8px 10px;
+  margin-inline: -10px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 .cv-entry:last-child {
   margin-bottom: 0;
@@ -106,47 +574,52 @@
 .cv-entry-head h3 {
   margin: 0;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--color-cv-h3);
 }
 .cv-entry-sub {
   margin: 2px 0 8px;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--color-cv-sub);
+}
+.cv-entry-thesis {
+  font-style: italic;
+  color: var(--color-cv-sub) !important;
 }
 .cv-dates {
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--color-cv-sub);
   white-space: nowrap;
 }
-.cv-entry ul {
-  margin: 0;
-  padding-left: 1.1em;
+.cv-tech {
+  font-size: 0.88rem;
+  color: var(--color-cv-sub) !important;
+  list-style: none;
 }
-.cv-entry li {
-  margin-bottom: 4px;
+/* Only cancel the <ul>'s default marker indent when cv-tech is actually a
+   <li> inside one (most cases) — applying the same negative margin to the
+   plain <p class="cv-tech"> that Education's short copy uses (it's not in
+   a list, so there's no indent to cancel) instead pushed it left of its
+   container. Harmless in the generously-padded main content column, but
+   inside the popup's tighter, overflow-clipped box it silently cut the
+   first few characters off. */
+li.cv-tech {
+  margin-left: -1.1em;
 }
-.cv-skills {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.cv-skills dt {
-  font-weight: 500;
-  font-size: 0.85rem;
-  letter-spacing: 0.03em;
-  color: var(--color-cv-skills-dt);
-  margin: 0 0 3px;
-}
-.cv-skills dd {
-  margin: 0;
-  color: var(--color-cv-skills-dd);
-  font-size: 0.9rem;
-}
+
 @media (max-width: 700px) {
+  .cv-header h1 {
+    font-size: 2rem;
+  }
   .cv-body {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+  .cv-sidebar {
+    position: static;
+  }
+  .cv-main {
+    width: 100%;
   }
 }
