@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-13
+
+Other Projects page, starting with a CouchSearch write-up. See [#30](https://github.com/bugi14/boojee.dev/pull/30).
+
+### Added
+- **Other Projects page** (`src/pages/projects.js`, `projects-data.js`, `projects.css`): the "Other Projects" destination now renders real content instead of the placeholder, following the CV page's panel styling for visual consistency. `other-projects` is marked implemented in `IMPLEMENTED_HASHES`.
+- **CouchSearch project entry**: a write-up covering the problem, approach, the region-cover algorithm, the two-geocoder pipeline, and engineering discipline, plus a captioned demo GIF and region-cover screenshot, and a Status note explaining the project is paused after Couchsurfing's 2026 site overhaul broke the scraping layer mid-development.
+
 ## [1.1.0] - 2026-07-13
 
 Progressive-disclosure CV page with floating nav, contextual highlighting, and hover previews. See [#28](https://github.com/bugi14/boojee.dev/pull/28).

@@ -12,6 +12,7 @@ import { loadSlim } from "@tsparticles/slim";
 import { loadImageShape } from "@tsparticles/shape-image";
 
 import { createCvPage } from "./pages/cv.js";
+import { createProjectsPage } from "./pages/projects.js";
 import { bgStars } from "./particles/bg-stars.js";
 import { registerAllPresets, loadPreset } from "./particles/presets.js";
 import { NAV_ITEMS, navButtons } from "./particles/nav-buttons.js";
@@ -27,7 +28,7 @@ const DESTINATIONS = new Map(
 );
 // Hash routes with real content. Everything else in DESTINATIONS renders the
 // shared "still under formation" placeholder instead of a blank label.
-const IMPLEMENTED_HASHES = new Set(["cv"]);
+const IMPLEMENTED_HASHES = new Set(["cv", "other-projects"]);
 
 const homeView = document.getElementById("home-view");
 const homeHeading = document.getElementById("home-heading");
@@ -44,6 +45,8 @@ const themeToggleBtn = themeToggleEl.querySelector(".toggle-track");
 const siteLogo = document.getElementById("site-logo");
 const cvPage = createCvPage();
 destinationContent.appendChild(cvPage);
+const projectsPage = createProjectsPage();
+destinationContent.appendChild(projectsPage);
 
 let traveling = false;
 
@@ -97,10 +100,13 @@ function showDestination(hash, label) {
   siteLogo.hidden = false;
 
   const isCv = hash === "cv";
+  const isProjects = hash === "other-projects";
   destinationContent.classList.toggle("is-cv", isCv);
-  destinationLabel.hidden = isCv;
-  destinationLabel.textContent = isCv ? "" : label;
+  destinationContent.classList.toggle("is-projects", isProjects);
+  destinationLabel.hidden = isCv || isProjects;
+  destinationLabel.textContent = isCv || isProjects ? "" : label;
   cvPage.hidden = !isCv;
+  projectsPage.hidden = !isProjects;
 }
 
 // Not-yet-implemented destinations keep the homepage's tsparticles/black-hole
