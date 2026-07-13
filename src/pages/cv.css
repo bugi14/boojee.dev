@@ -349,6 +349,26 @@
   color: var(--color-cv-link-hover);
 }
 
+/* Shortcut back to About after a trigger-driven open (see activateTrigger()
+   in cv.js) — only rendered while a highlight is active. */
+.cv-back {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 16px;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-cv-link);
+  cursor: pointer;
+}
+.cv-back:hover,
+.cv-back:focus-visible {
+  color: var(--color-cv-link-hover);
+  text-decoration: underline;
+}
+
 /* Whole-entry highlight (clicking a trigger like "Onna") and block-level
    highlight (a specific bullet/paragraph, via the data-block markers in
    cv-data.js — see applyBlockHighlights() in cv.js). The block variant
@@ -373,18 +393,25 @@ div.cv-block--highlight {
 }
 
 /* Hover preview popup for a trigger phrase — shows just the relevant
-   bullet(s) without requiring a click. Shares the header/section panel
+   bullet without requiring a click. Shares the header/section panel
    treatment (background-image/background-color/border/border-radius) via
    `.cv-preview` being added to the shared selector at the top of this
-   file; only positioning/sizing is added here. */
+   file; only positioning/sizing/interaction is added here. It's clickable
+   (see the click handler in cv.js) — cursor + hover border are the subtle
+   "you can click this" signal, backed up by the explicit hint caption. */
 .cv-preview {
   position: fixed;
   z-index: 30;
   width: 320px;
   max-width: calc(100vw - 16px);
   padding: 16px 20px;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   font-size: 0.9rem;
+  transition: border-color 0.15s ease;
+}
+.cv-preview:hover {
+  border-color: var(--color-cv-link-hover);
 }
 .cv-preview[hidden] {
   display: none;
@@ -405,20 +432,28 @@ div.cv-block--highlight {
   font-size: 0.95rem;
   color: var(--color-cv-h3);
 }
-/* Fixed-height fading window: the fixed height plus scrollTop (set in
-   showPreview()) crops the content to roughly the target bullet, and the
-   mask fades its very top/bottom edges toward transparent — reading as
-   "there's more text above/below" without needing to compute or render
-   any actual surrounding context. */
+/* Scrollable rather than clipped outright — the user can read the whole
+   entry here without clicking through — but still capped to a fixed
+   height with its top/bottom edges masked to fade toward transparent, as
+   a visual cue that there's more above/below than the current scroll
+   position shows. */
 .cv-preview-scroll {
-  max-height: 150px;
-  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+  cursor: auto;
   mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
 }
 .cv-preview-content p,
 .cv-preview-content li {
   color: var(--color-cv-summary);
+}
+.cv-preview-hint {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--color-cv-sub);
+  text-align: right;
 }
 
 .cv-skills {

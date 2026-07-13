@@ -11,19 +11,21 @@ export const SUBTITLE = "Python Developer | Scientific Computing | Backend Syste
 // entry shown, nothing filtered out) and highlights the relevant entries
 // and/or specific bullets/blocks within them (see the `data-block` markers
 // on EXPERIENCE entries below). Hovering (without clicking) instead shows a
-// small preview popup with just the relevant bullet, scrolled into view
-// inside a fixed-height fading window so it reads as "there's more text
-// above/below" — see cv.js's renderPreview()/showPreview().
+// small preview popup with just the relevant bullet — see cv.js's
+// showPreview().
 //
 // - `sections`: which sections open on click.
 // - `highlightEntries`: entry ids to mark as a whole (adds a highlight
 //   style to the whole entry card).
 // - `highlightBlocks`: { entryId: [blockKey, ...] } for finer-grained
 //   highlighting of specific bullets/paragraphs within an entry, using the
-//   `data-block` markers baked into that entry's `detailed` HTML.
-// - `forceDetailedSections`: sections whose Read-more state gets forced to
-//   "detailed" when this trigger fires, since `data-block` markers (and
-//   therefore highlightBlocks) only exist in the detailed copy.
+//   `data-block` markers baked into that entry's HTML. A given bullet's
+//   marker (and its wording) can differ between the short (CV) and
+//   detailed (LinkedIn) copy, so the value can instead be
+//   `{ short: [...], detailed: [...] }` when the two modes need different
+//   block keys — resolved against whatever Read-more state that entry's
+//   section is actually in (see resolveBlockKeys() in cv.js). A plain
+//   array is used where the same key exists in both.
 function triggerButton(id, label) {
   return `<button type="button" class="cv-trigger" data-trigger="${id}">${label}</button>`;
 }
@@ -44,14 +46,20 @@ export const TRIGGERS = {
   "research-papers": {
     sections: ["experience", "education"],
     highlightEntries: ["msc", "bsc"],
-    highlightBlocks: { freelance: ["hodgkinHuxley", "odePde"] },
-    forceDetailedSections: ["experience"],
+    highlightBlocks: {
+      freelance: { short: ["scientificModels"], detailed: ["hodgkinHuxley", "odePde"] },
+    },
   },
   "mathematical-models": {
     sections: ["experience", "education"],
     highlightEntries: ["msc", "bsc"],
-    highlightBlocks: { freelance: ["coreProject"], sherpa: ["mathModels"] },
-    forceDetailedSections: ["experience"],
+    highlightBlocks: {
+      freelance: {
+        short: ["economicIndex", "scientificModels"],
+        detailed: ["coreProjectConfig", "coreProjectPipelines", "coreProjectBackfills"],
+      },
+      sherpa: ["mathModels"],
+    },
   },
   onna: {
     sections: ["experience"],
@@ -60,7 +68,6 @@ export const TRIGGERS = {
   climatemapper: {
     sections: ["experience"],
     highlightBlocks: { freelance: ["climateMapper"] },
-    forceDetailedSections: ["experience"],
   },
 };
 
@@ -170,11 +177,13 @@ const FREELANCE_BLOCKS = {
       large-scale global news datasets, implementing Baker-Bloom-Davis-style academic methodology
       across tens of thousands of articles spanning multiple decades and news sources.</p>
       <ul>
-        <li>Configuration-driven framework enabling non-developers to define new indices across
-        sources, languages, regions, and time resolutions without modifying code</li>
-        <li>Resilient ingestion pipelines with structured logging, retries, fault recovery, and
-        validation</li>
-        <li>Automation workflows for historical backfills across thousands of news sources</li>
+        <li data-block="coreProjectConfig">Configuration-driven framework enabling non-developers to
+        define new indices across sources, languages, regions, and time resolutions without
+        modifying code</li>
+        <li data-block="coreProjectPipelines">Resilient ingestion pipelines with structured logging,
+        retries, fault recovery, and validation</li>
+        <li data-block="coreProjectBackfills">Automation workflows for historical backfills across
+        thousands of news sources</li>
       </ul>
     </div>
   `,
@@ -224,18 +233,21 @@ export const EXPERIENCE = {
       blocks: FREELANCE_BLOCKS,
       short: `
         <ul>
-          <li>Independently evolved from prototype a platform constructing economic indices from
-          large-scale global news datasets, implementing Baker-Bloom-Davis-style academic methodology
-          across tens of thousands of articles spanning multiple decades and news sources</li>
-          <li>Built <a href="https://climatemapper.boojee.dev/" target="_blank" rel="noreferrer">ClimateMapper</a>,
+          <li data-block="economicIndex">Independently evolved from prototype a platform constructing
+          economic indices from large-scale global news datasets, implementing Baker-Bloom-Davis-style
+          academic methodology across tens of thousands of articles spanning multiple decades and news
+          sources</li>
+          <li data-block="climateMapper">Built
+          <a href="https://climatemapper.boojee.dev/" target="_blank" rel="noreferrer">ClimateMapper</a>,
           a geospatial visualisation tool for exploring climate variables derived from ERA5 reanalysis
           data, with an interactive map interface for regional and temporal comparison</li>
           <li>Built CouchSearch, a geospatial discovery tool mapping hosts by region with a layered
           visual encoding system representing availability, references, and activity recency</li>
-          <li>Implemented scientific models from academic literature across multiple domains:
-          computational neuroscience (Hodgkin-Huxley neuron dynamics), epidemiology (SIR/SIRV
-          compartmental ODE models), structural and continuum mechanics (FEniCS / FEM — arterial blood
-          flow, PDE-based physical simulations), and predator-prey population dynamics</li>
+          <li data-block="scientificModels">Implemented scientific models from academic literature
+          across multiple domains: computational neuroscience (Hodgkin-Huxley neuron dynamics),
+          epidemiology (SIR/SIRV compartmental ODE models), structural and continuum mechanics (FEniCS
+          / FEM — arterial blood flow, PDE-based physical simulations), and predator-prey population
+          dynamics</li>
           <li>End-to-end delivery for 50+ clients: architecture, implementation, client alignment, and
           deployment</li>
           <li>Accepted into <a href="https://www.toptal.com/developers/resume/darren-buttigieg" target="_blank" rel="noreferrer">Toptal network</a>
