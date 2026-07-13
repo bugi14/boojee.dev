@@ -77,22 +77,41 @@ export function createCvPage() {
   const skillsBody = page.querySelector('[data-section="skills"] .cv-section-body');
   const skillsToggle = page.querySelector('[data-section="skills"] .cv-toggle-mode');
 
-  // Below this width, the fixed bottom-right contact badges (Toptal card +
-  // icons — #contact-badges, see badges.css) start to overlap .cv-main's
-  // content, so reparentBadges() below moves them into the sidebar under
-  // Skills instead, in normal flow.
-  const BADGES_OVERLAP_QUERY = window.matchMedia("(max-width: 900px)");
+  // Below this width, two fixed-positioned elements start to overlap
+  // .cv-main's content instead of sitting beside/above the header: the
+  // contact badges (Toptal card + icons — #contact-badges, see badges.css)
+  // and the nav-pill layer (Experience/Education — .cv-nav-layer, see
+  // updateNavLayerPosition() below). reparentSidebarOverlays() moves both
+  // into .cv-sidebar instead — the nav layer above Skills, the badges below
+  // it — so everything's in normal flow and nothing overlaps.
+  const SIDEBAR_OVERLAY_QUERY = window.matchMedia("(max-width: 900px)");
   const badgesHomeParent = document.getElementById("contact-badges")?.parentElement || null;
+  const navLayerHomeParent = navLayer.parentElement;
+  const navLayerHomeNextSibling = navLayer.nextSibling;
 
-  function reparentBadges() {
+  function reparentSidebarOverlays() {
     const badges = document.getElementById("contact-badges");
-    if (!badges) return;
-    if (BADGES_OVERLAP_QUERY.matches) {
-      badges.classList.add("contact-badges--inline");
-      sidebar.appendChild(badges);
+    if (SIDEBAR_OVERLAY_QUERY.matches) {
+      navLayer.classList.add("cv-nav-layer--inline");
+      // Clear whatever fixed-position inline styles updateNavLayerPosition()
+      // left behind (width/right/top) — .cv-nav-layer--inline's static,
+      // full-width row layout has to win, not a handful of stale pixel
+      // values sized for the old fixed placement.
+      navLayer.style.removeProperty("width");
+      navLayer.style.removeProperty("right");
+      navLayer.style.removeProperty("top");
+      sidebar.insertBefore(navLayer, sidebar.firstChild);
+      if (badges) {
+        badges.classList.add("contact-badges--inline");
+        sidebar.appendChild(badges);
+      }
     } else {
-      badges.classList.remove("contact-badges--inline");
-      badgesHomeParent?.appendChild(badges);
+      navLayer.classList.remove("cv-nav-layer--inline");
+      navLayerHomeParent.insertBefore(navLayer, navLayerHomeNextSibling);
+      if (badges) {
+        badges.classList.remove("contact-badges--inline");
+        badgesHomeParent?.appendChild(badges);
+      }
     }
   }
 
@@ -524,6 +543,12 @@ export function createCvPage() {
   // into the bottom-right corner on scroll, it moves to sit just below
   // the docked header, above the contact badges.
   function updateNavLayerPosition() {
+    // Once reparentSidebarOverlays() has moved the nav layer into the
+    // sidebar (see SIDEBAR_OVERLAY_QUERY above), .cv-nav-layer--inline puts
+    // it in normal flow above Skills — leave its layout to that CSS rather
+    // than fighting it with the fixed-position inline styles below.
+    if (navLayer.classList.contains("cv-nav-layer--inline")) return;
+
     const headerRect = header.getBoundingClientRect();
     const docked = header.classList.contains("cv-header--docked");
 
@@ -555,10 +580,14 @@ export function createCvPage() {
     const badges = document.getElementById("contact-badges");
     if (!badges) return;
     updateNavLayerPosition(); // width + a provisional top, so the pill stack is laid out for measuring
-    const navHeight = navLayer.offsetHeight;
-    // Once reparentBadges() has moved the badges into the sidebar (see
-    // BADGES_OVERLAP_QUERY above), they're no longer fixed bottom-right, so
-    // their rect can't be used to clear them — just clear the viewport edge.
+    // Once inline (in the sidebar), the nav layer isn't stacked above the
+    // fixed badges anymore, so it shouldn't factor into the docked header's
+    // clearance.
+    const navHeight = navLayer.classList.contains("cv-nav-layer--inline") ? 0 : navLayer.offsetHeight;
+    // Once reparentSidebarOverlays() has moved the badges into the sidebar
+    // (see SIDEBAR_OVERLAY_QUERY above), they're no longer fixed
+    // bottom-right, so their rect can't be used to clear them — just clear
+    // the viewport edge.
     const badgesTop = badges.classList.contains("contact-badges--inline") ? window.innerHeight : badges.getBoundingClientRect().top;
     const bottom = window.innerHeight - badgesTop + DOCK_GAP + navHeight + NAV_LAYER_GAP;
     header.style.setProperty("--cv-header-dock-bottom", `${bottom}px`);
@@ -607,12 +636,18 @@ export function createCvPage() {
       scrollContainer?.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", updateDockPosition);
       header.removeEventListener("transitionend", updateNavLayerPosition);
-      BADGES_OVERLAP_QUERY.removeEventListener("change", reparentBadges);
+      SIDEBAR_OVERLAY_QUERY.removeEventListener("change", reparentSidebarOverlays);
       header.classList.remove("cv-header--docked");
       headerSpacer.style.height = "0px";
       scrollContainer = null;
-      // Restore the badges to their normal (site-wide, fixed) home so
-      // they're not left stranded in the CV sidebar on other pages.
+      // Restore the badges and nav layer to their normal (site-wide fixed /
+      // header-adjacent) homes so they're not left stranded in the CV
+      // sidebar on other pages, or the next time the CV page shows.
+      navLayer.classList.remove("cv-nav-layer--inline");
+      navLayer.style.removeProperty("width");
+      navLayer.style.removeProperty("right");
+      navLayer.style.removeProperty("top");
+      navLayerHomeParent.insertBefore(navLayer, navLayerHomeNextSibling);
       const badges = document.getElementById("contact-badges");
       badges?.classList.remove("contact-badges--inline");
       if (badges && badgesHomeParent) badgesHomeParent.appendChild(badges);
@@ -623,10 +658,10 @@ export function createCvPage() {
       scrollContainer = document.getElementById("destination-view");
       handleScroll();
       updateDockPosition();
-      reparentBadges();
+      reparentSidebarOverlays();
       scrollContainer.addEventListener("scroll", handleScroll);
       window.addEventListener("resize", updateDockPosition);
-      BADGES_OVERLAP_QUERY.addEventListener("change", reparentBadges);
+      SIDEBAR_OVERLAY_QUERY.addEventListener("change", reparentSidebarOverlays);
       // Docking/undocking animates the header's position over 0.2s (see
       // cv.css); the nav layer's own position depends on the header's
       // rect, so it needs one more measurement once that settles rather

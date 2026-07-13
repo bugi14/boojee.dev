@@ -193,13 +193,23 @@
   flex-direction: column;
   /* Caps the pinned Skills panel to the viewport so it gets its own
      scrollbar (see .cv-section--pinned below) instead of growing the
-     whole sticky column past the fold. */
+     whole sticky column past the fold. `dvh` (falling back to `vh` for
+     browsers that don't support it) tracks the *shrunk* viewport once a
+     mobile browser's address bar is showing, rather than the full one —
+     otherwise the sidebar could size itself taller than what's actually
+     visible, pushing the nav layer/badges below it off the bottom of the
+     screen. */
   max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
 }
 .cv-section--pinned {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Shrinks first (before the nav layer / contact badges below it, which
+     are fixed-content and must stay fully visible) when the sidebar's
+     content exceeds max-height. */
+  flex: 1 1 auto;
 }
 .cv-section--pinned .cv-section-head {
   flex-shrink: 0;
@@ -208,6 +218,16 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+}
+/* The nav layer (once reparented inline, see .cv-nav-layer--inline) and the
+   contact badges (once reparented inline, see #contact-badges in
+   badges.css) sit above/below the pinned Skills section respectively;
+   neither should ever shrink to make room for Skills — Skills has its own
+   scrollbar for that (above) — so both keep their natural size and the
+   Toptal badge never gets clipped off the bottom of the sidebar/viewport. */
+.cv-sidebar > .cv-nav-layer,
+.cv-sidebar > #contact-badges {
+  flex-shrink: 0;
 }
 .cv-main {
   /* Narrower than the available column on wide screens, without shrinking
@@ -262,6 +282,21 @@
   .cv-nav-particle {
     font-size: 1.6rem;
   }
+}
+
+/* Below SIDEBAR_OVERLAY_QUERY (cv.js), the fixed nav-pill layer would float
+   over the stacked sidebar/main content instead of sitting beside the
+   header, so cv.js moves it into .cv-sidebar (above Skills) and swaps it
+   to this static, in-flow layout instead. */
+.cv-nav-layer.cv-nav-layer--inline {
+  position: static;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  pointer-events: auto;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .cv-content {

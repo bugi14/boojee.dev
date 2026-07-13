@@ -47,9 +47,17 @@
   height: 48px;
   border-radius: 50%;
   background: var(--color-icon-bg);
-  color: #fff;
   box-shadow: 0 8px 20px rgba(var(--color-icon-shadow-rgb), 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+}
+
+/* Reasserts white/theme colours at higher specificity than #cv-page's
+   `#cv-page a { color: var(--color-cv-link) }` — needed once cv.js
+   reparents #contact-badges inside #cv-page (see cv.js reparentBadges()),
+   since that ID selector would otherwise repaint the icons/CTA pink and
+   make "Hire me" unreadable against its own pink background. */
+#contact-badges .contact-icon {
+  color: #fff;
 }
 
 .contact-icon:hover,
@@ -145,6 +153,10 @@
   color: #F7E9C6;
 }
 
+#contact-badges .toptal-badge--dark .toptal-cta {
+  color: #F7E9C6;
+}
+
 /* ── Light scheme variant ─────────────────────────────────────────────────── */
 .toptal-badge--light .toptal-hex {
   background: #A8D8EA;
@@ -162,6 +174,10 @@
 
 .toptal-badge--light .toptal-cta {
   background: #1C2541;
+  color: #FAF7F2;
+}
+
+#contact-badges .toptal-badge--light .toptal-cta {
   color: #FAF7F2;
 }
 
