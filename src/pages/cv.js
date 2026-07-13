@@ -101,10 +101,14 @@ export function createCvPage() {
   // A highlightBlocks entry is either a flat array of block keys (same
   // wording/markers in both Read-more states) or `{ short, detailed }`
   // when the two states need different keys — resolved against whichever
-  // state that entry's own section is actually showing.
-  function resolveBlockKeys(entryId, blocksSpec) {
+  // state that entry's own section is actually showing, unless `mode` is
+  // given explicitly (the hover preview always previews one fixed mode
+  // per trigger — see TRIGGERS' `previewMode` in cv-data.js — regardless
+  // of what the real section is currently showing).
+  function resolveBlockKeys(entryId, blocksSpec, mode) {
     if (Array.isArray(blocksSpec)) return blocksSpec;
-    return blocksSpec[state.mode[entrySection(entryId)]] || blocksSpec.short || [];
+    const resolvedMode = mode || state.mode[entrySection(entryId)];
+    return blocksSpec[resolvedMode] || blocksSpec.short || [];
   }
 
   // Prunes an entry's rendered HTML down to just its highlighted block(s)
@@ -392,9 +396,9 @@ export function createCvPage() {
       .map((entryId) => {
         const entry = findEntry(entryId);
         if (!entry) return "";
-        const mode = state.mode[entrySection(entryId)];
+        const mode = trigger.previewMode || "short";
         const blocksSpec = trigger.highlightBlocks?.[entryId];
-        const blockKeys = blocksSpec ? resolveBlockKeys(entryId, blocksSpec) : null;
+        const blockKeys = blocksSpec ? resolveBlockKeys(entryId, blocksSpec, mode) : null;
         const windowed = !!blockKeys?.length;
         const body = windowed ? renderWindow(entry[mode], blockKeys) : entry[mode];
         // A block-level highlight already gets its own (stronger) treatment

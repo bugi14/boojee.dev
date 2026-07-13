@@ -26,6 +26,12 @@ export const SUBTITLE = "Python Developer | Scientific Computing | Backend Syste
 //   block keys — resolved against whatever Read-more state that entry's
 //   section is actually in (see resolveBlockKeys() in cv.js). A plain
 //   array is used where the same key exists in both.
+// - `previewMode`: "short" or "detailed" — which Read-more state the
+//   hover preview popup always shows for this trigger, independent of
+//   whatever state the real section is currently in. Some triggers'
+//   short copy is too minimal on its own to preview meaningfully (e.g.
+//   "astrophysics" is just a thesis title in short mode), so those force
+//   "detailed" in the popup; the rest default to "short".
 function triggerButton(id, label) {
   return `<button type="button" class="cv-trigger" data-trigger="${id}">${label}</button>`;
 }
@@ -38,10 +44,12 @@ export const TRIGGERS = {
   astrophysics: {
     sections: ["education"],
     highlightEntries: ["msc"],
+    previewMode: "detailed",
   },
   mathematics: {
     sections: ["education"],
     highlightEntries: ["bsc"],
+    previewMode: "detailed",
   },
   "research-papers": {
     sections: ["experience", "education"],
@@ -49,6 +57,7 @@ export const TRIGGERS = {
     highlightBlocks: {
       freelance: { short: ["scientificModels"], detailed: ["hodgkinHuxley", "odePde"] },
     },
+    previewMode: "detailed",
   },
   "mathematical-models": {
     sections: ["experience", "education"],
@@ -59,6 +68,13 @@ export const TRIGGERS = {
         detailed: ["coreProjectConfig", "coreProjectPipelines", "coreProjectBackfills"],
       },
       sherpa: ["mathModels"],
+    },
+    previewMode: "detailed",
+  },
+  "economic-index-platform": {
+    sections: ["experience"],
+    highlightBlocks: {
+      freelance: { short: ["economicIndex"], detailed: ["coreProject"] },
     },
   },
   onna: {
@@ -78,12 +94,13 @@ export const ABOUT = {
     ${triggerButton("mathematics", "mathematics")} shaped how I approach complex problems, be they
     ${triggerButton("research-papers", "research papers")},
     ${triggerButton("mathematical-models", "mathematical models")}, or ambiguous product ideas.
-    Modern AI tooling lets me move fast across stacks, backed by engineering judgment built over
+    Modern AI tooling lets me move fast across stacks, backed by engineering judgement built over
     nearly a decade to know what correct, maintainable code actually looks like.</p>
     <p>My core strength is reasoning from first principles, learning a new domain quickly, and
     shipping something real — from petabyte-scale data ingestion at
-    ${triggerButton("onna", "Onna")}, to a multi-year economic
-    index platform built independently, to recent product work like
+    ${triggerButton("onna", "Onna")}, to a
+    ${triggerButton("economic-index-platform", "multi-year economic index platform")}
+    built independently, to recent product work like
     ${triggerButton("climatemapper", "ClimateMapper")}
     and my own <a href="https://boojee.dev" target="_blank" rel="noreferrer">portfolio site</a>, both
     built solo using AI-assisted workflows.</p>
@@ -98,8 +115,9 @@ export const ABOUT = {
     nearly a decade to know what correct, maintainable code actually looks like.</p>
     <p>My core strength is reasoning from first principles, learning a new domain quickly, and
     shipping something real — from petabyte-scale data ingestion at
-    ${triggerButton("onna", "Onna")}, to a multi-year economic
-    index platform built independently, to recent product work like
+    ${triggerButton("onna", "Onna")}, to a
+    ${triggerButton("economic-index-platform", "multi-year economic index platform")}
+    built independently, to recent product work like
     ${triggerButton("climatemapper", "ClimateMapper")}
     and my own <a href="https://boojee.dev" target="_blank" rel="noreferrer">portfolio site</a>, both
     built solo using AI-assisted workflows.</p>
