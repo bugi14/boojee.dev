@@ -5,7 +5,7 @@ export const PROJECTS = [
     id: "couchsearch",
     title: "Beyond the City: A Discovery Map for Couchsurfing Hosts",
     status:
-      "Note: This project is currently paused. Couchsurfing overhauled their website in 2025, breaking the scraping layer this tool relied on. All references to Couchsurfing below describe how the platform worked prior to that overhaul. The project is presented here as a portfolio piece for the architecture and the problems it solved.",
+      "Note: This project is currently paused. Couchsurfing overhauled their website in 2026, breaking the scraping layer this tool relied on. All references to Couchsurfing below describe how the platform worked prior to that overhaul. The project is presented here as a portfolio piece for the architecture and the problems it solved.",
     demo: {
       src: "/assets/images/couchsearch-demo.gif",
       alt: "CouchSearch demo — panning and filtering the interactive host map",
@@ -54,6 +54,12 @@ export const PROJECTS = [
         heading: "Engineering discipline",
         paragraphs: [
           "The project is fully typed (Pydantic models, strict mypy), covered by a pytest suite, linted with Ruff, and has pre-commit hooks enforcing all of it. Every computed region cover and every scrape run is cached and keyed by a hash of the active config, so interrupted runs resume automatically and experimenting with different radius parameters never throws away prior scraped data.",
+        ],
+      },
+      {
+        heading: "Status",
+        paragraphs: [
+          "Couchsurfing rebuilt its site mid-development, breaking the scraping layer before several areas reached a finished state. Popup styling, profile pictures, and reference date parsing were all works in progress at the point development stopped. The architecture and the coverage algorithm stand on their own as solved problems, and the map itself is fully functional for the data that was successfully scraped.",
         ],
       },
     ],
