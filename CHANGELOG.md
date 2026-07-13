@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-13
+
+Progressive-disclosure CV page with floating nav, contextual highlighting, and hover previews. See [#28](https://github.com/bugi14/boojee.dev/pull/28).
+
+### Added
+- **Interactive CV page** (`src/pages/cv.js`, `cv-data.js`, `cv.css`): the CV page now uses progressive disclosure — only the header and About section are visible on landing. Skills, Experience, and Education are opened via floating nav pills.
+- **Floating nav pills**: fixed-position section nav that lives inside the header border when at the top of the page, then docks to a compact card in the bottom-right corner (above the Toptal badge) once the user scrolls down. Hysteresis (dock at 24 px scroll, undock at 4 px) prevents the bounce loop that would otherwise occur when docking shrinks the page height.
+- **Read more / less toggle**: each section has a short CV-style view (default) and a detailed LinkedIn-style view toggled with a More/Less button.
+- **Trigger phrases in About**: phrases like "8+ years of Python", "mathematical models", "ClimateMapper", and "multi-year economic index platform" are clickable. Clicking opens the relevant sections with the matched entries and bullets highlighted; hovering shows a hover popup with just the highlighted content windowed.
+- **Content windowing**: highlighted bullets are shown with one faded neighbour above and below, and a "Show all / Show less" toggle to expand the full section.
+- **Section-level fading**: non-targeted entries within an opened section are faded out (directional fade before/after) so the highlighted entry stands out.
+- **Hover previews**: hovering a trigger phrase shows a popup to the right listing all highlighted entries in CV order, each windowed to the relevant content. Clicking the popup activates the same trigger in the main frame.
+- **tsParticles links background** (`src/particles/cv-background.js`): an interactive particle-links canvas fills the CV page background, with mouse-grab interactivity.
+- **Printable CV link**: a "View printable version" link in the header opens the PDF CV (`public/assets/documents/darren-buttigieg-cv.pdf`) in a new tab.
+
 ## [1.0.0] - 2026-07-08
 
 Visual polish pass: colour themes, SVG particles, and site chrome. See [#22](https://github.com/bugi14/boojee.dev/issues/22).
