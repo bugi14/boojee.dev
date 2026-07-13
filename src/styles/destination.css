@@ -20,7 +20,8 @@
   padding: 88px 24px 64px;
 }
 
-#destination-content.is-cv {
+#destination-content.is-cv,
+#destination-content.is-projects {
   justify-content: flex-start;
   align-items: stretch;
 }
