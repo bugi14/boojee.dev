@@ -164,10 +164,38 @@ export function createCvPage() {
     if (id === "about") return ABOUT[mode];
 
     const data = id === "experience" ? EXPERIENCE : EDUCATION;
-    return data.entries
-      .map((entry) => {
+    const entries = data.entries;
+    // Entries this section's active highlight (if any) actually targets,
+    // whole or partial — everything else in the section fades away the
+    // same way a non-highlighted bullet does within an entry (see
+    // pruneToWindow()), just without the "distance > 1 gets removed"
+    // rule: with only two or three entries per section there's no
+    // unrelated middle distance to drop, so every non-targeted entry
+    // fades rather than only the nearest one.
+    const targetedIndexes = state.highlight
+      ? entries.map((entry, i) => (state.highlight.entries.includes(entry.id) || entry.id in state.highlight.blocks ? i : -1)).filter((i) => i !== -1)
+      : [];
+    const minTargeted = targetedIndexes.length ? Math.min(...targetedIndexes) : -1;
+
+    return entries
+      .map((entry, i) => {
         const highlighted = state.highlight?.entries.includes(entry.id);
         const blocksSpec = state.highlight?.blocks?.[entry.id];
+        const isTargeted = highlighted || !!blocksSpec;
+
+        if (state.highlight && !isTargeted) {
+          return `
+            <article class="cv-entry ${i < minTargeted ? "cv-block--fade-before" : "cv-block--fade-after"}" data-entry-id="${entry.id}">
+              <div class="cv-entry-head">
+                <h3>${entry.title}</h3>
+                <span class="cv-dates">${entry.dates}</span>
+              </div>
+              ${entry.sub ? `<p class="cv-entry-sub">${entry.sub}</p>` : ""}
+              ${entry[mode]}
+            </article>
+          `;
+        }
+
         const blockKeys = blocksSpec ? resolveBlockKeys(entry.id, blocksSpec) : null;
         const windowed = !!blockKeys?.length && !state.expandedEntries.has(entry.id);
         const body = windowed ? renderWindow(entry[mode], blockKeys) : entry[mode];
@@ -274,6 +302,12 @@ export function createCvPage() {
     state.open = new Set(trigger.sections);
     state.highlight = { entries: trigger.highlightEntries || [], blocks: trigger.highlightBlocks || {} };
     state.expandedEntries.clear();
+    // Matches whatever Read-more state the hover preview showed for this
+    // trigger (see `previewMode` in cv-data.js) — so what you saw in the
+    // popup is exactly what you land on, rather than whatever the section
+    // happened to be showing before.
+    const mode = trigger.previewMode || "short";
+    for (const section of trigger.sections) state.mode[section] = mode;
     render();
     hidePreview();
     const target = content.querySelector(".cv-block--highlight, .cv-entry--highlight");
