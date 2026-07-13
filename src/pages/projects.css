@@ -80,5 +80,21 @@
   height: auto;
   border-radius: 16px;
   border: 1px solid var(--color-cv-section);
+}
+
+.project-figure {
   margin: 16px 0;
+}
+
+.project-figure .project-demo,
+.project-figure .project-inline-image {
+  margin: 0;
+}
+
+.project-figure figcaption {
+  font-size: 0.9rem;
+  font-style: italic;
+  opacity: 0.75;
+  margin-top: 8px;
+  text-align: center;
 }

@@ -9,6 +9,8 @@ export const PROJECTS = [
     demo: {
       src: "/assets/images/couchsearch-demo.gif",
       alt: "CouchSearch demo — panning and filtering the interactive host map",
+      caption:
+        "Scraped hosts across central Japan, demonstrating the layered visual encoding of the icons, then clicking a couple of hosts to open their full profile.",
     },
     body: [
       {
@@ -39,6 +41,7 @@ export const PROJECTS = [
         image: {
           src: "/assets/images/couchsearch-map-cover.png",
           alt: "Map showing the computed region cover for CouchSearch",
+          caption: "The computed cover for the region.",
         },
         paragraphs: [
           "The list is sorted so major cities scrape first, giving a useful partial map even if a long-running scrape is interrupted.",

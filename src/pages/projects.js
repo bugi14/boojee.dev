@@ -15,9 +15,7 @@ export function createProjectsPage() {
 }
 
 function renderProject(project) {
-  const demo = project.demo
-    ? `<img class="project-demo" src="${project.demo.src}" alt="${project.demo.alt}" loading="lazy" />`
-    : "";
+  const demo = project.demo ? renderFigure(project.demo, "project-demo") : "";
 
   const body = project.body.map(renderBlock).join("");
 
@@ -33,13 +31,17 @@ function renderProject(project) {
 
 function renderBlock(block) {
   const heading = block.heading ? `<h3>${block.heading}</h3>` : "";
-  const image = block.image
-    ? `<img class="project-inline-image" src="${block.image.src}" alt="${block.image.alt}" loading="lazy" />`
-    : "";
+  const image = block.image ? renderFigure(block.image, "project-inline-image") : "";
   const paragraphs = (block.paragraphs || []).map((p) => `<p>${p}</p>`).join("");
   const list = block.list
     ? `<ul>${block.list.map((item) => `<li>${item}</li>`).join("")}</ul>`
     : "";
 
   return `${heading}${image}${paragraphs}${list}`;
+}
+
+function renderFigure(media, imageClass) {
+  const img = `<img class="${imageClass}" src="${media.src}" alt="${media.alt}" loading="lazy" />`;
+  if (!media.caption) return img;
+  return `<figure class="project-figure">${img}<figcaption>${media.caption}</figcaption></figure>`;
 }
