@@ -681,9 +681,50 @@ li.cv-tech {
   }
 }
 
-@media (max-width: 520px) {
+/* A second, more aggressive shrink tier — tuned to keep 2 columns fitting
+   on real phone widths (e.g. ~412px CSS px on an Android flagship like the
+   Vivo X200 5G in portrait) instead of only on tablets. */
+@media (max-width: 560px) {
+  #cv-page {
+    font-size: 0.85rem;
+  }
+  .cv-header {
+    padding: 16px 18px;
+    gap: 14px;
+  }
   .cv-header h1 {
+    font-size: 1.2rem;
+  }
+  .cv-title {
+    font-size: 0.85rem;
+  }
+  .cv-pdf-link {
+    font-size: 0.75rem;
+  }
+  .cv-photo {
+    width: 48px;
+    height: 48px;
+  }
+  .cv-body {
+    grid-template-columns: minmax(100px, 130px) 1fr;
+    gap: 12px;
+  }
+  .cv-section,
+  .cv-header {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .cv-section-head h2 {
     font-size: 1.4rem;
+  }
+  .cv-nav-particle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .cv-header h1 {
+    font-size: 1.1rem;
   }
   .cv-body {
     grid-template-columns: 1fr;
