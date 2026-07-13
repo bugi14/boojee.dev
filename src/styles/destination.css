@@ -55,12 +55,3 @@
 #destination-back:hover {
   color: var(--color-back-hover);
 }
-
-@media (max-width: 600px) {
-  #destination-back {
-    left: 96px; /* clears the larger mobile logo (20px + 60px + gap) */
-    padding: 10px 16px;
-    font-size: 1.1rem;
-    border-radius: 10px;
-  }
-}

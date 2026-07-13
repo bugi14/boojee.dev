@@ -643,9 +643,47 @@ li.cv-tech {
   margin-left: -1.1em;
 }
 
+/* .cv-main's desktop width (min(100%, clamp(420px, 60vw, 820px)) above)
+   imposes an effective ~420px floor that, combined with the sidebar
+   column, forced the grid to collapse to one column far earlier than the
+   space actually available — dropping .cv-main's own width back to 100%
+   of its grid track here lets the two columns keep working down to
+   whatever width .cv-body's own grid-template-columns (below) still
+   supports. */
+@media (max-width: 900px) {
+  .cv-main {
+    width: 100%;
+  }
+}
+
+/* Both the base font-size/heading sizes above and the sidebar's column
+   width were tuned against the ~980px layout viewport mobile browsers
+   used to fall back to without a <meta name="viewport"> tag (see
+   index.html) — everything (this page included) got scaled down to fit
+   the screen along with it, so a 2-column layout reads as "fitting" even
+   on a narrow phone. Now that real viewport widths are in play, both need
+   their own real-width sizing: shrink first (keeping 2 columns as long as
+   they'll fit) before finally stacking to 1 column close to phone width. */
 @media (max-width: 700px) {
+  #cv-page {
+    font-size: 1rem;
+  }
   .cv-header h1 {
-    font-size: 2rem;
+    font-size: 1.7rem;
+  }
+  .cv-photo {
+    width: 72px;
+    height: 72px;
+  }
+  .cv-body {
+    grid-template-columns: minmax(140px, 180px) 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .cv-header h1 {
+    font-size: 1.4rem;
   }
   .cv-body {
     grid-template-columns: 1fr;
@@ -653,8 +691,5 @@ li.cv-tech {
   }
   .cv-sidebar {
     position: static;
-  }
-  .cv-main {
-    width: 100%;
   }
 }

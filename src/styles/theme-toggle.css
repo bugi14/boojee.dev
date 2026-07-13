@@ -50,25 +50,3 @@
   transition: transform 0.25s ease, background 0.3s ease;
   transform: translateX(var(--toggle-thumb-x));
 }
-
-@media (max-width: 600px) {
-  .toggle-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .toggle-track {
-    width: 54px;
-    height: 30px;
-    border-radius: 15px;
-  }
-
-  .toggle-thumb {
-    width: 26px;
-    height: 26px;
-  }
-
-  :root[data-theme="light"] {
-    --toggle-thumb-x: 24px;
-  }
-}
