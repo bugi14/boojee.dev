@@ -10,3 +10,9 @@
   width: auto;
   pointer-events: none;
 }
+
+@media (max-width: 600px) {
+  #site-logo {
+    height: 60px;
+  }
+}

@@ -23,6 +23,17 @@
   display: none;
 }
 
+/* On the CV page, once the viewport narrows enough that the fixed
+   bottom-right badge would overlap the main content column, cv.js
+   reparents #contact-badges into .cv-sidebar (under Skills) and adds this
+   class so it lays out inline instead of floating over the content. */
+#contact-badges.contact-badges--inline {
+  position: static;
+  right: auto;
+  bottom: auto;
+  margin-top: 32px;
+}
+
 .contact-icons {
   display: flex;
   gap: 14px;
