@@ -10,13 +10,6 @@
   gap: 8px;
 }
 
-@media (max-width: 600px) {
-  #theme-toggle {
-    top: auto;
-    bottom: 16px;
-  }
-}
-
 /* The unconditional `display: flex` above beats the UA [hidden] rule's
    `display: none` on specificity (id vs attribute selector alone), so the
    hyperspace hide (main.js sets .hidden = true) would otherwise have no
