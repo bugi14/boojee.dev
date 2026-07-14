@@ -193,6 +193,18 @@
 /* Scaled down for real (narrow) mobile viewports — see the equivalent note
    in home.css. Sized to roughly match how these read at desktop viewport
    widths generally, not device-specific tuning. */
+/* In single-column mode (≤320px) the sidebar becomes static, but the badge
+   is still reparented inside it — restore it to a fixed corner position so
+   it appears at the bottom of the viewport rather than mid-flow. */
+@media (max-width: 320px) {
+  #contact-badges.contact-badges--inline {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    margin-top: 0;
+  }
+}
+
 @media (max-width: 600px) {
   #contact-badges {
     right: 12px;

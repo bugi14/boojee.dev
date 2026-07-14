@@ -299,6 +299,80 @@
   margin-bottom: 20px;
 }
 
+/* Below MOBILE_FIXED_SIDEBAR_QUERY (cv.js), the header is reparented into
+   .cv-sidebar so the full left column (header + nav + skills + badge) stays
+   visible as the user scrolls the right-column content. The compact column
+   layout fits within the 100–130 px sidebar track at these widths. */
+.cv-header.cv-header--in-sidebar {
+  position: static;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: none;
+  gap: 6px;
+  padding: 10px 12px;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.cv-header--in-sidebar .cv-photo {
+  width: 36px;
+  height: 36px;
+}
+.cv-header.cv-header--in-sidebar h1 {
+  font-size: 0.8rem;
+  margin-bottom: 0;
+}
+.cv-header--in-sidebar .cv-title {
+  font-size: 0.7rem;
+  margin-bottom: 0;
+}
+.cv-header--in-sidebar .cv-pdf-link {
+  font-size: 0.65rem;
+}
+.cv-header--in-sidebar .cv-title-sep {
+  display: none;
+}
+.cv-header--in-sidebar .cv-title-part {
+  display: block;
+}
+/* Cancel the floating corner-card docking when the header is already inside
+   the sticky sidebar — the sidebar keeps it visible as the user scrolls, so
+   there is no need (or room) for the docked state here. */
+.cv-header--in-sidebar.cv-header--docked {
+  position: static;
+  right: auto;
+  bottom: auto;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: none;
+  gap: 6px;
+  padding: 10px 12px;
+  margin-bottom: 0;
+}
+.cv-header--in-sidebar .cv-header-text,
+.cv-header--in-sidebar.cv-header--docked .cv-header-text {
+  text-align: left;
+}
+.cv-header.cv-header--in-sidebar.cv-header--docked h1 {
+  font-size: 0.8rem;
+  text-align: left;
+}
+.cv-header--in-sidebar.cv-header--docked .cv-title {
+  font-size: 0.7rem;
+}
+.cv-header--in-sidebar.cv-header--docked .cv-title-part {
+  display: block;
+}
+.cv-header--in-sidebar.cv-header--docked .cv-title-sep {
+  display: none;
+}
+.cv-header--in-sidebar.cv-header--docked .cv-photo {
+  width: 36px;
+  height: 36px;
+}
+
 .cv-content {
   display: flex;
   flex-direction: column;
@@ -722,7 +796,7 @@ li.cv-tech {
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 320px) {
   .cv-header h1 {
     font-size: 1.1rem;
   }
@@ -732,5 +806,6 @@ li.cv-tech {
   }
   .cv-sidebar {
     position: static;
+    max-height: none;
   }
 }

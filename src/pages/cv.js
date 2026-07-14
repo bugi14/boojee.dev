@@ -85,9 +85,27 @@ export function createCvPage() {
   // into .cv-sidebar instead — the nav layer above Skills, the badges below
   // it — so everything's in normal flow and nothing overlaps.
   const SIDEBAR_OVERLAY_QUERY = window.matchMedia("(max-width: 900px)");
+  // Below this width the header is reparented into the sidebar so the full
+  // left column (header + nav pills + skills + badge) stays visible while
+  // the user scrolls the right-column content.
+  const MOBILE_FIXED_SIDEBAR_QUERY = window.matchMedia("(max-width: 520px)");
   const badgesHomeParent = document.getElementById("contact-badges")?.parentElement || null;
   const navLayerHomeParent = navLayer.parentElement;
   const navLayerHomeNextSibling = navLayer.nextSibling;
+  const headerHomeParent = header.parentElement;
+  const headerHomeNextSibling = header.nextSibling;
+
+  function reparentHeader() {
+    if (MOBILE_FIXED_SIDEBAR_QUERY.matches) {
+      header.classList.add("cv-header--in-sidebar");
+      sidebar.insertBefore(header, sidebar.firstChild);
+      headerSpacer.style.height = "0px";
+    } else {
+      header.classList.remove("cv-header--in-sidebar");
+      headerHomeParent.insertBefore(header, headerHomeNextSibling);
+      headerSpacer.style.height = "0px";
+    }
+  }
 
   function reparentSidebarOverlays() {
     const badges = document.getElementById("contact-badges");
@@ -100,7 +118,13 @@ export function createCvPage() {
       navLayer.style.removeProperty("width");
       navLayer.style.removeProperty("right");
       navLayer.style.removeProperty("top");
-      sidebar.insertBefore(navLayer, sidebar.firstChild);
+      // If the header is already in the sidebar (MOBILE_FIXED_SIDEBAR_QUERY),
+      // insert the nav layer after it so the order stays
+      // [header | nav | skills | badges].
+      const navInsertPoint = header.classList.contains("cv-header--in-sidebar")
+        ? header.nextSibling
+        : sidebar.firstChild;
+      sidebar.insertBefore(navLayer, navInsertPoint);
       if (badges) {
         badges.classList.add("contact-badges--inline");
         sidebar.appendChild(badges);
@@ -595,6 +619,8 @@ export function createCvPage() {
   }
 
   function handleScroll() {
+    // The header is inside the fixed sidebar — no docking needed.
+    if (header.classList.contains("cv-header--in-sidebar")) return;
     const currentlyDocked = header.classList.contains("cv-header--docked");
     const shouldDock = currentlyDocked
       ? scrollContainer.scrollTop > UNDOCK_SCROLL_THRESHOLD
@@ -637,12 +663,15 @@ export function createCvPage() {
       window.removeEventListener("resize", updateDockPosition);
       header.removeEventListener("transitionend", updateNavLayerPosition);
       SIDEBAR_OVERLAY_QUERY.removeEventListener("change", reparentSidebarOverlays);
+      MOBILE_FIXED_SIDEBAR_QUERY.removeEventListener("change", reparentHeader);
       header.classList.remove("cv-header--docked");
       headerSpacer.style.height = "0px";
       scrollContainer = null;
-      // Restore the badges and nav layer to their normal (site-wide fixed /
-      // header-adjacent) homes so they're not left stranded in the CV
-      // sidebar on other pages, or the next time the CV page shows.
+      // Restore the header, badges and nav layer to their normal homes so
+      // they're not left stranded in the CV sidebar on other pages, or the
+      // next time the CV page shows.
+      header.classList.remove("cv-header--in-sidebar");
+      headerHomeParent.insertBefore(header, headerHomeNextSibling);
       navLayer.classList.remove("cv-nav-layer--inline");
       navLayer.style.removeProperty("width");
       navLayer.style.removeProperty("right");
@@ -656,12 +685,16 @@ export function createCvPage() {
       cvBackground.attach();
       render();
       scrollContainer = document.getElementById("destination-view");
+      // Reparent header first so reparentSidebarOverlays() can insert the
+      // nav layer after it if both queries match.
+      reparentHeader();
+      reparentSidebarOverlays();
       handleScroll();
       updateDockPosition();
-      reparentSidebarOverlays();
       scrollContainer.addEventListener("scroll", handleScroll);
       window.addEventListener("resize", updateDockPosition);
       SIDEBAR_OVERLAY_QUERY.addEventListener("change", reparentSidebarOverlays);
+      MOBILE_FIXED_SIDEBAR_QUERY.addEventListener("change", reparentHeader);
       // Docking/undocking animates the header's position over 0.2s (see
       // cv.css); the nav layer's own position depends on the header's
       // rect, so it needs one more measurement once that settles rather
