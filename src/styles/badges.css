@@ -244,16 +244,27 @@
     width: 15px;
     height: 15px;
   }
+  .toptal-hex {
+    padding: 3px;
+  }
   .toptal-card {
     width: 67px;
     padding: 7px 0 11px;
     gap: 3px;
   }
+  .toptal-card > svg:first-of-type {
+    width: 16px;
+    height: auto;
+  }
+  .toptal-card > svg:last-of-type {
+    width: 28px;
+    height: auto;
+  }
   .toptal-title {
     font-size: 7px;
   }
   .toptal-divider {
-    width: 40px;
+    width: 32px;
   }
   .toptal-label {
     font-size: 6px;

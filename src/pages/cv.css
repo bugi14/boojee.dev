@@ -746,10 +746,25 @@ li.cv-tech {
    they'll fit) before finally stacking to 1 column close to phone width. */
 @media (max-width: 700px) {
   #cv-page {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   .cv-header h1 {
     font-size: 1.7rem;
+  }
+  .cv-title {
+    font-size: 0.9rem;
+  }
+  .cv-pdf-link {
+    font-size: 0.82rem;
+  }
+  .cv-toggle-mode {
+    font-size: 0.78rem;
+  }
+  .cv-skills dt {
+    font-size: 0.74rem;
+  }
+  .cv-skills dd {
+    font-size: 0.84rem;
   }
   .cv-photo {
     width: 72px;
@@ -766,7 +781,7 @@ li.cv-tech {
    Vivo X200 5G in portrait) instead of only on tablets. */
 @media (max-width: 560px) {
   #cv-page {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
   .cv-header {
     padding: 16px 18px;
@@ -776,10 +791,19 @@ li.cv-tech {
     font-size: 1.2rem;
   }
   .cv-title {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
   .cv-pdf-link {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+  }
+  .cv-toggle-mode {
+    font-size: 0.68rem;
+  }
+  .cv-skills dt {
+    font-size: 0.64rem;
+  }
+  .cv-skills dd {
+    font-size: 0.72rem;
   }
   .cv-photo {
     width: 48px;
@@ -809,7 +833,7 @@ li.cv-tech {
    to the smaller surrounding text. */
 @media (max-width: 420px) {
   #cv-page {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
   }
   .cv-section-head h2 {
     font-size: 0.95rem;
@@ -817,11 +841,20 @@ li.cv-tech {
   .cv-nav-particle {
     font-size: 0.82rem;
   }
+  .cv-title {
+    font-size: 0.58rem;
+  }
+  .cv-pdf-link {
+    font-size: 0.54rem;
+  }
+  .cv-toggle-mode {
+    font-size: 0.56rem;
+  }
   .cv-skills dt {
-    font-size: 0.62rem;
+    font-size: 0.53rem;
   }
   .cv-skills dd {
-    font-size: 0.68rem;
+    font-size: 0.57rem;
   }
   .cv-section,
   .cv-header {
@@ -832,7 +865,7 @@ li.cv-tech {
     gap: 10px;
   }
   .cv-body {
-    grid-template-columns: minmax(75px, 91px) 1fr;
+    grid-template-columns: minmax(83px, 100px) 1fr;
   }
 }
 
