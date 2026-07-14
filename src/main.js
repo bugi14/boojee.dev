@@ -59,7 +59,7 @@ let traveling = false;
 // the badges into the normal document flow at the end of the page's own
 // content: fixed becomes static, and "bottom-right corner" becomes
 // "bottom of the page, only reached once the user scrolls all the way down".
-const BADGES_OVERLAP_QUERY = window.matchMedia("(max-width: 900px)");
+const BADGES_OVERLAP_QUERY = window.matchMedia("(max-width: 1450px)");
 const badgesHomeParent = contactBadges.parentElement;
 
 function updateBadgesPlacement() {

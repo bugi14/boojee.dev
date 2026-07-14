@@ -84,7 +84,8 @@ export function createCvPage() {
   // updateNavLayerPosition() below). reparentSidebarOverlays() moves both
   // into .cv-sidebar instead — the nav layer above Skills, the badges below
   // it — so everything's in normal flow and nothing overlaps.
-  const SIDEBAR_OVERLAY_QUERY = window.matchMedia("(max-width: 900px)");
+  const SIDEBAR_OVERLAY_QUERY = window.matchMedia("(max-width: 1450px)");
+  const SINGLE_COLUMN_QUERY = window.matchMedia("(max-width: 320px)");
   // Below this width the header is reparented into the sidebar so the full
   // left column (header + nav pills + skills + badge) stays visible while
   // the user scrolls the right-column content.
@@ -110,6 +111,7 @@ export function createCvPage() {
 
   function reparentSidebarOverlays() {
     const badges = document.getElementById("contact-badges");
+    const main = page.querySelector(".cv-main");
     if (SIDEBAR_OVERLAY_QUERY.matches) {
       navLayer.classList.add("cv-nav-layer--inline");
       // Clear whatever fixed-position inline styles updateNavLayerPosition()
@@ -128,7 +130,14 @@ export function createCvPage() {
       sidebar.insertBefore(navLayer, navInsertPoint);
       if (badges) {
         badges.classList.add("contact-badges--inline");
-        sidebar.appendChild(badges);
+        // In single-column mode the sidebar sits above the main section in
+        // the flow, so the badge would appear before the content. Move it
+        // after .cv-main instead so it lands at the very bottom of the page.
+        if (SINGLE_COLUMN_QUERY.matches && main) {
+          main.after(badges);
+        } else {
+          sidebar.appendChild(badges);
+        }
       }
     } else {
       navLayer.classList.remove("cv-nav-layer--inline");
@@ -691,6 +700,7 @@ export function createCvPage() {
       window.removeEventListener("resize", updateDockPosition);
       header.removeEventListener("transitionend", updateNavLayerPosition);
       SIDEBAR_OVERLAY_QUERY.removeEventListener("change", reparentSidebarOverlays);
+      SINGLE_COLUMN_QUERY.removeEventListener("change", reparentSidebarOverlays);
       MOBILE_FIXED_SIDEBAR_QUERY.removeEventListener("change", reparentHeader);
       header.classList.remove("cv-header--docked");
       headerSpacer.style.height = "0px";
@@ -719,6 +729,7 @@ export function createCvPage() {
       scrollContainer.addEventListener("scroll", handleScroll);
       window.addEventListener("resize", updateDockPosition);
       SIDEBAR_OVERLAY_QUERY.addEventListener("change", reparentSidebarOverlays);
+      SINGLE_COLUMN_QUERY.addEventListener("change", reparentSidebarOverlays);
       MOBILE_FIXED_SIDEBAR_QUERY.addEventListener("change", reparentHeader);
       // Docking/undocking animates the header's position over 0.2s (see
       // cv.css); the nav layer's own position depends on the header's

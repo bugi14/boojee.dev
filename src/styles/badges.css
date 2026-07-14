@@ -275,14 +275,6 @@
   }
 }
 
-/* In single-column mode (≤320px) the sidebar becomes static, but the badge
-   is still reparented inside it — restore it to a fixed corner position so
-   it appears at the bottom of the viewport rather than mid-flow. */
-@media (max-width: 320px) {
-  #contact-badges.contact-badges--inline {
-    position: fixed;
-    right: 12px;
-    bottom: 12px;
-    margin-top: 0;
-  }
-}
+/* In single-column mode (≤320px) cv.js moves #contact-badges to after
+   .cv-main so it sits at the very bottom of the page. No position override
+   needed — contact-badges--inline already gives it position: static. */
