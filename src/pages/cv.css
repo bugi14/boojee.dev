@@ -741,26 +741,13 @@ li.cv-tech {
   }
 }
 
-/* Single-column layout for mobile: stack sidebar and main content vertically
-   below 760 px. Font-size overrides intentionally removed here — keeping
-   default sizes so we can see the natural baseline before fine-tuning. */
+/* Single-column layout for mobile: sidebar is hidden, only cv-main shows.
+   Skills renders as a peer section inside cv-main in this mode (cv.js). */
 @media (max-width: 760px) {
   .cv-body {
     grid-template-columns: 1fr;
-    gap: 32px;
   }
   .cv-sidebar {
-    position: static;
-    max-height: none;
-  }
-  /* In single-column, Skills heading acts as a collapse toggle like the
-     other sections — make it cursor: pointer and hide the body when
-     the cv-section--collapsed class is toggled by cv.js. */
-  .cv-section--pinned .cv-section-head h2 {
-    cursor: pointer;
-  }
-  .cv-section--pinned.cv-section--collapsed .cv-section-body,
-  .cv-section--pinned.cv-section--collapsed .cv-toggle-mode {
     display: none;
   }
 }

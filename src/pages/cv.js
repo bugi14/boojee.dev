@@ -3,11 +3,12 @@ import { cvNav } from "../particles/cv-nav.js";
 import { cvBackground } from "../particles/cv-background.js";
 import { SUBTITLE, ABOUT, SKILLS, EXPERIENCE, EDUCATION, TRIGGERS } from "./cv-data.js";
 
-// Skills is pinned to its own sidebar column and never floats/collapses;
-// these three are the ones that toggle between a floating pill and an open
-// section, and also double as the render order for open sections.
-const SECTION_ORDER = ["about", "experience", "education"];
-const SECTION_LABELS = { about: "About", experience: "Experience", education: "Education" };
+// In single-column mobile (≤760px), Skills becomes a peer section that
+// toggles/collapses like the others. In desktop, Skills lives permanently
+// in the sidebar and is excluded from the section order.
+const SECTION_ORDER_DESKTOP = ["about", "experience", "education"];
+const SECTION_ORDER_MOBILE  = ["about", "skills", "experience", "education"];
+const SECTION_LABELS = { about: "About", skills: "Skills", experience: "Experience", education: "Education" };
 const CV_PDF_URL = "/assets/documents/darren-buttigieg-cv.pdf";
 // Once the user scrolls the CV past this point, the header docks into the
 // bottom-right corner (see DOCK_GAP below) instead of sitting full-width
@@ -53,7 +54,7 @@ export function createCvPage() {
       <aside class="cv-sidebar">
         <section class="cv-section cv-section--pinned" data-section="skills">
           <div class="cv-section-head">
-            <h2 data-action="toggle-skills" tabindex="0" role="button" aria-label="Toggle Skills">Skills</h2>
+            <h2>Skills</h2>
             <button type="button" class="cv-toggle-mode" data-action="toggle-mode" data-section="skills">
               More
             </button>
@@ -76,7 +77,6 @@ export function createCvPage() {
   const sidebar = page.querySelector(".cv-sidebar");
   const skillsBody = page.querySelector('[data-section="skills"] .cv-section-body');
   const skillsToggle = page.querySelector('[data-section="skills"] .cv-toggle-mode');
-  const skillsSection = page.querySelector('[data-section="skills"]');
 
   // Below this width, two fixed-positioned elements start to overlap
   // .cv-main's content instead of sitting beside/above the header: the
@@ -115,32 +115,30 @@ export function createCvPage() {
   function reparentSidebarOverlays() {
     const badges = document.getElementById("contact-badges");
     const main = page.querySelector(".cv-main");
-    if (SIDEBAR_OVERLAY_QUERY.matches) {
+    if (SINGLE_COLUMN_QUERY.matches) {
+      // Single-column: sidebar is hidden (CSS). Nav layer stays inline in
+      // cv-main (its original home — restore if it was moved to sidebar).
+      // Badges go after cv-main so they land at the very bottom.
       navLayer.classList.add("cv-nav-layer--inline");
-      // Clear whatever fixed-position inline styles updateNavLayerPosition()
-      // left behind (width/right/top) — .cv-nav-layer--inline's static,
-      // full-width row layout has to win, not a handful of stale pixel
-      // values sized for the old fixed placement.
       navLayer.style.removeProperty("width");
       navLayer.style.removeProperty("right");
       navLayer.style.removeProperty("top");
-      // If the header is already in the sidebar (MOBILE_FIXED_SIDEBAR_QUERY),
-      // insert the nav layer after it so the order stays
-      // [header | nav | skills | badges].
-      const navInsertPoint = header.classList.contains("cv-header--in-sidebar")
-        ? header.nextSibling
-        : sidebar.firstChild;
-      sidebar.insertBefore(navLayer, navInsertPoint);
+      navLayerHomeParent.insertBefore(navLayer, navLayerHomeNextSibling);
       if (badges) {
         badges.classList.add("contact-badges--inline");
-        // In single-column mode the sidebar sits above the main section in
-        // the flow, so the badge would appear before the content. Move it
-        // after .cv-main instead so it lands at the very bottom of the page.
-        if (SINGLE_COLUMN_QUERY.matches && main) {
-          main.after(badges);
-        } else {
-          sidebar.appendChild(badges);
-        }
+        if (main) main.after(badges);
+      }
+    } else if (SIDEBAR_OVERLAY_QUERY.matches) {
+      // Wide but not wide enough for floating nav: move nav layer and badges
+      // into the sidebar column.
+      navLayer.classList.add("cv-nav-layer--inline");
+      navLayer.style.removeProperty("width");
+      navLayer.style.removeProperty("right");
+      navLayer.style.removeProperty("top");
+      sidebar.insertBefore(navLayer, sidebar.firstChild);
+      if (badges) {
+        badges.classList.add("contact-badges--inline");
+        sidebar.appendChild(badges);
       }
     } else {
       navLayer.classList.remove("cv-nav-layer--inline");
@@ -169,7 +167,6 @@ export function createCvPage() {
     mode: { about: "short", skills: "short", experience: "short", education: "short" },
     highlight: null, // { entries: string[], blocks: { entryId: string[] } }
     expandedEntries: new Set(),
-    skillsOpen: true,
   };
 
   function findEntry(entryId) {
@@ -244,6 +241,7 @@ export function createCvPage() {
   function renderSectionBody(id) {
     const mode = state.mode[id];
     if (id === "about") return ABOUT[mode];
+    if (id === "skills") return SKILLS[mode];
 
     const data = id === "experience" ? EXPERIENCE : EDUCATION;
     const entries = data.entries;
@@ -319,7 +317,8 @@ export function createCvPage() {
   }
 
   function render() {
-    const closed = SECTION_ORDER.filter((id) => !state.open.has(id));
+    const sectionOrder = SINGLE_COLUMN_QUERY.matches ? SECTION_ORDER_MOBILE : SECTION_ORDER_DESKTOP;
+    const closed = sectionOrder.filter((id) => !state.open.has(id));
     if (cvNav.layer) {
       cvNav.setItems(closed.map((id) => ({ id, label: SECTION_LABELS[id] })));
       // The pill count (hence the nav layer's height) just changed, and the
@@ -328,15 +327,11 @@ export function createCvPage() {
       updateDockPosition();
     }
 
+    // Sidebar skills section: always kept in sync for desktop; hidden by CSS in mobile.
     skillsBody.innerHTML = SKILLS[state.mode.skills];
     skillsToggle.textContent = state.mode.skills === "short" ? "More" : "Less";
 
-    // In single-column mode, skills can be collapsed like any other section.
-    // When going back to desktop, reset to open.
-    if (!SINGLE_COLUMN_QUERY.matches) state.skillsOpen = true;
-    skillsSection.classList.toggle("cv-section--collapsed", SINGLE_COLUMN_QUERY.matches && !state.skillsOpen);
-
-    const sections = SECTION_ORDER.filter((id) => state.open.has(id))
+    const sections = sectionOrder.filter((id) => state.open.has(id))
       .map((id) => {
         const mode = state.mode[id];
         return `
@@ -408,13 +403,6 @@ export function createCvPage() {
       return;
     }
 
-    const toggleSkillsEl = e.target.closest('[data-action="toggle-skills"]');
-    if (toggleSkillsEl && SINGLE_COLUMN_QUERY.matches) {
-      state.skillsOpen = !state.skillsOpen;
-      render();
-      return;
-    }
-
     const collapseEl = e.target.closest('[data-action="collapse"]');
     if (collapseEl) {
       state.open.delete(collapseEl.dataset.section);
@@ -456,10 +444,10 @@ export function createCvPage() {
       e.preventDefault();
       collapseEl.click();
     }
-    const toggleSkillsEl = e.target.closest('[data-action="toggle-skills"]');
-    if (toggleSkillsEl) {
+    const triggerEl = e.target.closest(".cv-trigger");
+    if (triggerEl) {
       e.preventDefault();
-      toggleSkillsEl.click();
+      triggerEl.click();
     }
   });
 

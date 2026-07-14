@@ -33,7 +33,7 @@ export const SUBTITLE = "Python Developer | Scientific Computing | Backend Syste
 //   "astrophysics" is just a thesis title in short mode), so those force
 //   "detailed" in the popup; the rest default to "short".
 function triggerButton(id, label) {
-  return `<button type="button" class="cv-trigger" data-trigger="${id}">${label}</button>`;
+  return `<span role="button" tabindex="0" class="cv-trigger" data-trigger="${id}">${label}</span>`;
 }
 
 export const TRIGGERS = {
