@@ -190,12 +190,45 @@
 :root[data-theme="light"] .toptal-badge--dark  { display: none; }
 :root[data-theme="light"] .toptal-badge--light { display: block; }
 
-/* Adjust badge position on narrow viewports but keep badge at full size. */
+/* Scale badge and icons to 75% of desktop size on mobile viewports. */
 @media (max-width: 600px) {
   #contact-badges {
     right: 12px;
     bottom: 12px;
-    gap: 10px;
+    gap: 11px;
+  }
+  .contact-icons {
+    gap: 11px;
+  }
+  .contact-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .contact-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .toptal-hex {
+    padding: 5px;
+  }
+  .toptal-card {
+    width: 128px;
+    padding: 15px 0 24px;
+    gap: 6px;
+  }
+  .toptal-title {
+    font-size: 12px;
+  }
+  .toptal-divider {
+    width: 75px;
+  }
+  .toptal-label {
+    font-size: 11px;
+    margin-bottom: -5px;
+  }
+  .toptal-cta {
+    padding: 3px 14px;
+    font-size: 11px;
   }
 }
 

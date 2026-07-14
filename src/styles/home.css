@@ -80,6 +80,7 @@ h1 {
 @media (max-width: 600px) {
   h1 {
     font-size: 2.44rem;
+    top: 38%;
   }
   .nav-particle {
     font-size: 1.79rem;

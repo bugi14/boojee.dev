@@ -53,7 +53,7 @@ export function createCvPage() {
       <aside class="cv-sidebar">
         <section class="cv-section cv-section--pinned" data-section="skills">
           <div class="cv-section-head">
-            <h2>Skills</h2>
+            <h2 data-action="toggle-skills" tabindex="0" role="button" aria-label="Toggle Skills">Skills</h2>
             <button type="button" class="cv-toggle-mode" data-action="toggle-mode" data-section="skills">
               More
             </button>
@@ -76,6 +76,7 @@ export function createCvPage() {
   const sidebar = page.querySelector(".cv-sidebar");
   const skillsBody = page.querySelector('[data-section="skills"] .cv-section-body');
   const skillsToggle = page.querySelector('[data-section="skills"] .cv-toggle-mode');
+  const skillsSection = page.querySelector('[data-section="skills"]');
 
   // Below this width, two fixed-positioned elements start to overlap
   // .cv-main's content instead of sitting beside/above the header: the
@@ -151,6 +152,11 @@ export function createCvPage() {
     }
   }
 
+  function handleSingleColumnChange() {
+    reparentSidebarOverlays();
+    render();
+  }
+
   // Which sections are currently expanded inline (vs. floating pills), which
   // variant (short/detailed) each section is showing (including the pinned
   // Skills column), which entries/blocks are currently highlighted (see
@@ -163,6 +169,7 @@ export function createCvPage() {
     mode: { about: "short", skills: "short", experience: "short", education: "short" },
     highlight: null, // { entries: string[], blocks: { entryId: string[] } }
     expandedEntries: new Set(),
+    skillsOpen: true,
   };
 
   function findEntry(entryId) {
@@ -324,6 +331,11 @@ export function createCvPage() {
     skillsBody.innerHTML = SKILLS[state.mode.skills];
     skillsToggle.textContent = state.mode.skills === "short" ? "More" : "Less";
 
+    // In single-column mode, skills can be collapsed like any other section.
+    // When going back to desktop, reset to open.
+    if (!SINGLE_COLUMN_QUERY.matches) state.skillsOpen = true;
+    skillsSection.classList.toggle("cv-section--collapsed", SINGLE_COLUMN_QUERY.matches && !state.skillsOpen);
+
     const sections = SECTION_ORDER.filter((id) => state.open.has(id))
       .map((id) => {
         const mode = state.mode[id];
@@ -396,6 +408,13 @@ export function createCvPage() {
       return;
     }
 
+    const toggleSkillsEl = e.target.closest('[data-action="toggle-skills"]');
+    if (toggleSkillsEl && SINGLE_COLUMN_QUERY.matches) {
+      state.skillsOpen = !state.skillsOpen;
+      render();
+      return;
+    }
+
     const collapseEl = e.target.closest('[data-action="collapse"]');
     if (collapseEl) {
       state.open.delete(collapseEl.dataset.section);
@@ -436,6 +455,11 @@ export function createCvPage() {
     if (collapseEl) {
       e.preventDefault();
       collapseEl.click();
+    }
+    const toggleSkillsEl = e.target.closest('[data-action="toggle-skills"]');
+    if (toggleSkillsEl) {
+      e.preventDefault();
+      toggleSkillsEl.click();
     }
   });
 
@@ -702,7 +726,7 @@ export function createCvPage() {
       window.removeEventListener("resize", updateDockPosition);
       header.removeEventListener("transitionend", updateNavLayerPosition);
       SIDEBAR_OVERLAY_QUERY.removeEventListener("change", reparentSidebarOverlays);
-      SINGLE_COLUMN_QUERY.removeEventListener("change", reparentSidebarOverlays);
+      SINGLE_COLUMN_QUERY.removeEventListener("change", handleSingleColumnChange);
       MOBILE_FIXED_SIDEBAR_QUERY.removeEventListener("change", reparentHeader);
       header.classList.remove("cv-header--docked");
       headerSpacer.style.height = "0px";
@@ -731,7 +755,7 @@ export function createCvPage() {
       scrollContainer.addEventListener("scroll", handleScroll);
       window.addEventListener("resize", updateDockPosition);
       SIDEBAR_OVERLAY_QUERY.addEventListener("change", reparentSidebarOverlays);
-      SINGLE_COLUMN_QUERY.addEventListener("change", reparentSidebarOverlays);
+      SINGLE_COLUMN_QUERY.addEventListener("change", handleSingleColumnChange);
       MOBILE_FIXED_SIDEBAR_QUERY.addEventListener("change", reparentHeader);
       // Docking/undocking animates the header's position over 0.2s (see
       // cv.css); the nav layer's own position depends on the header's

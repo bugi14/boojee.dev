@@ -458,6 +458,8 @@
   cursor: pointer;
   text-decoration: underline dotted;
   text-underline-offset: 3px;
+  text-align: inherit;
+  white-space: normal;
 }
 .cv-trigger:hover,
 .cv-trigger:focus-visible {
@@ -750,5 +752,15 @@ li.cv-tech {
   .cv-sidebar {
     position: static;
     max-height: none;
+  }
+  /* In single-column, Skills heading acts as a collapse toggle like the
+     other sections — make it cursor: pointer and hide the body when
+     the cv-section--collapsed class is toggled by cv.js. */
+  .cv-section--pinned .cv-section-head h2 {
+    cursor: pointer;
+  }
+  .cv-section--pinned.cv-section--collapsed .cv-section-body,
+  .cv-section--pinned.cv-section--collapsed .cv-toggle-mode {
+    display: none;
   }
 }
