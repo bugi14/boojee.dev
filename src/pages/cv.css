@@ -329,8 +329,7 @@
   margin-bottom: 0;
 }
 .cv-header--in-sidebar .cv-title {
-  font-size: 0.7rem;
-  margin-bottom: 0;
+  display: none;
 }
 .cv-header--in-sidebar .cv-pdf-link {
   font-size: 0.65rem;
@@ -365,7 +364,7 @@
   text-align: left;
 }
 .cv-header--in-sidebar.cv-header--docked .cv-title {
-  font-size: 0.7rem;
+  display: none;
 }
 .cv-header--in-sidebar.cv-header--docked .cv-title-part {
   display: block;
@@ -432,6 +431,7 @@
 .cv-section-body p {
   margin: 0 0 12px;
   color: var(--color-cv-summary);
+  overflow-wrap: break-word;
 }
 .cv-section-body p:last-child {
   margin-bottom: 0;
@@ -766,6 +766,16 @@ li.cv-tech {
   .cv-skills dd {
     font-size: 0.84rem;
   }
+  .cv-entry-head h3 {
+    font-size: 0.96rem;
+  }
+  .cv-entry-sub {
+    font-size: 0.84rem;
+  }
+  .cv-dates,
+  .cv-tech {
+    font-size: 0.82rem;
+  }
   .cv-photo {
     width: 72px;
     height: 72px;
@@ -805,6 +815,16 @@ li.cv-tech {
   .cv-skills dd {
     font-size: 0.72rem;
   }
+  .cv-entry-head h3 {
+    font-size: 0.88rem;
+  }
+  .cv-entry-sub {
+    font-size: 0.76rem;
+  }
+  .cv-dates,
+  .cv-tech {
+    font-size: 0.73rem;
+  }
   .cv-photo {
     width: 48px;
     height: 48px;
@@ -842,19 +862,33 @@ li.cv-tech {
     font-size: 0.82rem;
   }
   .cv-title {
-    font-size: 0.58rem;
+    font-size: 0.48rem;
   }
   .cv-pdf-link {
     font-size: 0.54rem;
   }
   .cv-toggle-mode {
-    font-size: 0.56rem;
+    font-size: 0.51rem;
   }
   .cv-skills dt {
-    font-size: 0.53rem;
+    font-size: 0.38rem;
+    margin-left: 0;
+    padding-left: 0;
   }
   .cv-skills dd {
-    font-size: 0.57rem;
+    font-size: 0.42rem;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  .cv-entry-head h3 {
+    font-size: 0.85rem;
+  }
+  .cv-entry-sub {
+    font-size: 0.70rem;
+  }
+  .cv-dates,
+  .cv-tech {
+    font-size: 0.63rem;
   }
   .cv-section,
   .cv-header {
