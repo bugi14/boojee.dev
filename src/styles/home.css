@@ -79,9 +79,9 @@ h1 {
    inheriting the desktop ones at full pixel size. */
 @media (max-width: 600px) {
   h1 {
-    font-size: 2.25rem;
+    font-size: 2.44rem;
   }
   .nav-particle {
-    font-size: 1.6rem;
+    font-size: 1.79rem;
   }
 }

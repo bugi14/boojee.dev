@@ -141,7 +141,7 @@
 .cv-header--docked .cv-pdf-link {
   font-size: 0.75rem;
 }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   /* Not enough room in a narrow viewport for a floating corner card without
      it colliding with the contact badges — keep the header in normal flow
      regardless of scroll position below this width. */
@@ -283,7 +283,7 @@
     0 0 12px rgba(var(--color-nav-glow-rgb), 0.9),
     0 0 24px rgba(var(--color-nav-glow-rgb), 0.5);
 }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .cv-nav-particle {
     font-size: 1.6rem;
   }
@@ -407,7 +407,7 @@
 .cv-section--open .cv-section-head h2:focus-visible {
   color: var(--color-cv-link-hover);
 }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .cv-section-head h2 {
     font-size: 1.6rem;
   }
@@ -739,187 +739,10 @@ li.cv-tech {
   }
 }
 
-/* Both the base font-size/heading sizes above and the sidebar's column
-   width were tuned against the ~980px layout viewport mobile browsers
-   used to fall back to without a <meta name="viewport"> tag (see
-   index.html) — everything (this page included) got scaled down to fit
-   the screen along with it, so a 2-column layout reads as "fitting" even
-   on a narrow phone. Now that real viewport widths are in play, both need
-   their own real-width sizing: shrink first (keeping 2 columns as long as
-   they'll fit) before finally stacking to 1 column close to phone width. */
-@media (max-width: 700px) {
-  #cv-page {
-    font-size: 0.9rem;
-  }
-  .cv-header h1 {
-    font-size: 1.7rem;
-  }
-  .cv-title {
-    font-size: 0.9rem;
-  }
-  .cv-pdf-link {
-    font-size: 0.82rem;
-  }
-  .cv-toggle-mode {
-    font-size: 0.78rem;
-  }
-  .cv-skills dt {
-    font-size: 0.74rem;
-  }
-  .cv-skills dd {
-    font-size: 0.84rem;
-  }
-  .cv-entry-head h3 {
-    font-size: 0.96rem;
-  }
-  .cv-entry-sub {
-    font-size: 0.84rem;
-  }
-  .cv-dates,
-  .cv-tech {
-    font-size: 0.82rem;
-  }
-  .cv-photo {
-    width: 72px;
-    height: 72px;
-  }
-  .cv-body {
-    grid-template-columns: minmax(140px, 180px) 1fr;
-    gap: 20px;
-  }
-}
-
-/* A second, more aggressive shrink tier — tuned to keep 2 columns fitting
-   on real phone widths (e.g. ~412px CSS px on an Android flagship like the
-   Vivo X200 5G in portrait) instead of only on tablets. */
-@media (max-width: 560px) {
-  #cv-page {
-    font-size: 0.75rem;
-  }
-  .cv-header {
-    padding: 16px 18px;
-    gap: 14px;
-  }
-  .cv-header h1 {
-    font-size: 1.2rem;
-  }
-  .cv-title {
-    font-size: 0.75rem;
-  }
-  .cv-pdf-link {
-    font-size: 0.65rem;
-  }
-  .cv-toggle-mode {
-    font-size: 0.68rem;
-  }
-  .cv-skills dt {
-    font-size: 0.64rem;
-  }
-  .cv-skills dd {
-    font-size: 0.72rem;
-  }
-  .cv-entry-head h3 {
-    font-size: 0.88rem;
-  }
-  .cv-entry-sub {
-    font-size: 0.76rem;
-  }
-  .cv-dates,
-  .cv-tech {
-    font-size: 0.73rem;
-  }
-  .cv-photo {
-    width: 48px;
-    height: 48px;
-  }
-  .cv-body {
-    grid-template-columns: minmax(100px, 130px) 1fr;
-    gap: 12px;
-  }
-  .cv-section,
-  .cv-header {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-  .cv-section-head h2 {
-    font-size: 1.4rem;
-  }
-  .cv-nav-particle {
-    font-size: 1.1rem;
-  }
-}
-
-/* Narrowest 2-column tier: bring body, heading, and pill text down so more
-   fits in each column at real phone widths (≈357–420 px). The name (h1)
-   is intentionally left at the 560px value (1.2rem at the top, or the
-   --in-sidebar override at 0.9rem) so it becomes more prominent relative
-   to the smaller surrounding text. */
-@media (max-width: 420px) {
-  #cv-page {
-    font-size: 0.62rem;
-  }
-  .cv-section-head {
-    padding-bottom: 3px;
-    margin-bottom: 8px;
-  }
-  .cv-section-head h2 {
-    font-size: 0.95rem;
-  }
-  .cv-nav-layer.cv-nav-layer--inline {
-    gap: 3px 10px;
-    margin-bottom: 12px;
-  }
-  .cv-nav-particle {
-    font-size: 0.82rem;
-    padding: 2px 6px;
-  }
-  .cv-title {
-    font-size: 0.48rem;
-  }
-  .cv-pdf-link {
-    font-size: 0.54rem;
-  }
-  .cv-toggle-mode {
-    font-size: 0.51rem;
-  }
-  .cv-skills {
-    gap: 0;
-  }
-  .cv-skills dt {
-    font-size: 0.43rem;
-    margin: 8px 0 1px;
-  }
-  .cv-skills dt:first-child {
-    margin-top: 0;
-  }
-  .cv-skills dd {
-    font-size: 0.37rem;
-  }
-  .cv-entry-head h3 {
-    font-size: 0.85rem;
-  }
-  .cv-entry-sub,
-  .cv-dates,
-  .cv-tech {
-    font-size: inherit;
-  }
-  .cv-section,
-  .cv-header {
-    padding: 10px;
-    border-width: 1px;
-  }
-  .cv-header {
-    gap: 10px;
-  }
-  .cv-body {
-    grid-template-columns: minmax(83px, 100px) 1fr;
-  }
-}
-
-@media (max-width: 320px) {
-  .cv-header h1 {
-    font-size: 1.1rem;
-  }
+/* Single-column layout for mobile: stack sidebar and main content vertically
+   below 760 px. Font-size overrides intentionally removed here — keeping
+   default sizes so we can see the natural baseline before fine-tuning. */
+@media (max-width: 760px) {
   .cv-body {
     grid-template-columns: 1fr;
     gap: 32px;

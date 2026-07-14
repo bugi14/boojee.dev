@@ -85,11 +85,13 @@ export function createCvPage() {
   // into .cv-sidebar instead — the nav layer above Skills, the badges below
   // it — so everything's in normal flow and nothing overlaps.
   const SIDEBAR_OVERLAY_QUERY = window.matchMedia("(max-width: 1450px)");
-  const SINGLE_COLUMN_QUERY = window.matchMedia("(max-width: 320px)");
+  const SINGLE_COLUMN_QUERY = window.matchMedia("(max-width: 760px)");
   // Below this width the header is reparented into the sidebar so the full
   // left column (header + nav pills + skills + badge) stays visible while
   // the user scrolls the right-column content.
-  const MOBILE_FIXED_SIDEBAR_QUERY = window.matchMedia("(max-width: 520px)");
+  // Disabled: in single-column mode (≤760px), the header stays in normal flow
+  // above the sidebar and needs no special reparenting.
+  const MOBILE_FIXED_SIDEBAR_QUERY = window.matchMedia("(max-width: 0px)");
   const badgesHomeParent = document.getElementById("contact-badges")?.parentElement || null;
   const navLayerHomeParent = navLayer.parentElement;
   const navLayerHomeNextSibling = navLayer.nextSibling;

@@ -34,7 +34,9 @@ export const cvBackground = {
         },
         particles: {
           color: { value: color },
-          links: { color },
+          links: { color, distance: 100, opacity: 0.3 },
+          move: { speed: 0.8 },
+          number: { value: 40 },
         },
       },
     });
