@@ -142,30 +142,64 @@
   font-size: 0.75rem;
 }
 @media (max-width: 760px) {
-  /* Not enough room in a narrow viewport for a floating corner card without
-     it colliding with the contact badges — keep the header in normal flow
-     regardless of scroll position below this width. */
+  /* Header: always compact (no size jump on scroll). Grid layout: photo + name
+     on row 1 (photo top-aligned with name), subtitle and pdf link span full
+     width on rows 2 and 3. display:contents on .cv-header-text lets h1,
+     .cv-title, and .cv-pdf-link participate directly in the grid. */
+  .cv-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 14px;
+    align-items: start;
+    padding: 18px 22px;
+  }
+  .cv-photo {
+    grid-column: 1;
+    grid-row: 1;
+    width: 60px;
+    height: 60px;
+  }
+  .cv-header-text {
+    display: contents;
+  }
+  .cv-header h1 {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 1.8rem;
+    align-self: center;
+    margin: 0;
+  }
+  .cv-title {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 8px;
+  }
+  .cv-pdf-link {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  /* Docked state: keep position in-flow, neutralize any layout/size overrides
+     so the header looks identical scrolled or not. */
   .cv-header--docked {
     position: static;
-    flex-direction: row;
-    align-items: center;
+    align-items: start;
     width: 100%;
     max-width: none;
-    padding: 22px 26px;
+    padding: 18px 22px;
   }
   .cv-header--docked .cv-photo {
-    width: 96px;
-    height: 96px;
+    width: 60px;
+    height: 60px;
   }
   .cv-header--docked .cv-header-text {
     text-align: left;
   }
   .cv-header--docked h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     text-align: left;
   }
   .cv-header--docked .cv-title {
-    font-size: 1rem;
+    font-size: inherit;
   }
   .cv-header--docked .cv-title-part {
     display: inline;
@@ -174,7 +208,7 @@
     display: inline;
   }
   .cv-header--docked .cv-pdf-link {
-    font-size: 0.9rem;
+    font-size: inherit;
   }
 }
 
