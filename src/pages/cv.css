@@ -325,7 +325,7 @@
   height: 36px;
 }
 .cv-header.cv-header--in-sidebar h1 {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   margin-bottom: 0;
 }
 .cv-header--in-sidebar .cv-title {
@@ -798,6 +798,31 @@ li.cv-tech {
   }
   .cv-nav-particle {
     font-size: 1.1rem;
+  }
+}
+
+/* Narrowest 2-column tier: bring body, heading, and pill text down so more
+   fits in each column at real phone widths (≈357–420 px). The name (h1)
+   is intentionally left at the 560px value (1.2rem at the top, or the
+   --in-sidebar override at 0.9rem) so it becomes more prominent relative
+   to the smaller surrounding text. */
+@media (max-width: 420px) {
+  #cv-page {
+    font-size: 0.72rem;
+  }
+  .cv-section-head h2 {
+    font-size: 0.95rem;
+  }
+  .cv-nav-particle {
+    font-size: 0.82rem;
+  }
+  .cv-section,
+  .cv-header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .cv-header {
+    gap: 10px;
   }
 }
 

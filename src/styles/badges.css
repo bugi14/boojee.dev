@@ -193,6 +193,40 @@
 /* Scaled down for real (narrow) mobile viewports — see the equivalent note
    in home.css. Sized to roughly match how these read at desktop viewport
    widths generally, not device-specific tuning. */
+/* Narrowest mobile (≤420px): reduce badge and icon sizes so they fit
+   comfortably within the 130px sidebar column. */
+@media (max-width: 420px) {
+  .contact-icons {
+    gap: 8px;
+  }
+  .contact-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .contact-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+  .toptal-card {
+    width: 100px;
+    padding: 10px 0 16px;
+    gap: 4px;
+  }
+  .toptal-title {
+    font-size: 10px;
+  }
+  .toptal-divider {
+    width: 60px;
+  }
+  .toptal-label {
+    font-size: 9px;
+  }
+  .toptal-cta {
+    padding: 2px 10px;
+    font-size: 9px;
+  }
+}
+
 /* In single-column mode (≤320px) the sidebar becomes static, but the badge
    is still reparented inside it — restore it to a fixed corner position so
    it appears at the bottom of the viewport rather than mid-flow. */
