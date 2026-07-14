@@ -234,15 +234,15 @@
    within the narrow sidebar. Must come after ≤600px to win on cascade. */
 @media (max-width: 420px) {
   .contact-icons {
-    gap: 8px;
+    gap: 6px;
   }
   .contact-icon {
-    width: 30px;
-    height: 30px;
+    width: 22px;
+    height: 22px;
   }
   .contact-icon svg {
-    width: 15px;
-    height: 15px;
+    width: 11px;
+    height: 11px;
   }
   .toptal-hex {
     padding: 3px;

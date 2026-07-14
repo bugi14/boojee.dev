@@ -666,6 +666,7 @@ div.cv-block--highlight {
   list-style: none;
   margin: 0;
   padding: 0;
+  padding-inline-start: 0;
 }
 .cv-skills-list li {
   margin-bottom: 2px;
@@ -857,11 +858,20 @@ li.cv-tech {
   #cv-page {
     font-size: 0.62rem;
   }
+  .cv-section-head {
+    padding-bottom: 3px;
+    margin-bottom: 8px;
+  }
   .cv-section-head h2 {
     font-size: 0.95rem;
   }
+  .cv-nav-layer.cv-nav-layer--inline {
+    gap: 3px 10px;
+    margin-bottom: 12px;
+  }
   .cv-nav-particle {
     font-size: 0.82rem;
+    padding: 2px 6px;
   }
   .cv-title {
     font-size: 0.48rem;
@@ -876,14 +886,14 @@ li.cv-tech {
     gap: 0;
   }
   .cv-skills dt {
-    font-size: 0.38rem;
+    font-size: 0.43rem;
     margin: 8px 0 1px;
   }
   .cv-skills dt:first-child {
     margin-top: 0;
   }
   .cv-skills dd {
-    font-size: 0.32rem;
+    font-size: 0.37rem;
   }
   .cv-entry-head h3 {
     font-size: 0.85rem;
