@@ -37,9 +37,9 @@ export const bgStars = {
           // key is particles.paint.fill.color.
           paint: { fill: { color: { value: starColors } } },
           shape: { type: "circle" },
-          size: { value: { min: 1, max: 5 } },
+          size: { value: { min: 0.67, max: 3.33 } },
           opacity: {
-            value: { min: 0.4, max: 0.95 },
+            value: { min: 0.28, max: 0.67 },
             animation: { enable: true, speed: 0.4, sync: false },
           },
           move: {

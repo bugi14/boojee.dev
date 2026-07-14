@@ -8,6 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-14
+
+Mobile responsiveness fine-tuning pass for narrow phone viewports. See [#34](https://github.com/bugi14/boojee.dev/pull/34).
+
+### Added
+- **Skills as peer section on mobile** (`src/pages/cv.js`): at ≤ 760 px, Skills moves from the sidebar into the main content flow as a full peer section alongside About, Experience, and Education. Only one section is visible at a time (the nav pills switch between them); About is shown on load. The sidebar is hidden entirely in single-column mode.
+- **Section nav in single-column mode** (`src/pages/cv.js`): `reparentSidebarOverlays()` now handles a third case — single-column — where the nav layer stays inside `.cv-main` as an inline element (not fixed), and the contact badges are appended after `.cv-main` so they sit at the bottom of the page flow.
+
+### Fixed
+- **CV header jumps on scroll at mobile** (`src/pages/cv.css`): the base `.cv-header--docked` rule sets `gap: 8px; margin-bottom: 0`. These bled through to ≤ 760 px (where the header is `position: static`), causing the nav pills and content below to shift whenever the docked class was applied. The ≤ 760 px docked override now explicitly restores `gap: 2px 14px; margin-bottom: 24px`.
+- **"View printable version" grows on scroll at mobile** (`src/pages/cv.css`): the ≤ 760 px docked override had `font-size: inherit` for `.cv-pdf-link`, which resolved to `1.15 rem` (inherited from `#cv-page`) rather than the intended `0.9 rem`. Changed to an explicit value.
+- **Light/dark toggle at bottom on mobile** (`src/styles/theme-toggle.css`): a ≤ 600 px override moved `#theme-toggle` to `bottom: 16px`. Removed — the toggle now stays top-right on all viewport sizes, matching the desktop position.
+- **About-section trigger text flow** (`src/pages/cv-data.js`, `src/pages/cv.css`): trigger phrases were rendered as `<button>` elements, which browsers treat as `inline-block` — causing them to sit alone on their own line and centre-align. Changed to `<span role="button" tabindex="0">` so they flow as true inline text. A `keydown` handler on `.cv-trigger` spans fires `.click()` on Enter/Space to preserve keyboard accessibility.
+
+### Changed
+- **CV single-column breakpoint raised** from 320 px to 760 px (`src/pages/cv.js`, `src/pages/cv.css`): the three-tier breakpoint system (700 / 560 / 420 px) is replaced by a single ≤ 760 px rule that hides the sidebar entirely and stacks all sections in one column.
+- **CV header always compact on mobile** (`src/pages/cv.css`): at ≤ 760 px the header uses a two-column grid (photo + name on row 1, subtitle and PDF link spanning full width on rows 2–3) at all times. Scrolling no longer changes the header size or layout. `.cv-header--docked` overrides are fully neutralised at this breakpoint.
+- **Profile photo top-aligned with name** (`src/pages/cv.css`): `align-items: start` on the grid container places the photo flush with the top of the name rather than centred on it.
+- **Light/dark toggle position on home** (`src/styles/theme-toggle.css`): reverts the 1.3.0 change that moved the toggle to the bottom on mobile — it is now top-right on all screen sizes. (See also the Fixed entry above.)
+- **Home heading position** (`src/styles/home.css`): `h1` `top` adjusted from 50 % to 38 % on ≤ 600 px viewports, centering the name in the space above the nav items.
+- **Home heading and nav font sizes increased** on ≤ 600 px (`src/styles/home.css`): `h1` 2.44 rem, `.nav-particle` 1.79 rem (up ~3 px each).
+- **Toptal badge and contact icons scaled to 75 %** on ≤ 600 px (`src/styles/badges.css`): card 170 px → 128 px, icons 48 px → 36 px (SVGs 24 px → 18 px), padding/font sizes reduced proportionally.
+- **Background star size and opacity reduced** (`src/particles/bg-stars.js`): size range ÷ 1.5 (1–5 → 0.67–3.33), opacity range −30 % (0.4–0.96 → 0.28–0.67). Gives a lighter, less distracting star field on small screens.
+- **CV link-particle speed and density reduced** (`src/particles/cv-background.js`): move speed 2 → 0.8, particle count 80 → 40, link opacity 0.6 → 0.3. Makes the background less busy while reading the CV.
+
 ## [1.3.0] - 2026-07-14
 
 Mobile layout overhaul for narrow phone viewports (tested on Vivo X200 5G, 357 px CSS width). See [#31](https://github.com/bugi14/boojee.dev/pull/31).

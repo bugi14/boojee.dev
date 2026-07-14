@@ -190,17 +190,15 @@
 :root[data-theme="light"] .toptal-badge--dark  { display: none; }
 :root[data-theme="light"] .toptal-badge--light { display: block; }
 
-/* Scaled down for real (narrow) mobile viewports — see the equivalent note
-   in home.css. Sized to roughly match how these read at desktop viewport
-   widths generally, not device-specific tuning. */
+/* Scale badge and icons to 75% of desktop size on mobile viewports. */
 @media (max-width: 600px) {
   #contact-badges {
     right: 12px;
     bottom: 12px;
-    gap: 10px;
+    gap: 11px;
   }
   .contact-icons {
-    gap: 10px;
+    gap: 11px;
   }
   .contact-icon {
     width: 36px;
@@ -210,68 +208,27 @@
     width: 18px;
     height: 18px;
   }
+  .toptal-hex {
+    padding: 5px;
+  }
   .toptal-card {
-    width: 130px;
-    padding: 14px 0 22px;
+    width: 128px;
+    padding: 15px 0 24px;
     gap: 6px;
   }
   .toptal-title {
     font-size: 12px;
   }
   .toptal-divider {
-    width: 76px;
+    width: 75px;
   }
   .toptal-label {
     font-size: 11px;
+    margin-bottom: -5px;
   }
   .toptal-cta {
     padding: 3px 14px;
     font-size: 11px;
-  }
-}
-
-/* Narrowest mobile (≤420px): further reduce badge and icon sizes to fit
-   within the narrow sidebar. Must come after ≤600px to win on cascade. */
-@media (max-width: 420px) {
-  .contact-icons {
-    gap: 6px;
-  }
-  .contact-icon {
-    width: 22px;
-    height: 22px;
-  }
-  .contact-icon svg {
-    width: 11px;
-    height: 11px;
-  }
-  .toptal-hex {
-    padding: 3px;
-  }
-  .toptal-card {
-    width: 67px;
-    padding: 7px 0 11px;
-    gap: 3px;
-  }
-  .toptal-card > svg:first-of-type {
-    width: 16px;
-    height: auto;
-  }
-  .toptal-card > svg:last-of-type {
-    width: 28px;
-    height: auto;
-  }
-  .toptal-title {
-    font-size: 7px;
-  }
-  .toptal-divider {
-    width: 32px;
-  }
-  .toptal-label {
-    font-size: 6px;
-  }
-  .toptal-cta {
-    padding: 2px 6px;
-    font-size: 6px;
   }
 }
 
