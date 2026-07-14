@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-14
+
+Mobile layout fixes for narrow phone viewports (≈357 px). See [#31](https://github.com/bugi14/boojee.dev/pull/31).
+
+### Fixed
+- **Two-column layout preserved down to 320 px**: the grid previously collapsed to one column at 380 px; the sidebar threshold is now 320 px.
+- **Scroll-triggered header**: on mobile the CV header starts at the top of the page and slides into the sticky left sidebar only once the user scrolls past it (hysteresis: dock at 24 px, undock at 4 px). Previously the header was always in the sidebar regardless of scroll position.
+- **Toptal badge placement**: badge now moves into the sidebar at ≤ 1450 px (was 900 px), so it no longer overlaps the main content column at typical laptop widths. In single-column mode (≤ 320 px) it is placed after the main content section rather than being restored to a fixed overlay.
+- **Hover popup on touch**: trigger-phrase popup (e.g. "astrophysics") was firing on mobile taps because `mouseover` synthesised from touch events. Switched to `pointerover`/`pointerout` with a `pointerType === "mouse"` guard so the popup is mouse-only.
+- **About-section text wrapping**: trigger-phrase `<button>` elements changed to `display: inline` so they flow with surrounding text instead of acting as isolated inline-block atoms; `overflow-wrap: break-word` added to section paragraphs.
+- **Skills indentation**: browser UA applies `margin-inline-start` and `padding-inline-start` via logical properties that the physical `margin: 0` / `padding: 0` shorthands do not clear. Added explicit logical-property resets on `.cv-skills dd` and `.cv-skills-list`.
+- **Skills gap**: replaced the flat `gap: 14px` on the flex `<dl>` (which applied between every `dt`/`dd` including within a group) with `gap: 0` + `margin-top` on `dt` so spacing appears between groups but not between a category header and its list.
+
+### Changed
+- **Font scaling at all three mobile tiers** (700 / 560 / 420 px): body text, skills labels, subtitle, PDF link, more/less toggle, entry headings, dates, location, and tech-stack text all now scale with the page font-size at each breakpoint instead of staying at their hardcoded `rem` values.
+- **Sidebar column widened** by ~10% at ≤ 420 px (`minmax(83 px, 100 px)`), giving the main column roughly two-thirds of the available width.
+- **Logo and back button hidden on mobile** (≤ 600 px); destination content top-padding reduced from 88 px to 16 px now that these fixed overlays are gone.
+- **Light/dark toggle moved to bottom-right on mobile** (≤ 600 px) to free up the top of the screen.
+- **Subtitle hidden in sidebar**: `.cv-title` is hidden when the header is in the mobile sidebar; it remains visible in all desktop positions.
+- **PDF link hidden in sidebar**: "View printable version" also hidden when the header is in the mobile sidebar.
+- **Contact icons reduced** to 75% (22 px) at ≤ 420 px.
+- **Toptal badge internal scaling**: the two SVGs inside the badge (stars logo 38 px, Toptal wordmark 61 px) are now overridden to 16 px / 28 px at ≤ 420 px so they actually fit the 67 px card; hex wrapper padding reduced from 6 px to 3 px.
+- **Nav pill spacing** reduced ~30% at ≤ 420 px (row gap 4 → 3 px, padding 4 px → 2 px top/bottom).
+
 ## [1.2.0] - 2026-07-13
 
 Other Projects page, starting with a CouchSearch write-up. See [#30](https://github.com/bugi14/boojee.dev/pull/30).
