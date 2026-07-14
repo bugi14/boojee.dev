@@ -70,3 +70,18 @@ h1 {
     0 0 12px rgba(var(--color-nav-glow-rgb), 0.9),
     0 0 24px rgba(var(--color-nav-glow-rgb), 0.5);
 }
+
+/* Both sizes were tuned against the ~980px layout viewport mobile browsers
+   used to fall back to without a <meta name="viewport"> tag (see
+   index.html) — everything got scaled down to fit the screen along with
+   it, so it read as correctly sized. Now that real (narrow) viewport
+   widths are in play, they need their own, smaller sizing here instead of
+   inheriting the desktop ones at full pixel size. */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2.25rem;
+  }
+  .nav-particle {
+    font-size: 1.6rem;
+  }
+}

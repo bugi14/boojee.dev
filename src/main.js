@@ -50,6 +50,35 @@ destinationContent.appendChild(projectsPage);
 
 let traveling = false;
 
+// Below this width, #contact-badges (fixed bottom-right — see badges.css)
+// starts to overlap a destination page's own content instead of sitting in
+// the empty margin beside it. The CV page owns its own version of this (see
+// SIDEBAR_OVERLAY_QUERY in cv.js, which tucks the badges into its sidebar
+// instead) — this generic version is for any other destination page (e.g.
+// "Other Projects"), which has no sidebar to tuck into, so it instead moves
+// the badges into the normal document flow at the end of the page's own
+// content: fixed becomes static, and "bottom-right corner" becomes
+// "bottom of the page, only reached once the user scrolls all the way down".
+const BADGES_OVERLAP_QUERY = window.matchMedia("(max-width: 1450px)");
+const badgesHomeParent = contactBadges.parentElement;
+
+function updateBadgesPlacement() {
+  // The CV page manages #contact-badges itself while visible (moving it in
+  // and out of its own sidebar) — deferring to it here avoids both pieces
+  // of logic fighting over the same element.
+  if (!cvPage.hidden && !destinationView.hidden) return;
+
+  const projectsVisible = !projectsPage.hidden && !destinationView.hidden;
+  if (BADGES_OVERLAP_QUERY.matches && projectsVisible) {
+    contactBadges.classList.add("contact-badges--inline");
+    destinationContent.appendChild(contactBadges);
+  } else {
+    contactBadges.classList.remove("contact-badges--inline");
+    badgesHomeParent.appendChild(contactBadges);
+  }
+}
+BADGES_OVERLAP_QUERY.addEventListener("change", updateBadgesPlacement);
+
 function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
@@ -81,11 +110,25 @@ function showHome() {
   contactBadges.hidden = false;
   themeToggleEl.hidden = false;
   siteLogo.hidden = false;
+  // Explicitly hides the destination pages themselves (not just their
+  // shared container, destinationView, above) so cv.js's own visibility
+  // observer — which only watches #cv-page's own `hidden` attribute, not
+  // its ancestors' — reliably notices it's left the CV page and cleans up
+  // (detaching its scroll/resize listeners, restoring #contact-badges to
+  // its normal fixed position) on every route away from CV, not only when
+  // switching directly to another destination.
+  cvPage.hidden = true;
+  projectsPage.hidden = true;
   navButtons.attach(navLayer, travelTo);
   // Mirrors showPlaceholder() reloading "stars" itself: landing on home
   // always resets the background regardless of which preset was showing
   // beforehand (e.g. hyperspace, left over from CV having never touched it).
   loadPreset(HOME_DEFAULT_PRESET);
+  // Queued as a microtask so it runs after cv.js's own MutationObserver
+  // (queued the moment cvPage.hidden flips, above) has already restored
+  // #contact-badges to its normal parent — otherwise this could run first
+  // and have its placement immediately overwritten.
+  queueMicrotask(updateBadgesPlacement);
 }
 
 // The "cv" destination renders the static CV markup already in the page
@@ -107,6 +150,7 @@ function showDestination(hash, label) {
   destinationLabel.textContent = isCv || isProjects ? "" : label;
   cvPage.hidden = !isCv;
   projectsPage.hidden = !isProjects;
+  queueMicrotask(updateBadgesPlacement);
 }
 
 // Not-yet-implemented destinations keep the homepage's tsparticles/black-hole
@@ -122,7 +166,11 @@ function showPlaceholder() {
   contactBadges.hidden = false;
   themeToggleEl.hidden = false;
   siteLogo.hidden = false;
+  // See the equivalent comment in showHome().
+  cvPage.hidden = true;
+  projectsPage.hidden = true;
   loadPreset(HOME_DEFAULT_PRESET);
+  queueMicrotask(updateBadgesPlacement);
 }
 
 function renderRoute() {

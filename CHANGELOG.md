@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-14
+
+Mobile layout overhaul for narrow phone viewports (tested on Vivo X200 5G, 357 px CSS width). See [#31](https://github.com/bugi14/boojee.dev/pull/31).
+
+### Fixed
+- **Missing viewport meta tag**: `<meta name="viewport" content="width=device-width, initial-scale=1">` was absent, causing mobile browsers to use a ~980 px layout viewport and scale everything down. Adding it was the root cause of most subsequent sizing work.
+- **Two-column layout preserved down to 320 px**: the grid previously collapsed at 380 px. Three breakpoints now progressively narrow the sidebar track (700 px → 560 px → 420 px) before the single-column fallback at 320 px. `min-width: 0` added to `.cv-main` to prevent long words from blowing out the grid track.
+- **Scroll-triggered header on mobile** (≤ 520 px): the header now starts at the top of the page in its normal flow position. After scrolling 24 px it slides into the sticky left sidebar (hysteresis undock at 4 px scroll-back). Previously it was permanently in the sidebar from page load.
+- **Toptal badge overlap at wide desktop widths**: the badge's fixed position overlapped the CV content below ~1556 px. `SIDEBAR_OVERLAY_QUERY` raised from 900 px to 1450 px in both `cv.js` and `main.js`, so the badge moves into the sidebar well before the overlap zone.
+- **Toptal badge in single-column mode** (≤ 320 px): previously restored to `position: fixed`, overlapping the main content. `cv.js` now places it after `.cv-main` so it sits at the bottom of the page flow.
+- **Toptal badge internal scaling at ≤ 420 px**: the card was 67 px wide but the inline SVGs had hardcoded `width="38"` (stars) and `width="61"` (Toptal wordmark) — wider than the hex clip area. Added CSS overrides: stars → 16 px, wordmark → 28 px; hex wrapper padding 6 px → 3 px; divider 40 px → 32 px. Media-query cascade bug also fixed: the `≤ 420 px` block was listed before `≤ 600 px` in `badges.css`, so the wider rule silently won — reordered so 420 px comes last.
+- **Hover popup on touch**: the trigger-phrase popup (e.g. for "astrophysics") was appearing on mobile tap because `mouseover` is synthesised from touch events. Replaced `mouseover`/`mouseout` with `pointerover`/`pointerout` guarded by `e.pointerType === "mouse"`.
+- **About-section link flow**: trigger-phrase `<button>` elements set to `display: inline` so they flow continuously with surrounding text rather than being isolated `inline-block` atoms that break onto their own lines. `overflow-wrap: break-word` added to `.cv-section-body p` to handle long inline runs in the narrow main column.
+- **Skills list indentation**: browser UA stylesheets apply `margin-inline-start` / `padding-inline-start` via logical properties; the existing physical `margin: 0` / `padding: 0` shorthands did not clear them. Added explicit resets on `.cv-skills dd` and `.cv-skills-list`.
+- **Skills gap within groups**: the `gap: 14px` on the flex `<dl>` applied between every `<dt>`/`<dd>` pair, including between a category header and its own list. At ≤ 420 px: replaced with `gap: 0`, `dt { margin-top: 8px }` (skipped on `:first-child`) and `dt { margin-bottom: 1px }`, so spacing appears only between groups.
+- **Icon colour in sidebar**: `#cv-page a { color: var(--color-cv-link) }` outranked `.contact-icon { color: #fff }` once the badge was reparented inside `#cv-page`. Fixed with `#contact-badges .contact-icon { color: #fff }`.
+
+### Changed
+- **Font scaling across three mobile breakpoints** (≤ 700 / 560 / 420 px): body text, entry headings (`h3`), entry subtitle/location, dates, tech-stack text, skills category labels (`dt`) and skill values (`dd`), subtitle (`.cv-title`), PDF link, more/less toggle, and section heading (`h2`) all now have explicit overrides at each breakpoint. Previously most elements used hardcoded `rem` values that ignored the page-level `font-size` reduction.
+- **Sidebar column widened ~10%** at ≤ 420 px: `minmax(75 px, 91 px)` → `minmax(83 px, 100 px)`, giving the main column ~⅔ of available width at 357 px.
+- **Section borders thinned** to 1 px at ≤ 420 px (was 2 px).
+- **Section padding tightened**: all sides 10 px at ≤ 420 px; destination content padding 88 px / 24 px / 64 px → 16 px / 8 px / 72 px on mobile (≤ 600 px) now that fixed top-chrome is hidden.
+- **Logo and back button hidden** on mobile (≤ 600 px) to reclaim screen space.
+- **Light/dark toggle moved to bottom-right** on mobile (≤ 600 px).
+- **Subtitle (`.cv-title`) and PDF link hidden** when the header is in the mobile sidebar — only the name and photo are shown in the compact sidebar header.
+- **Contact icons** reduced to 75% at ≤ 420 px: circle 30 px → 22 px, SVG 15 px → 11 px.
+- **Nav pill vertical spacing** reduced ~30% at ≤ 420 px: row gap 4 px → 3 px, pill padding 4 px → 2 px top/bottom.
+- **Sidebar height** uses `100dvh` (with `100vh` fallback) so the sticky column stays within the visible viewport on mobile browsers with a retractable address bar.
+
 ## [1.2.0] - 2026-07-13
 
 Other Projects page, starting with a CouchSearch write-up. See [#30](https://github.com/bugi14/boojee.dev/pull/30).

@@ -23,6 +23,17 @@
   display: none;
 }
 
+/* On the CV page, once the viewport narrows enough that the fixed
+   bottom-right badge would overlap the main content column, cv.js
+   reparents #contact-badges into .cv-sidebar (under Skills) and adds this
+   class so it lays out inline instead of floating over the content. */
+#contact-badges.contact-badges--inline {
+  position: static;
+  right: auto;
+  bottom: auto;
+  margin-top: 32px;
+}
+
 .contact-icons {
   display: flex;
   gap: 14px;
@@ -36,9 +47,17 @@
   height: 48px;
   border-radius: 50%;
   background: var(--color-icon-bg);
-  color: #fff;
   box-shadow: 0 8px 20px rgba(var(--color-icon-shadow-rgb), 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+}
+
+/* Reasserts white/theme colours at higher specificity than #cv-page's
+   `#cv-page a { color: var(--color-cv-link) }` — needed once cv.js
+   reparents #contact-badges inside #cv-page (see cv.js reparentBadges()),
+   since that ID selector would otherwise repaint the icons/CTA pink and
+   make "Hire me" unreadable against its own pink background. */
+#contact-badges .contact-icon {
+  color: #fff;
 }
 
 .contact-icon:hover,
@@ -134,6 +153,10 @@
   color: #F7E9C6;
 }
 
+#contact-badges .toptal-badge--dark .toptal-cta {
+  color: #F7E9C6;
+}
+
 /* ── Light scheme variant ─────────────────────────────────────────────────── */
 .toptal-badge--light .toptal-hex {
   background: #A8D8EA;
@@ -154,6 +177,10 @@
   color: #FAF7F2;
 }
 
+#contact-badges .toptal-badge--light .toptal-cta {
+  color: #FAF7F2;
+}
+
 /* Show dark by default; swap to light when data-theme="light" is set on <html>
    (the inline <script> in index.html <head> sets this before first paint). */
 .toptal-badge--light {
@@ -162,3 +189,92 @@
 
 :root[data-theme="light"] .toptal-badge--dark  { display: none; }
 :root[data-theme="light"] .toptal-badge--light { display: block; }
+
+/* Scaled down for real (narrow) mobile viewports — see the equivalent note
+   in home.css. Sized to roughly match how these read at desktop viewport
+   widths generally, not device-specific tuning. */
+@media (max-width: 600px) {
+  #contact-badges {
+    right: 12px;
+    bottom: 12px;
+    gap: 10px;
+  }
+  .contact-icons {
+    gap: 10px;
+  }
+  .contact-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .contact-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .toptal-card {
+    width: 130px;
+    padding: 14px 0 22px;
+    gap: 6px;
+  }
+  .toptal-title {
+    font-size: 12px;
+  }
+  .toptal-divider {
+    width: 76px;
+  }
+  .toptal-label {
+    font-size: 11px;
+  }
+  .toptal-cta {
+    padding: 3px 14px;
+    font-size: 11px;
+  }
+}
+
+/* Narrowest mobile (≤420px): further reduce badge and icon sizes to fit
+   within the narrow sidebar. Must come after ≤600px to win on cascade. */
+@media (max-width: 420px) {
+  .contact-icons {
+    gap: 6px;
+  }
+  .contact-icon {
+    width: 22px;
+    height: 22px;
+  }
+  .contact-icon svg {
+    width: 11px;
+    height: 11px;
+  }
+  .toptal-hex {
+    padding: 3px;
+  }
+  .toptal-card {
+    width: 67px;
+    padding: 7px 0 11px;
+    gap: 3px;
+  }
+  .toptal-card > svg:first-of-type {
+    width: 16px;
+    height: auto;
+  }
+  .toptal-card > svg:last-of-type {
+    width: 28px;
+    height: auto;
+  }
+  .toptal-title {
+    font-size: 7px;
+  }
+  .toptal-divider {
+    width: 32px;
+  }
+  .toptal-label {
+    font-size: 6px;
+  }
+  .toptal-cta {
+    padding: 2px 6px;
+    font-size: 6px;
+  }
+}
+
+/* In single-column mode (≤320px) cv.js moves #contact-badges to after
+   .cv-main so it sits at the very bottom of the page. No position override
+   needed — contact-badges--inline already gives it position: static. */
