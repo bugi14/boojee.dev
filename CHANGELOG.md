@@ -10,27 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.0] - 2026-07-14
 
-Mobile layout fixes for narrow phone viewports (≈357 px). See [#31](https://github.com/bugi14/boojee.dev/pull/31).
+Mobile layout overhaul for narrow phone viewports (tested on Vivo X200 5G, 357 px CSS width). See [#31](https://github.com/bugi14/boojee.dev/pull/31).
 
 ### Fixed
-- **Two-column layout preserved down to 320 px**: the grid previously collapsed to one column at 380 px; the sidebar threshold is now 320 px.
-- **Scroll-triggered header**: on mobile the CV header starts at the top of the page and slides into the sticky left sidebar only once the user scrolls past it (hysteresis: dock at 24 px, undock at 4 px). Previously the header was always in the sidebar regardless of scroll position.
-- **Toptal badge placement**: badge now moves into the sidebar at ≤ 1450 px (was 900 px), so it no longer overlaps the main content column at typical laptop widths. In single-column mode (≤ 320 px) it is placed after the main content section rather than being restored to a fixed overlay.
-- **Hover popup on touch**: trigger-phrase popup (e.g. "astrophysics") was firing on mobile taps because `mouseover` synthesised from touch events. Switched to `pointerover`/`pointerout` with a `pointerType === "mouse"` guard so the popup is mouse-only.
-- **About-section text wrapping**: trigger-phrase `<button>` elements changed to `display: inline` so they flow with surrounding text instead of acting as isolated inline-block atoms; `overflow-wrap: break-word` added to section paragraphs.
-- **Skills indentation**: browser UA applies `margin-inline-start` and `padding-inline-start` via logical properties that the physical `margin: 0` / `padding: 0` shorthands do not clear. Added explicit logical-property resets on `.cv-skills dd` and `.cv-skills-list`.
-- **Skills gap**: replaced the flat `gap: 14px` on the flex `<dl>` (which applied between every `dt`/`dd` including within a group) with `gap: 0` + `margin-top` on `dt` so spacing appears between groups but not between a category header and its list.
+- **Missing viewport meta tag**: `<meta name="viewport" content="width=device-width, initial-scale=1">` was absent, causing mobile browsers to use a ~980 px layout viewport and scale everything down. Adding it was the root cause of most subsequent sizing work.
+- **Two-column layout preserved down to 320 px**: the grid previously collapsed at 380 px. Three breakpoints now progressively narrow the sidebar track (700 px → 560 px → 420 px) before the single-column fallback at 320 px. `min-width: 0` added to `.cv-main` to prevent long words from blowing out the grid track.
+- **Scroll-triggered header on mobile** (≤ 520 px): the header now starts at the top of the page in its normal flow position. After scrolling 24 px it slides into the sticky left sidebar (hysteresis undock at 4 px scroll-back). Previously it was permanently in the sidebar from page load.
+- **Toptal badge overlap at wide desktop widths**: the badge's fixed position overlapped the CV content below ~1556 px. `SIDEBAR_OVERLAY_QUERY` raised from 900 px to 1450 px in both `cv.js` and `main.js`, so the badge moves into the sidebar well before the overlap zone.
+- **Toptal badge in single-column mode** (≤ 320 px): previously restored to `position: fixed`, overlapping the main content. `cv.js` now places it after `.cv-main` so it sits at the bottom of the page flow.
+- **Toptal badge internal scaling at ≤ 420 px**: the card was 67 px wide but the inline SVGs had hardcoded `width="38"` (stars) and `width="61"` (Toptal wordmark) — wider than the hex clip area. Added CSS overrides: stars → 16 px, wordmark → 28 px; hex wrapper padding 6 px → 3 px; divider 40 px → 32 px. Media-query cascade bug also fixed: the `≤ 420 px` block was listed before `≤ 600 px` in `badges.css`, so the wider rule silently won — reordered so 420 px comes last.
+- **Hover popup on touch**: the trigger-phrase popup (e.g. for "astrophysics") was appearing on mobile tap because `mouseover` is synthesised from touch events. Replaced `mouseover`/`mouseout` with `pointerover`/`pointerout` guarded by `e.pointerType === "mouse"`.
+- **About-section link flow**: trigger-phrase `<button>` elements set to `display: inline` so they flow continuously with surrounding text rather than being isolated `inline-block` atoms that break onto their own lines. `overflow-wrap: break-word` added to `.cv-section-body p` to handle long inline runs in the narrow main column.
+- **Skills list indentation**: browser UA stylesheets apply `margin-inline-start` / `padding-inline-start` via logical properties; the existing physical `margin: 0` / `padding: 0` shorthands did not clear them. Added explicit resets on `.cv-skills dd` and `.cv-skills-list`.
+- **Skills gap within groups**: the `gap: 14px` on the flex `<dl>` applied between every `<dt>`/`<dd>` pair, including between a category header and its own list. At ≤ 420 px: replaced with `gap: 0`, `dt { margin-top: 8px }` (skipped on `:first-child`) and `dt { margin-bottom: 1px }`, so spacing appears only between groups.
+- **Icon colour in sidebar**: `#cv-page a { color: var(--color-cv-link) }` outranked `.contact-icon { color: #fff }` once the badge was reparented inside `#cv-page`. Fixed with `#contact-badges .contact-icon { color: #fff }`.
 
 ### Changed
-- **Font scaling at all three mobile tiers** (700 / 560 / 420 px): body text, skills labels, subtitle, PDF link, more/less toggle, entry headings, dates, location, and tech-stack text all now scale with the page font-size at each breakpoint instead of staying at their hardcoded `rem` values.
-- **Sidebar column widened** by ~10% at ≤ 420 px (`minmax(83 px, 100 px)`), giving the main column roughly two-thirds of the available width.
-- **Logo and back button hidden on mobile** (≤ 600 px); destination content top-padding reduced from 88 px to 16 px now that these fixed overlays are gone.
-- **Light/dark toggle moved to bottom-right on mobile** (≤ 600 px) to free up the top of the screen.
-- **Subtitle hidden in sidebar**: `.cv-title` is hidden when the header is in the mobile sidebar; it remains visible in all desktop positions.
-- **PDF link hidden in sidebar**: "View printable version" also hidden when the header is in the mobile sidebar.
-- **Contact icons reduced** to 75% (22 px) at ≤ 420 px.
-- **Toptal badge internal scaling**: the two SVGs inside the badge (stars logo 38 px, Toptal wordmark 61 px) are now overridden to 16 px / 28 px at ≤ 420 px so they actually fit the 67 px card; hex wrapper padding reduced from 6 px to 3 px.
-- **Nav pill spacing** reduced ~30% at ≤ 420 px (row gap 4 → 3 px, padding 4 px → 2 px top/bottom).
+- **Font scaling across three mobile breakpoints** (≤ 700 / 560 / 420 px): body text, entry headings (`h3`), entry subtitle/location, dates, tech-stack text, skills category labels (`dt`) and skill values (`dd`), subtitle (`.cv-title`), PDF link, more/less toggle, and section heading (`h2`) all now have explicit overrides at each breakpoint. Previously most elements used hardcoded `rem` values that ignored the page-level `font-size` reduction.
+- **Sidebar column widened ~10%** at ≤ 420 px: `minmax(75 px, 91 px)` → `minmax(83 px, 100 px)`, giving the main column ~⅔ of available width at 357 px.
+- **Section borders thinned** to 1 px at ≤ 420 px (was 2 px).
+- **Section padding tightened**: all sides 10 px at ≤ 420 px; destination content padding 88 px / 24 px / 64 px → 16 px / 8 px / 72 px on mobile (≤ 600 px) now that fixed top-chrome is hidden.
+- **Logo and back button hidden** on mobile (≤ 600 px) to reclaim screen space.
+- **Light/dark toggle moved to bottom-right** on mobile (≤ 600 px).
+- **Subtitle (`.cv-title`) and PDF link hidden** when the header is in the mobile sidebar — only the name and photo are shown in the compact sidebar header.
+- **Contact icons** reduced to 75% at ≤ 420 px: circle 30 px → 22 px, SVG 15 px → 11 px.
+- **Nav pill vertical spacing** reduced ~30% at ≤ 420 px: row gap 4 px → 3 px, pill padding 4 px → 2 px top/bottom.
+- **Sidebar height** uses `100dvh` (with `100vh` fallback) so the sticky column stays within the visible viewport on mobile browsers with a retractable address bar.
 
 ## [1.2.0] - 2026-07-13
 
