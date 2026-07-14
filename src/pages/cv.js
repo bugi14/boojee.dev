@@ -96,15 +96,16 @@ export function createCvPage() {
   const headerHomeNextSibling = header.nextSibling;
 
   function reparentHeader() {
-    if (MOBILE_FIXED_SIDEBAR_QUERY.matches) {
-      header.classList.add("cv-header--in-sidebar");
-      sidebar.insertBefore(header, sidebar.firstChild);
-      headerSpacer.style.height = "0px";
-    } else {
+    // When the viewport grows above the mobile threshold, restore the header
+    // to its home above the grid immediately — scroll events manage the
+    // transition in the opposite direction via handleScroll().
+    if (!MOBILE_FIXED_SIDEBAR_QUERY.matches && header.classList.contains("cv-header--in-sidebar")) {
       header.classList.remove("cv-header--in-sidebar");
       headerHomeParent.insertBefore(header, headerHomeNextSibling);
       headerSpacer.style.height = "0px";
     }
+    // Re-evaluate the scroll-driven sidebar state for the new viewport width.
+    if (scrollContainer) handleScroll();
   }
 
   function reparentSidebarOverlays() {
@@ -619,8 +620,33 @@ export function createCvPage() {
   }
 
   function handleScroll() {
-    // The header is inside the fixed sidebar — no docking needed.
-    if (header.classList.contains("cv-header--in-sidebar")) return;
+    // On narrow mobile, slide the header into the sidebar once the user has
+    // scrolled past it — so the full left column (header + nav + skills +
+    // badge) stays visible while the right column scrolls — and restore it
+    // when scrolling back to the top. Same hysteresis thresholds as the
+    // desktop docking to prevent bouncing at the threshold.
+    if (MOBILE_FIXED_SIDEBAR_QUERY.matches) {
+      const currentlyInSidebar = header.classList.contains("cv-header--in-sidebar");
+      const shouldBeInSidebar = currentlyInSidebar
+        ? scrollContainer.scrollTop > UNDOCK_SCROLL_THRESHOLD
+        : scrollContainer.scrollTop > DOCK_SCROLL_THRESHOLD;
+
+      if (shouldBeInSidebar && !currentlyInSidebar) {
+        const style = getComputedStyle(header);
+        undockedHeaderHeight = header.offsetHeight + (parseFloat(style.marginBottom) || 0);
+        header.classList.add("cv-header--in-sidebar");
+        headerSpacer.style.height = `${undockedHeaderHeight}px`;
+        sidebar.insertBefore(header, sidebar.firstChild);
+      } else if (!shouldBeInSidebar && currentlyInSidebar) {
+        header.classList.remove("cv-header--in-sidebar");
+        headerHomeParent.insertBefore(header, headerHomeNextSibling);
+        headerSpacer.style.height = "0px";
+      }
+      return;
+    }
+
+    // Desktop / wider viewport: dock the header as a floating corner card
+    // once scrolled, restore it to the top of the page when scrolling back.
     const currentlyDocked = header.classList.contains("cv-header--docked");
     const shouldDock = currentlyDocked
       ? scrollContainer.scrollTop > UNDOCK_SCROLL_THRESHOLD
@@ -685,9 +711,6 @@ export function createCvPage() {
       cvBackground.attach();
       render();
       scrollContainer = document.getElementById("destination-view");
-      // Reparent header first so reparentSidebarOverlays() can insert the
-      // nav layer after it if both queries match.
-      reparentHeader();
       reparentSidebarOverlays();
       handleScroll();
       updateDockPosition();
