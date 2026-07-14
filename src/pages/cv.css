@@ -449,6 +449,7 @@
 }
 
 .cv-trigger {
+  display: inline;
   background: none;
   border: none;
   padding: 0;
@@ -815,6 +816,12 @@ li.cv-tech {
   }
   .cv-nav-particle {
     font-size: 0.82rem;
+  }
+  .cv-skills dt {
+    font-size: 0.62rem;
+  }
+  .cv-skills dd {
+    font-size: 0.68rem;
   }
   .cv-section,
   .cv-header {
