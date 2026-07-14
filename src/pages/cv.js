@@ -531,7 +531,8 @@ export function createCvPage() {
     preview.style.top = `${Math.min(Math.max(rect.top, 8), window.innerHeight - preview.offsetHeight - 8)}px`;
   }
 
-  page.addEventListener("mouseover", (e) => {
+  page.addEventListener("pointerover", (e) => {
+    if (e.pointerType !== "mouse") return;
     const triggerEl = e.target.closest(".cv-trigger");
     if (triggerEl) {
       showPreview(triggerEl, triggerEl.dataset.trigger);
@@ -539,7 +540,8 @@ export function createCvPage() {
     }
     if (preview.contains(e.target)) cancelHidePreview();
   });
-  page.addEventListener("mouseout", (e) => {
+  page.addEventListener("pointerout", (e) => {
+    if (e.pointerType !== "mouse") return;
     const leavingTrigger = e.target.closest(".cv-trigger");
     const leavingPreview = preview.contains(e.target);
     if (!leavingTrigger && !leavingPreview) return;
