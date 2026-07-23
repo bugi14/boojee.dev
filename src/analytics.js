@@ -6,8 +6,8 @@ let sectionPath = null;
 let activeSince = null;
 let activeTimeMs = 0;
 
-function gtag(...args) {
-  window.dataLayer.push(args);
+function gtag() {
+  window.dataLayer.push(arguments);
 }
 
 function recordActiveTime() {
