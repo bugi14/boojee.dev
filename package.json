@@ -26,7 +26,9 @@
     "@tsparticles/preset-links": "^4.3.1",
     "@tsparticles/preset-snow": "^4.3.1",
     "@tsparticles/preset-stars": "^4.3.1",
-    "@tsparticles/slim": "^4.3.1"
+    "@tsparticles/slim": "^4.3.1",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0"
   },
   "allowScripts": {
     "@tsparticles/engine@4.3.1": true

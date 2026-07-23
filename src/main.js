@@ -10,9 +10,12 @@ import "./styles/logo.css";
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import { loadImageShape } from "@tsparticles/shape-image";
+import { inject } from "@vercel/analytics";
+import { injectSpeedInsights } from "@vercel/speed-insights";
 
 import { createCvPage } from "./pages/cv.js";
 import { createProjectsPage } from "./pages/projects.js";
+import { initAnalytics, trackSectionView } from "./analytics.js";
 import { bgStars } from "./particles/bg-stars.js";
 import { registerAllPresets, loadPreset } from "./particles/presets.js";
 import { NAV_ITEMS, navButtons } from "./particles/nav-buttons.js";
@@ -176,13 +179,24 @@ function showPlaceholder() {
 function renderRoute() {
   const hash = window.location.hash.replace(/^#\/?/, "");
   const label = DESTINATIONS.get(hash);
+  let sectionName;
+  let pageTitle;
+
   if (!label) {
     showHome();
+    sectionName = "home";
+    pageTitle = "Darren Buttigieg";
   } else if (IMPLEMENTED_HASHES.has(hash)) {
     showDestination(hash, label);
+    sectionName = hash;
+    pageTitle = `Darren Buttigieg — ${label}`;
   } else {
     showPlaceholder();
+    sectionName = `placeholder:${hash}`;
+    pageTitle = `Darren Buttigieg — ${label}`;
   }
+
+  trackSectionView(sectionName, pageTitle);
 }
 
 function wait(ms) {
@@ -318,6 +332,9 @@ window.addEventListener("pageshow", (event) => {
 });
 
 async function init() {
+  inject();
+  injectSpeedInsights();
+  initAnalytics();
   await loadSlim(tsParticles);
   await loadImageShape(tsParticles);
   await registerAllPresets();
