@@ -10,6 +10,8 @@ import "./styles/logo.css";
 import { tsParticles } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import { loadImageShape } from "@tsparticles/shape-image";
+import { inject } from "@vercel/analytics";
+import { injectSpeedInsights } from "@vercel/speed-insights";
 
 import { createCvPage } from "./pages/cv.js";
 import { createProjectsPage } from "./pages/projects.js";
@@ -330,6 +332,8 @@ window.addEventListener("pageshow", (event) => {
 });
 
 async function init() {
+  inject();
+  injectSpeedInsights();
   initAnalytics();
   await loadSlim(tsParticles);
   await loadImageShape(tsParticles);
